@@ -4,10 +4,7 @@ Conventions allow an operator to define cross cutting behavior that are directly
 
 - [Pre-requisites](#pre-requisites)
 - [Install](#install)
-  - [Releases](#releases)
   - [From Source](#from-source)
-- [Troubleshooting](#troubleshooting)
-- [Reference Documentation](#reference-documentation)
 - [Samples](#samples)
 - [Contributing](#contributing)
 - [License](#license)
@@ -17,10 +14,6 @@ Conventions allow an operator to define cross cutting behavior that are directly
 This project requires access to a [container registry](https://docs.docker.com/registry/introduction/) for fetching image metadata. It will not work for images that have bypassed a registry by loading directly into a local daemon.
 
 ## Install
-
-### Releases
-
-[Built release bundles](https://github.com/vmware-tanzu/dap-framework/releases) are available with step by step [install instructions](./docs/tutorial-installing-releases.md), or you can build directly from source.
 
 ### From Source
 
@@ -53,17 +46,6 @@ We use [Golang 1.17+](https://golang.org) and [`ko`](https://github.com/google/k
     ```
 
     Note: you'll need to `export KO_DOCKER_REPO=<ACCESSIBLE_DOCKER_REPO>` such that `ko` can push to the repository and your cluster can pull from it. Visit [the ko README](https://github.com/google/ko/blob/master/README.md#usage) for more information.
-
-## Troubleshooting
-
-For basic troubleshooting Cartographer Conventions, please see the troubleshooting guide [here](./docs/troubleshooting.md).
-
-## Reference Documentation
-
-- [Resources](docs/reference/README.md)
-- [Convention Authors](docs/convention-authors.md)
-- [Webhook Convention Server](docs/webhook-server.md)
-- [Creating Conventions](docs/creating-conventions.md)
 
 ## Samples
 
