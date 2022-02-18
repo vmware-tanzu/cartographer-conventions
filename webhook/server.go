@@ -22,8 +22,8 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"path/filepath"
@@ -51,7 +51,7 @@ func NewConventionServer(ctx context.Context, addr string) error {
 		CrtFile: filepath.Join(CertMountPath, "tls.crt"),
 		KeyFile: filepath.Join(CertMountPath, "tls.key"),
 	}
-	if err := watcher.Load(); err != nil {
+	if err := watcher.Load(ctx); err != nil {
 		return err
 	}
 	go watcher.Watch(ctx)
@@ -78,20 +78,21 @@ func NewConventionServer(ctx context.Context, addr string) error {
 	return server.ListenAndServeTLS("", "")
 }
 
-func ConventionHandler(convention Convention) func(http.ResponseWriter, *http.Request) {
+func ConventionHandler(ctx context.Context, convention Convention) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Received request")
+		logger := loggerFromContext(ctx)
+		logInfo(logger, "received request")
 		wc := &webhookv1alpha1.PodConventionContext{}
 		if r.Body != nil {
 			reqBody, err := ioutil.ReadAll(r.Body)
 			if err != nil {
-				log.Println("Failed to read request body")
+				logError(logger, err, "error reading request body")
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 			decoder := json.NewDecoder(bytes.NewBuffer(reqBody))
 			if derr := decoder.Decode(wc); derr != nil {
-				log.Println("Failed to decode req body into PodConventionContext type")
+				logError(logger, derr, "error decoding request body into PodConventionContext type")
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
@@ -100,13 +101,13 @@ func ConventionHandler(convention Convention) func(http.ResponseWriter, *http.Re
 		pts := wc.Spec.Template.DeepCopy()
 		appliedConventions, err := convention(pts, wc.Spec.ImageConfig)
 		if err != nil {
-			log.Printf("error applying conventions: %v\n", err)
+			logError(logger, err, "error applying conventions")
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 		wc.Status.AppliedConventions = appliedConventions
 		wc.Status.Template = *pts
 		if err := json.NewEncoder(w).Encode(wc); err != nil {
-			log.Println("Failed to Encode response")
+			logError(logger, err, "error encoding response")
 			return
 		}
 	}
@@ -121,6 +122,7 @@ type certWatcher struct {
 }
 
 func (w *certWatcher) Watch(ctx context.Context) error {
+	logger := loggerFromContext(ctx)
 	// refresh the certs periodically even if we miss a fs event
 	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
@@ -130,8 +132,8 @@ func (w *certWatcher) Watch(ctx context.Context) error {
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				if err := w.Load(); err != nil {
-					log.Printf("error loading TLS key pair: %s\n", err)
+				if err := w.Load(ctx); err != nil {
+					logError(logger, err, "error loading TLS key pair")
 				}
 			}
 		}
@@ -141,7 +143,8 @@ func (w *certWatcher) Watch(ctx context.Context) error {
 	return nil
 }
 
-func (w *certWatcher) Load() error {
+func (w *certWatcher) Load(ctx context.Context) error {
+	logger := loggerFromContext(ctx)
 	w.m.Lock()
 	defer w.m.Unlock()
 
@@ -165,7 +168,7 @@ func (w *certWatcher) Load() error {
 		}
 	}
 	w.keyPair = &keyPair
-	log.Printf("loaded TLS key pair (valid until %q)\n", leaf.NotAfter)
+	logInfo(logger, fmt.Sprintf("loaded TLS key pair (valid until %q)", leaf.NotAfter))
 	return nil
 }
 
