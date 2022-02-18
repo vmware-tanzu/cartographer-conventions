@@ -13,7 +13,7 @@ require (
 	github.com/vmware-labs/reconciler-runtime v0.4.0
 	github.com/vmware-tanzu/cartographer-conventions/webhook v0.0.0
 	k8s.io/api v0.23.3
-	k8s.io/apimachinery v0.23.3
+	k8s.io/apimachinery v0.23.4
 	k8s.io/apiserver v0.23.3
 	k8s.io/client-go v0.23.3
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed
