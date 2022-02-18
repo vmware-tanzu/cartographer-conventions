@@ -1,0 +1,111 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sample-conventions
+
+---
+# The following manifests contain a self-signed issuer CR and a certificate CR.
+# More document can be found at https://docs.cert-manager.io
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+  namespace: sample-conventions
+spec:
+  selfSigned: {}
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: webhook-cert
+  namespace: sample-conventions
+spec:
+  subject:
+    organizations:
+    - vmware
+    organizationalUnits:
+    - tanzu
+  commonName: webhook.sample-conventions.svc
+  dnsNames:
+  - webhook.sample-conventions.svc
+  - webhook.sample-conventions.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: selfsigned-issuer
+  secretName: webhook-cert
+  revisionHistoryLimit: 10
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webhook
+  namespace: sample-conventions
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webhook
+  template:
+    metadata:
+      labels:
+        app: webhook
+    spec:
+      containers:
+      - name: webhook
+        image: ko://github.com/vmware-tanzu/cartographer-conventions/samples/convention-server
+        env:
+        - name: PORT
+          value: "8443"
+        ports:
+        - containerPort: 8443
+          name: webhook
+        livenessProbe:
+          httpGet:
+            scheme: HTTPS
+            port: webhook
+            path: /healthz
+        readinessProbe:
+          httpGet:
+            scheme: HTTPS
+            port: webhook
+            path: /healthz
+        volumeMounts:
+        - name: certs
+          mountPath: /config/certs
+          readOnly: true
+      volumes:
+        - name: certs
+          secret:
+            defaultMode: 420
+            secretName: webhook-cert
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webhook
+  namespace: sample-conventions
+spec:
+  selector:
+    app: webhook
+  ports:
+    - protocol: TCP
+      port: 443
+      targetPort: webhook
+
+---
+apiVersion: conventions.carto.run/v1alpha1
+kind: ClusterPodConvention
+metadata:
+  name: sample
+  annotations:
+    conventions.carto.run/inject-ca-from: "sample-conventions/webhook-cert"
+spec:
+  webhook:
+    clientConfig:
+      service:
+        name: webhook
+        namespace: sample-conventions

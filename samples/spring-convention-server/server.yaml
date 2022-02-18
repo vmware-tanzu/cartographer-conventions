@@ -1,0 +1,111 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sample-spring-conventions
+
+---
+# The following manifests contain a self-signed issuer CR and a certificate CR.
+# More document can be found at https://docs.cert-manager.io
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: spring-selfsigned-issuer
+  namespace: sample-spring-conventions
+spec:
+  selfSigned: {}
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: spring-webhook-cert
+  namespace: sample-spring-conventions
+spec:
+  subject:
+    organizations:
+    - vmware
+    organizationalUnits:
+    - tanzu
+  commonName: spring-webhook.spring-conventions.svc
+  dnsNames:
+  - spring-webhook.sample-spring-conventions.svc
+  - spring-webhook.sample-spring-conventions.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: spring-selfsigned-issuer
+  secretName: spring-webhook-cert
+  revisionHistoryLimit: 10
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-webhook
+  namespace: sample-spring-conventions
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spring-webhook
+  template:
+    metadata:
+      labels:
+        app: spring-webhook
+    spec:
+      containers:
+      - name: webhook
+        image: ko://github.com/vmware-tanzu/cartographer-conventions/samples/spring-convention-server
+        env:
+        - name: PORT
+          value: "8443"
+        ports:
+        - containerPort: 8443
+          name: webhook
+        livenessProbe:
+          httpGet:
+            scheme: HTTPS
+            port: webhook
+            path: /healthz
+        readinessProbe:
+          httpGet:
+            scheme: HTTPS
+            port: webhook
+            path: /healthz
+        volumeMounts:
+        - name: certs
+          mountPath: /config/certs
+          readOnly: true
+      volumes:
+        - name: certs
+          secret:
+            defaultMode: 420
+            secretName: spring-webhook-cert
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-webhook
+  namespace: sample-spring-conventions
+spec:
+  selector:
+    app: spring-webhook
+  ports:
+    - protocol: TCP
+      port: 443
+      targetPort: webhook
+
+---
+apiVersion: conventions.carto.run/v1alpha1
+kind: ClusterPodConvention
+metadata:
+  name: spring-sample
+  annotations:
+    conventions.carto.run/inject-ca-from: "sample-spring-conventions/spring-webhook-cert"
+spec:
+  webhook:
+    clientConfig:
+      service:
+        name: spring-webhook
+        namespace: sample-spring-conventions

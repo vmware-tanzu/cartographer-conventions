@@ -1,0 +1,94 @@
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: mutating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-conventions-carto-run-v1alpha1-clusterpodconvention
+  failurePolicy: Fail
+  name: clusterpodconventions.conventions.carto.run
+  rules:
+  - apiGroups:
+    - conventions.carto.run
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - clusterpodconventions
+  sideEffects: None
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-conventions-carto-run-v1alpha1-podintent
+  failurePolicy: Fail
+  name: podintents.conventions.carto.run
+  rules:
+  - apiGroups:
+    - conventions.carto.run
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - podintents
+  sideEffects: None
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: validating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-conventions-carto-run-v1alpha1-clusterpodconvention
+  failurePolicy: Fail
+  name: clusterpodconventions.conventions.carto.run
+  rules:
+  - apiGroups:
+    - conventions.carto.run
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - clusterpodconventions
+  sideEffects: None
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-conventions-carto-run-v1alpha1-podintent
+  failurePolicy: Fail
+  name: podintents.conventions.carto.run
+  rules:
+  - apiGroups:
+    - conventions.carto.run
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - podintents
+  sideEffects: None

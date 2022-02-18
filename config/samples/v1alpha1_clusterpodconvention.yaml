@@ -1,0 +1,9 @@
+apiVersion: conventions.carto.run/v1alpha1
+kind: ClusterPodConvention
+metadata:
+  name: clusterpodconvention-sample
+spec:
+  clientConfig:
+    service:
+      name: "stub-svc"
+      namespace: "stub-ns"

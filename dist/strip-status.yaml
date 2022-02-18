@@ -1,0 +1,8 @@
+#! Copyright 2022 VMware Inc. All rights reserved
+
+#@ load("@ytt:overlay", "overlay")
+
+#@overlay/match by=overlay.all, expects="0+"
+---
+#@overlay/match missing_ok=True
+status: #@overlay/remove

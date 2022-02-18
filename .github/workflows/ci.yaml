@@ -1,0 +1,607 @@
+name: CI
+
+on:
+  push:
+    branches:
+    - 'main'
+    - '!dependabot/**'
+    tags:
+    - '**'
+  pull_request: {}
+
+jobs:
+
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2.4.0
+    - uses: actions/setup-go@v2.2.0
+      with:
+        go-version: 1.17.x
+    - name: Test
+      run: make test
+    # TODO setup project with codecov
+    # - name: Report coverage
+    #   run: bash <(curl -s https://codecov.io/bash)
+    #   env:
+    #     CODECOV_TOKEN: ...
+    - name: Build
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        make dist
+        git diff --exit-code dist
+
+  stage:
+    runs-on: ubuntu-latest
+    env:
+      REGISTRY_NAME: registry.local
+      KO_DOCKER_REPO: registry.local/conventions
+      BUNDLE: registry.local/conventions/bundle
+    steps:
+    - uses: actions/checkout@v2.4.0
+    - uses: actions/setup-go@v2.2.0
+      with:
+        go-version: 1.17.x
+    - uses: vmware-tanzu/carvel-setup-action@v1
+    - name: Install ko
+      run: |
+        cd $(mktemp -d -t ko.XXXX)
+        curl -sL https://github.com/google/ko/releases/download/v0.8.1/ko_0.8.1_Linux_x86_64.tar.gz | tar -xz
+        sudo mv ./ko /usr/local/bin
+        cd -
+    - name: Generate certs
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        CERT_DIR=$(mktemp -d -t certs.XXXX)
+        echo "CERT_DIR=$CERT_DIR" >> $GITHUB_ENV
+
+        echo "##[group]Install cfssl"
+          go install github.com/cloudflare/cfssl/cmd/cfssl@v1.6.1
+          go install github.com/cloudflare/cfssl/cmd/cfssljson@v1.6.1
+        echo "##[endgroup]"
+
+        echo "##[group]Generate CA"
+          cfssl gencert -initca .github/tls/root-csr.json \
+            | cfssljson -bare ${CERT_DIR}/root-ca
+          cfssl gencert -ca ${CERT_DIR}/root-ca.pem -ca-key ${CERT_DIR}/root-ca-key.pem \
+            -config=".github/tls/config.json" \
+            -profile="intermediate" .github/tls/intermediate-csr.json \
+            | cfssljson -bare ${CERT_DIR}/signing-ca
+          cat ${CERT_DIR}/signing-ca.pem ${CERT_DIR}/root-ca.pem > ${CERT_DIR}/ca.pem
+        echo "##[endgroup]"
+        echo "##[group]Install CA"
+          # https://ubuntu.com/server/docs/security-trust-store
+          sudo apt-get install -y ca-certificates
+          sudo cp ${CERT_DIR}/ca.pem /usr/local/share/ca-certificates/ca.crt
+          sudo update-ca-certificates
+        echo "##[endgroup]"
+
+        echo "##[group]Generate cert"
+          cfssl gencert -ca ${CERT_DIR}/signing-ca.pem -ca-key ${CERT_DIR}/signing-ca-key.pem \
+            -config=".github/tls/config.json" \
+            -profile="server" \
+            -hostname="${REGISTRY_NAME},local-registry" \
+            .github/tls/server-csr.json \
+            | cfssljson -bare ${CERT_DIR}/server
+        echo "##[endgroup]"
+    - name: Setup local registry
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        # Run a registry.
+        docker run -d \
+          --restart=always \
+          --name local-registry \
+          -v ${CERT_DIR}:/certs \
+          -e REGISTRY_HTTP_ADDR=0.0.0.0:443 \
+          -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/server.pem \
+          -e REGISTRY_HTTP_TLS_KEY=/certs/server-key.pem \
+          -p "443:443" \
+          registry:2
+
+        # Make the $REGISTRY_NAME -> local-registry
+        echo "$(hostname -I | cut -d' ' -f1) $REGISTRY_NAME" | sudo tee -a /etc/hosts
+    - name: Build Cartographer Conventions
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        scratch=$(mktemp -d -t bundle.XXXX)
+        mkdir -p "${scratch}/.imgpkg"
+        mkdir -p "${scratch}/config"
+
+        cp LICENSE "${scratch}/LICENSE"
+        cp CHANGELOG.md "${scratch}/CHANGELOG.md"
+        cp dist/bundle.yaml "${scratch}/bundle.yaml"
+        cp dist/ca-overlay.yaml "${scratch}/ca-overlay.yaml"
+        cp dist/ca.pem "${scratch}/ca.pem"
+
+        echo "##[group]Build"
+          cp dist/namespace.yaml "${scratch}/config/namespace.yaml"
+          cat hack/boilerplate.ytt.txt > "${scratch}/config/cartogrpaher-conventions.yaml"
+          ko resolve -B -f dist/cartogrpaher-conventions.yaml >> "${scratch}/config/cartogrpaher-conventions.yaml"
+          kbld -f "${scratch}/config/cartogrpaher-conventions.yaml" --imgpkg-lock-output "${scratch}/.imgpkg/images.yml" > /dev/null
+        echo "##[endgroup]"
+
+        echo "##[group]Create bundle"
+          imgpkg push -f "${scratch}" -b "${BUNDLE}/controller"
+          imgpkg copy -b "${BUNDLE}/controller" --to-tar cartographer-conventions-controller-bundle.tar
+        echo "##[endgroup]"
+    - name: Build samples
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        scratch=$(mktemp -d -t bundle.XXXX)
+        mkdir "${scratch}/.imgpkg"
+        cp LICENSE "${scratch}/LICENSE"
+
+        echo "##[group]Build"
+          mkdir -p ${scratch}/convention-server
+          cp samples/convention-server/*.{md,yaml} ${scratch}/convention-server/
+          pushd samples/convention-server
+            KO_DOCKER_REPO="${KO_DOCKER_REPO}/samples" ko resolve -B -f server.yaml > "${scratch}/convention-server/server.yaml"
+          popd
+
+          mkdir -p ${scratch}/spring-convention-server
+          cp samples/spring-convention-server/*.{md,yaml} ${scratch}/spring-convention-server/
+          pushd samples/spring-convention-server
+            KO_DOCKER_REPO="${KO_DOCKER_REPO}/samples" ko resolve -B -f server.yaml > "${scratch}/spring-convention-server/server.yaml"
+          popd
+
+          kbld --imgpkg-lock-output "${scratch}/.imgpkg/images.yml" \
+            -f "${scratch}/convention-server/server.yaml" \
+            -f "${scratch}/spring-convention-server/server.yaml" \
+            > /dev/null
+        echo "##[endgroup]"
+
+        echo "##[group]Create sample bundle"
+          imgpkg push -f "${scratch}" -b "${BUNDLE}/samples"
+          imgpkg copy -b "${BUNDLE}/samples" --to-tar cartographer-conventions-samples-bundle.tar
+        echo "##[endgroup]"
+    - uses: actions/upload-artifact@v2
+      with:
+        name: cartographer-conventions-controller-bundle.tar
+        path: cartographer-conventions-controller-bundle.tar
+        retention-days: 1
+    - uses: actions/upload-artifact@v2
+      with:
+        name: cartographer-conventions-samples-bundle.tar
+        path: cartographer-conventions-samples-bundle.tar
+        retention-days: 1
+    - name: Grype scan
+      run: |
+        echo "##[group]Install grype"
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+        echo "##[endgroup]"
+        echo "##[group]Scan source ."
+          grype dir:. --exclude ./hack
+        echo "##[endgroup]"
+        echo "##[group]Scan source ./webhook"
+          grype dir:webhook --exclude ./hack
+        echo "##[endgroup]"
+        echo "##[group]Scan manager image"
+          grype registry:registry.local/conventions/manager:latest
+        echo "##[endgroup]"
+      continue-on-error: true
+
+  acceptance:
+    needs: stage
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        k8s:
+        - 1.21.2
+        - 1.22.4
+        - 1.23.1
+    env:
+      REGISTRY_NAME: registry.local
+      BUNDLE: registry.local/conventions/bundle
+    steps:
+    - uses: actions/checkout@v2.4.0
+    - uses: actions/setup-go@v2.2.0
+      with:
+        go-version: 1.17.x
+    - uses: vmware-tanzu/carvel-setup-action@v1
+    - name: Install kind
+      run: |
+        cd $(mktemp -d -t kind.XXXX)
+        curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-$(go env GOHOSTOS)-$(go env GOHOSTARCH)
+        chmod +x ./kind
+        sudo mv ./kind /usr/local/bin
+        cd -
+    - name: Generate certs
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        CERT_DIR=$(mktemp -d -t certs.XXXX)
+        echo "CERT_DIR=$CERT_DIR" >> $GITHUB_ENV
+
+        echo "##[group]Install cfssl"
+          go install github.com/cloudflare/cfssl/cmd/cfssl@v1.6.1
+          go install github.com/cloudflare/cfssl/cmd/cfssljson@v1.6.1
+        echo "##[endgroup]"
+
+        echo "##[group]Generate CA"
+          cfssl gencert -initca .github/tls/root-csr.json \
+            | cfssljson -bare ${CERT_DIR}/root-ca
+          cfssl gencert -ca ${CERT_DIR}/root-ca.pem -ca-key ${CERT_DIR}/root-ca-key.pem \
+            -config=".github/tls/config.json" \
+            -profile="intermediate" .github/tls/intermediate-csr.json \
+            | cfssljson -bare ${CERT_DIR}/signing-ca
+          cat ${CERT_DIR}/signing-ca.pem ${CERT_DIR}/root-ca.pem > ${CERT_DIR}/ca.pem
+        echo "##[endgroup]"
+        echo "##[group]Install CA"
+          # https://ubuntu.com/server/docs/security-trust-store
+          sudo apt-get install -y ca-certificates
+          sudo cp ${CERT_DIR}/ca.pem /usr/local/share/ca-certificates/ca.crt
+          sudo update-ca-certificates
+        echo "##[endgroup]"
+
+        echo "##[group]Generate cert"
+          cfssl gencert -ca ${CERT_DIR}/signing-ca.pem -ca-key ${CERT_DIR}/signing-ca-key.pem \
+            -config=".github/tls/config.json" \
+            -profile="server" \
+            -hostname="${REGISTRY_NAME},local-registry" \
+            .github/tls/server-csr.json \
+            | cfssljson -bare ${CERT_DIR}/server
+        echo "##[endgroup]"
+    - name: Setup local registry
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        # Run a registry.
+        docker run -d \
+          --restart=always \
+          --name local-registry \
+          -v ${CERT_DIR}:/certs \
+          -e REGISTRY_HTTP_ADDR=0.0.0.0:443 \
+          -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/server.pem \
+          -e REGISTRY_HTTP_TLS_KEY=/certs/server-key.pem \
+          -p "443:443" \
+          registry:2
+
+        # Make the $REGISTRY_NAME -> local-registry
+        echo "$(hostname -I | cut -d' ' -f1) $REGISTRY_NAME" | sudo tee -a /etc/hosts
+    - name: Create Cluster
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        # create a cluster with the local registry enabled in containerd
+        cat <<EOF | kind create cluster --config=-
+        kind: Cluster
+        apiVersion: kind.x-k8s.io/v1alpha4
+        containerdConfigPatches:
+        - |-
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."${REGISTRY_NAME}"]
+            endpoint = ["https://local-registry"]
+        - |-
+          [plugins."io.containerd.grpc.v1.cri".registry.configs."local-registry".tls]
+            ca_file  = "/etc/docker/certs.d/local-registry/ca.pem"
+        nodes:
+        - role: control-plane
+          image: kindest/node:v${{ matrix.k8s }}
+          extraMounts:
+          - containerPath: /etc/docker/certs.d/local-registry
+            hostPath: ${CERT_DIR}
+        EOF
+
+        # connect the registry to the cluster network
+        docker network connect kind local-registry
+
+        # Document the local registry
+        # https://github.com/kubernetes/enhancements/tree/master/keps/sig-cluster-lifecycle/generic/1755-communicating-a-local-registry
+        cat <<EOF | kubectl apply -f -
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: local-registry-hosting
+          namespace: kube-public
+        data:
+          localRegistryHosting.v1: |
+            host: "localhost"
+            help: "https://kind.sigs.k8s.io/docs/user/local-registry/"
+        EOF
+    - name: Download staged Cartographer Conventions build
+      uses: actions/download-artifact@v2.1.0
+      with:
+        name: cartographer-conventions-controller-bundle.tar
+    - name: Download staged Cartographer Conventions build
+      uses: actions/download-artifact@v2.1.0
+      with:
+        name: cartographer-conventions-samples-bundle.tar
+    - name: Relocate bundles
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        imgpkg version
+
+        imgpkg copy --tar cartographer-conventions-controller-bundle.tar --to-repo "${BUNDLE}/controller"
+        mkdir -p convention-bundle/controller
+        imgpkg pull -b "${BUNDLE}/controller" -o convention-bundle/controller
+
+        imgpkg copy --tar cartographer-conventions-samples-bundle.tar --to-repo "${BUNDLE}/samples"
+        mkdir -p convention-bundle/samples
+        imgpkg pull -b "${BUNDLE}/samples" -o convention-bundle/samples 
+    - name: Install kapp-controller
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        kapp deploy -a kapp-controller -n kube-system \
+          --wait-timeout 5m -y \
+          -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/latest/download/release.yml \
+          -f <( \
+            ytt -f .github/kapp/kapp-controller-config.yaml \
+              --data-value-file ca_cert_data=${CERT_DIR}/ca.pem \
+          )
+    - name: Install cert-manager
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        kapp deploy -a cert-manager -n kube-system -y -f dist/third-party/cert-manager.yaml
+    - name: Deploy Cartographer Conventions Package
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+        
+        kapp deploy -a cartographer-conventions-controller-package -y \
+          --wait-timeout 5m \
+          -f <( \
+            ytt -f dist/package.yaml -f dist/package.values.yaml \
+              --data-value version=0.0.0-snapshot \
+              --data-value image=${BUNDLE}/controller \
+          )
+
+    - name: Deploy Cartographer Conventions with no package values
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        kapp deploy -a cartographer-conventions-controller -y \
+          -f <( \
+            ytt -f dist/package-install.yaml -f dist/package-install.values.yaml \
+              --data-value package_constraints=0.0.0-snapshot \
+              --data-value-yaml 'package_prerelease={}' \
+          )
+
+        kapp delete -a cartographer-conventions-controller --wait-timeout 5m -y
+
+    - name: Deploy Cartographer Conventions
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        kapp deploy -a cartographer-conventions-controller -y \
+          -f <( \
+            ytt -f dist/package-install.yaml -f dist/package-install.values.yaml \
+              --data-value package_constraints=0.0.0-snapshot \
+              --data-value-yaml 'package_prerelease={}' \
+              --data-value sync_period=10s \
+              --data-value-yaml 'has_values=true' \
+              --data-value-file ca_cert_data=${CERT_DIR}/ca.pem \
+          )
+
+    - name: Deploy Sample Convention Server
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        echo "##[group]Deploy convention server"
+          kapp deploy -a convention-server -n kube-system \
+            -f <(kbld -f convention-bundle/samples/convention-server/server.yaml -f convention-bundle/samples/.imgpkg/images.yml) -y
+        echo "##[endgroup]"
+        echo "##[group]Deploy workload"
+          kapp deploy -a convention-server-workload -f convention-bundle/samples/convention-server/workload.yaml -y
+        echo "##[endgroup]"
+        echo "##[group]Wait for workload status to be ready"
+          kubectl wait podintents.conventions.carto.run sample --for condition=ready
+        echo "##[endgroup]"
+        echo "##[group]Verify convention is applied to workload"
+          actual=$(kubectl get podintent.conventions.carto.run sample -ojson | jq -r ".status.template.spec.containers[].env[] | select(.name==\"CONVENTION_SERVER\") | .value ")
+          expects="HELLO FROM CONVENTION"
+          if [ "$actual" != "$expects" ]; then echo "Environmental variable do not match. Got \"$actual\"; expected \"$expects\". Exiting..."; exit 1; fi;
+          echo "Environmental variables matched. Got \"$actual\"; expected \"$expects\""
+        echo "##[endgroup]"
+    - name: Deploy Spring Sample Convention Server
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        echo "##[group]Deploy spring convention server"
+          kapp deploy -a spring-convention-server -n kube-system \
+            -f <(kbld -f convention-bundle/samples/spring-convention-server/server.yaml -f convention-bundle/samples/.imgpkg/images.yml) -y
+        echo "##[endgroup]"
+        echo "##[group]Deploy workload"
+          kapp deploy -a spring-convention-server-workload -f convention-bundle/samples/spring-convention-server/workload.yaml -y
+        echo "##[endgroup]"
+        echo "##[group]Wait for workload status to be ready"
+          kubectl wait podintents.conventions.carto.run spring-sample --for condition=ready
+        echo "##[endgroup]"
+        echo "##[group]Verify spring convention is applied to workload"
+          actual_annotation=$(kubectl get podintent.conventions.carto.run spring-sample -ojson | jq -r ".status.template.metadata.annotations"[\"boot.spring.io/version\"])
+          if [[ "${actual_annotation}" == "null" || -z "${actual_annotation}" ]]; then echo "Annotations \"boot.spring.io/version\" is not present. Exiting..."; exit 1; fi;
+          echo "Found Annotation \"boot.spring.io/version\" with value \"$actual_annotation\";"
+          actual_label=$(kubectl get podintent.conventions.carto.run spring-sample -ojson | jq -r ".status.template.metadata.labels"[\"conventions.carto.run/framework\"])
+          if [[ "${actual_label}" == "null" || -z "${actual_label}" ]]; then echo "Label \"conventions.carto.run/framework\" is not present. Exiting..."; exit 1; fi;
+          echo "Found Label \"conventions.carto.run/framework\" with value \"$actual_label\";"
+        echo "##[endgroup]"
+    - name: Collect diagnostics
+      run: |
+        set +o errexit
+        set -o nounset
+        set +o pipefail
+
+        echo "##[group]Packages"
+          kubectl get package -A -oyaml
+        echo "##[endgroup]"
+        echo "##[group]Package Installs"
+          kubectl get packageinstall -A -oyaml
+        echo "##[endgroup]"
+        echo "##[group]Kapp list apps"
+          kapp list -A
+        echo "##[endgroup]"
+        echo "##[group]Package changesets"
+          kapp app-change list -a cartographer-conventions-controller-ctrl
+        echo "##[endgroup]"
+        echo "##[group]kapp-controller logs"
+          kubectl logs -n kapp-controller -l app=kapp-controller -c kapp-controller --tail 1000
+        echo "##[endgroup]"
+
+        echo "##[group]Cartographer Conventions logs"
+          kubectl logs -n cartographer-conventions-system -l component=conventions.carto.run,control-plane=controller-manager -c manager --tail 1000
+        echo "##[endgroup]"
+        
+        echo "##[group]Convention Server deployment"
+          kubectl describe deployment webhook -n sample-conventions
+        echo "##[endgroup]"
+        echo "##[group]ClusterPodConvention resource"
+          kubectl describe clusterpodconventions.conventions.carto.run sample
+          kubectl describe clusterpodconventions.conventions.carto.run spring-sample
+        echo "##[endgroup]"
+        echo "##[group]WorkloadPodIntent resource"
+          kubectl describe podintents.conventions.carto.run sample
+          kubectl describe podintents.conventions.carto.run spring-sample
+        echo "##[endgroup]"
+        echo "##[group]Convention Server logs"
+          kubectl logs -l app=webhook -n sample-conventions --tail 100
+        echo "##[endgroup]"
+        echo "##[group]Resources in sample-conventions namespace"
+          kubectl get deployments,pods,svc,secrets,cm -n sample-conventions
+        echo "##[endgroup]"
+        echo "##[group]Spring Convention Server deployment"
+          kubectl describe deployment spring-webhook -n spring-conventions
+        echo "##[endgroup]"
+        echo "##[group]Spring Convention Server logs"
+          kubectl logs -l app=spring-webhook -n spring-conventions --tail 100
+        echo "##[endgroup]"
+        echo "##[group]Resources in spring spring-conventions namespace"
+          kubectl get deployments,pods,svc,secrets,cm -n spring-conventions
+        echo "##[endgroup]"
+        echo "##[group]Docker processes"
+          docker ps
+        echo "##[endgroup]"
+        echo "##[group]Registry logs"
+          docker logs local-registry
+        echo "##[endgroup]"
+        echo "##[group]Registry certs"
+          openssl s_client -connect ${REGISTRY_NAME}:443 -showcerts
+        echo "##[endgroup]"
+        echo "##[group]Registry request"
+          curl -v https://${REGISTRY_NAME}/v2/
+        echo "##[endgroup]"
+      if: always()
+      continue-on-error: true
+    - name: Fail for multiple kapp changes
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        deploys=$(kapp app-change list -a cartographer-conventions-controller-ctrl --json | jq '.Tables[0].Rows | length')
+        if [ "$deploys" != "1" ]; then
+          echo "Too many app changes for the cartographer-conventions-controller package, expected 1 found ${deploys}"
+          exit 1
+        fi
+    - name: Delete Gracefully
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        echo "##[group]Delete sample convention servers"
+          kapp delete -a convention-server -n kube-system -y
+          kapp delete -a spring-convention-server -n kube-system -y
+        echo "##[endgroup]"
+        echo "##[group]Delete PodIntent resources"
+          kapp delete -a convention-server-workload -y
+          kapp delete -a spring-convention-server-workload -y
+        echo "##[endgroup]"
+        echo "##[group]Delete cartographer-conventions-controller"
+          kapp delete -a cartographer-conventions-controller -y
+        echo "##[endgroup]"
+        echo "##[group]Delete cartographer-conventions-controller-package"
+          kapp delete -a cartographer-conventions-controller-package  --wait-timeout 5m -y
+        echo "##[endgroup]"
+        echo "##[group]Delete kapp-controller"
+         kapp delete -a kapp-controller -n kube-system  --wait-timeout 5m -y
+        echo "##[endgroup]"
+        echo "##[group]Delete cert-manager"
+          kapp delete -a cert-manager -n kube-system  --wait-timeout 5m -y
+        echo "##[endgroup]"
+      if: always()
+    - name: Cleanup cluster
+      run: kind delete cluster
+      if: always()
+
+  release:
+    needs:
+    - unit
+    - acceptance
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+    - name: Get the version
+      id: get_version
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+    - name: Draft release
+      id: create_release
+      uses: actions/create-release@v1.1.4
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ steps.get_version.outputs.VERSION }}
+        draft: true
+    - name: Download staged Cartographer Conventions build
+      uses: actions/download-artifact@v2.1.0
+      with:
+        name: cartographer-conventions-controller-bundle.tar
+    - name: Download staged samples build
+      uses: actions/download-artifact@v2.1.0
+      with:
+        name: cartographer-conventions-samples-bundle.tar
+    - name: Upload Cartographer Conventions release
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+        asset_path: cartographer-conventions-controller-bundle.tar
+        asset_name: cartographer-conventions-controller-bundle-${{ steps.get_version.outputs.VERSION }}.tar
+        asset_content_type: application/x-tar
+    - name: Upload Convention samples
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+        asset_path: cartographer-conventions-samples-bundle.tar
+        asset_name: cartographer-conventions-samples-bundle-${{ steps.get_version.outputs.VERSION }}.tar
+        asset_content_type: application/x-tar

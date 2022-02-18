@@ -1,0 +1,11 @@
+#! Copyright 2021-2022 VMware Inc. All rights reserved
+
+#@ load("@ytt:overlay", "overlay")
+#@ load("@ytt:data", "data")
+#@ load("@ytt:base64", "base64")
+
+
+#@overlay/match by=overlay.subset({"apiVersion": "v1", "kind": "Secret", "metadata":{"name": "cartographer-conventions-ca-certificates"}})
+---
+data:
+  ca-certificates.crt: #@ base64.encode(data.values.ca_cert_data) if hasattr(data.values, "ca_cert_data") else ""

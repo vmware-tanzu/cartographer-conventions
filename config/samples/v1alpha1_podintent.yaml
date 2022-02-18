@@ -1,0 +1,14 @@
+apiVersion: conventions.carto.run/v1alpha1
+kind: PodIntent
+metadata:
+  name: podintent-sample
+spec:
+  serviceAccountName: default
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: workload
+        image: ubuntu:bionic
+        command:
+        - env

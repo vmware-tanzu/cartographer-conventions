@@ -1,0 +1,154 @@
+#! Copyright 2021-2022 VMware Inc.
+#!
+#! Licensed under the Apache License, Version 2.0 (the "License");
+#! you may not use this file except in compliance with the License.
+#! You may obtain a copy of the License at
+#!
+#!     http://www.apache.org/licenses/LICENSE-2.0
+#!
+#! Unless required by applicable law or agreed to in writing, software
+#! distributed under the License is distributed on an "AS IS" BASIS,
+#! WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#! See the License for the specific language governing permissions and
+#! limitations under the License.
+
+#@ load("@ytt:data", "data")
+#@ load("@ytt:base64", "base64")
+#@ load("@ytt:yaml", "yaml")
+
+---
+apiVersion: packaging.carvel.dev/v1alpha1
+kind: PackageInstall
+metadata:
+  namespace: #@ data.values.namespace
+  name: #@ data.values.name
+  annotations:
+    kapp.k14s.io/change-group: conventions.carto.run/install
+    kapp.k14s.io/change-rule: "upsert after upserting conventions.carto.run/install-rbac"
+spec:
+  serviceAccountName: #@ data.values.service_account_name
+  syncPeriod: #@ data.values.sync_period
+  packageRef:
+    refName: #@ data.values.package_name
+    versionSelection:
+      constraints: #@ data.values.package_constraints
+      #@ if data.values.package_prerelease != None:
+      prereleases: #@ data.values.package_prerelease
+      #@ end
+  #@ if/end data.values.has_values:
+  values:
+  - secretRef:
+      name: cartographer-conventions-controller-values
+
+
+---
+apiVersion: kapp.k14s.io/v1alpha1
+kind: Config
+minimumRequiredVersion: 0.29.0
+waitRules:
+- supportsObservedGeneration: true
+  conditionMatchers:
+  - type: ReconcileFailed
+    status: "True"
+    failure: true
+  - type: ReconcileSucceeded
+    status: "True"
+    success: true
+  resourceMatchers:
+  - apiVersionKindMatcher:
+      apiVersion: packaging.carvel.dev/v1alpha1
+      kind: PackageInstall
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: #@ data.values.namespace
+  name: #@ data.values.service_account_name
+  annotations:
+    kapp.k14s.io/change-group: conventions.carto.run/install-rbac
+    kapp.k14s.io/change-rule: "delete after deleting conventions.carto.run/install"
+
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: #@ data.values.cluster_role_name
+  annotations:
+    kapp.k14s.io/change-group: conventions.carto.run/install-rbac
+    kapp.k14s.io/change-rule: "delete after deleting conventions.carto.run/install"
+rules:
+  - apiGroups:
+    - ""
+    resources:
+    - configmaps
+    - namespaces
+    - secrets
+    - serviceaccounts
+    - services
+    verbs:
+    - "*"
+  - apiGroups:
+    - apps
+    resources:
+    - deployments
+    verbs:
+    - "*"
+  - apiGroups:
+    - admissionregistration.k8s.io
+    resources:
+    - mutatingwebhookconfigurations
+    - validatingwebhookconfigurations
+    verbs:
+    - "*"
+  - apiGroups:
+    - apiextensions.k8s.io
+    resources:
+    - customresourcedefinitions
+    verbs:
+    - "*"
+  - apiGroups:
+    - rbac.authorization.k8s.io
+    resources:
+    - clusterrolebindings
+    - clusterroles
+    - rolebindings
+    - roles
+    verbs:
+    - "*"
+  - apiGroups:
+    - cert-manager.io
+    resources:
+    - certificates
+    - issuers
+    verbs:
+    - "*"
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: #@ data.values.cluster_role_binding_name
+  annotations:
+    kapp.k14s.io/change-group: conventions.carto.run/install-rbac
+    kapp.k14s.io/change-rule: "delete after deleting conventions.carto.run/install"
+subjects:
+  - kind: ServiceAccount
+    name: #@ data.values.service_account_name
+    namespace: #@ data.values.namespace
+roleRef:
+  kind: ClusterRole
+  name: #@ data.values.cluster_role_name
+  apiGroup: rbac.authorization.k8s.io
+
+#@ if/end data.values.has_values:
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cartographer-conventions-controller-values
+  annotations:
+    kapp.k14s.io/change-group: conventions.carto.run/install-rbac
+    kapp.k14s.io/change-rule: "delete after deleting conventions.carto.run/install"
+data:
+  values.yaml: #@ base64.encode(yaml.encode(data.values))

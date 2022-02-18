@@ -1,0 +1,11 @@
+---
+apiVersion: conventions.carto.run/v1alpha1
+kind: PodIntent
+metadata:
+  name: spring-sample
+spec:
+  template:
+    spec:
+      containers:
+      - name: workload
+        image: scothis/petclinic:sbom-20211210@sha256:8b517f21f283229e855e316e2753396239884eb9c4009ab6c797bdf2a041140f

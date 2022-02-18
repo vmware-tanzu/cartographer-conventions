@@ -1,0 +1,16 @@
+{
+    "CN": "CI Intermediate CA",
+    "hosts": [
+        ""
+    ],
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "names": [
+        {
+            "O": "VMware Inc",
+            "OU": "Tanzu"
+        }
+    ]
+}

@@ -1,0 +1,7 @@
+/cover.out
+
+cartographer-conventions-controller-bundle/
+cartographer-conventions-samples-bundle/
+
+# IDEs
+.vscode/
