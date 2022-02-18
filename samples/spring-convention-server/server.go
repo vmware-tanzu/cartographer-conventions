@@ -71,6 +71,6 @@ func main() {
 	if port == "" {
 		port = "9000"
 	}
-	http.HandleFunc("/", webhook.ConventionHandler(addSpringBootConventions))
+	http.HandleFunc("/", webhook.ConventionHandler(ctx, addSpringBootConventions))
 	log.Fatal(webhook.NewConventionServer(ctx, fmt.Sprintf(":%s", port)))
 }

@@ -60,6 +60,6 @@ func main() {
 	if port == "" {
 		port = "9000"
 	}
-	http.HandleFunc("/", webhook.ConventionHandler(conventionHandler))
+	http.HandleFunc("/", webhook.ConventionHandler(ctx, conventionHandler))
 	log.Fatal(webhook.NewConventionServer(ctx, fmt.Sprintf(":%s", port)))
 }
