@@ -73,6 +73,10 @@ For example, adding a prometheus sidecar to web apps, or adding a `workload-type
             "net/http"
             "os"
             ...
+            "go.uber.org/zap"
+            "github.com/go-logr/logr"
+	          "github.com/go-logr/zapr"
+            ...
         )
         ...
         func main() {
@@ -81,6 +85,9 @@ For example, adding a prometheus sidecar to web apps, or adding a `workload-type
             if port == "" {
                 port = "9000"
             }
+            zapLog, _ := zap.NewProductionConfig().Build()
+            logger := zapr.NewLogger(zapLog)
+            ctx = logr.NewContext(ctx, logger)
             http.HandleFunc("/", webhook.ServerHandler(convention.ConventionHandler))
             log.Fatal(webhook.NewConventionServer(ctx, fmt.Sprintf(":%s", port)))
         }
@@ -95,7 +102,7 @@ For example, adding a prometheus sidecar to web apps, or adding a `workload-type
     + `port` is the calculated port of the server to listen requests, it needs to match the [`Deployment`](#install-deployment) if the `PORT` variable is not defined in it
     + The `path` or pattern (default to `/`) is the convention server's default path if it is changed the it needs to be changed in the [`ClusterPodConvention`](#install-convention)
 
-**Note:** The *Server Handler* (`func ConventionHandler(...)`) and the configure/start web server (`func NewConventionServer(...)`) are defined in Cartographer Conventions within the `webhook` package but a custom one can be used.
+**Note:** The *Server Handler* (`func ConventionHandler(...)`) and the configure/start web server (`func NewConventionServer(...)`) are defined in Cartographer Conventions within the `webhook` package but a custom one can be used. In case of use the provided handler a logger of type [`logr.Logger`](https://pkg.go.dev/github.com/go-logr/logr#Logger) needs to be provided through the context by using `logr.NewContext(ctx, logger)` otherwise no log output will be generated.
 
 3. Creating the *Server Handler* which handles the request from Cartographer Conventions with the [PodConventionContext](./reference/pod-convention-context.md) serialized to JSON.
 

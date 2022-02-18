@@ -32,6 +32,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
+	"github.com/go-logr/logr"
 	webhookv1alpha1 "github.com/vmware-tanzu/cartographer-conventions/webhook/api/v1alpha1"
 )
 
@@ -80,19 +81,20 @@ func NewConventionServer(ctx context.Context, addr string) error {
 
 func ConventionHandler(ctx context.Context, convention Convention) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		logger := loggerFromContext(ctx)
-		logInfo(logger, "received request")
+		logger := logr.FromContextOrDiscard(ctx)
+
+		logger.Info("received request")
 		wc := &webhookv1alpha1.PodConventionContext{}
 		if r.Body != nil {
 			reqBody, err := ioutil.ReadAll(r.Body)
 			if err != nil {
-				logError(logger, err, "error reading request body")
+				logger.Error(err, "error reading request body")
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 			decoder := json.NewDecoder(bytes.NewBuffer(reqBody))
 			if derr := decoder.Decode(wc); derr != nil {
-				logError(logger, derr, "error decoding request body into PodConventionContext type")
+				logger.Error(derr, "error decoding request body into PodConventionContext type")
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
@@ -101,13 +103,13 @@ func ConventionHandler(ctx context.Context, convention Convention) func(http.Res
 		pts := wc.Spec.Template.DeepCopy()
 		appliedConventions, err := convention(pts, wc.Spec.ImageConfig)
 		if err != nil {
-			logError(logger, err, "error applying conventions")
+			logger.Error(err, "error applying conventions", "namespace", wc.Namespace, "name", wc.Name, "kind", wc.Kind)
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 		wc.Status.AppliedConventions = appliedConventions
 		wc.Status.Template = *pts
 		if err := json.NewEncoder(w).Encode(wc); err != nil {
-			logError(logger, err, "error encoding response")
+			logger.Error(err, "error encoding response")
 			return
 		}
 	}
@@ -122,7 +124,7 @@ type certWatcher struct {
 }
 
 func (w *certWatcher) Watch(ctx context.Context) error {
-	logger := loggerFromContext(ctx)
+	logger := logr.FromContextOrDiscard(ctx)
 	// refresh the certs periodically even if we miss a fs event
 	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
@@ -133,7 +135,7 @@ func (w *certWatcher) Watch(ctx context.Context) error {
 				return
 			case <-ticker.C:
 				if err := w.Load(ctx); err != nil {
-					logError(logger, err, "error loading TLS key pair")
+					logger.Error(err, "error loading TLS key pair")
 				}
 			}
 		}
@@ -144,7 +146,7 @@ func (w *certWatcher) Watch(ctx context.Context) error {
 }
 
 func (w *certWatcher) Load(ctx context.Context) error {
-	logger := loggerFromContext(ctx)
+	logger := logr.FromContextOrDiscard(ctx)
 	w.m.Lock()
 	defer w.m.Unlock()
 
@@ -168,7 +170,7 @@ func (w *certWatcher) Load(ctx context.Context) error {
 		}
 	}
 	w.keyPair = &keyPair
-	logInfo(logger, fmt.Sprintf("loaded TLS key pair (valid until %q)", leaf.NotAfter))
+	logger.Info(fmt.Sprintf("loaded TLS key pair (valid until %q)", leaf.NotAfter))
 	return nil
 }
 

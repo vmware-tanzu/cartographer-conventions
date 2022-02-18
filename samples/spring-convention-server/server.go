@@ -23,8 +23,11 @@ import (
 	"net/http"
 	"os"
 
+	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 
+	"github.com/go-logr/logr"
+	"github.com/go-logr/zapr"
 	"github.com/vmware-tanzu/cartographer-conventions/samples/spring-convention-server/resources"
 	"github.com/vmware-tanzu/cartographer-conventions/webhook"
 )
@@ -71,6 +74,11 @@ func main() {
 	if port == "" {
 		port = "9000"
 	}
+
+	zapLog, _ := zap.NewProductionConfig().Build()
+	logger := zapr.NewLogger(zapLog)
+	ctx = logr.NewContext(ctx, logger)
+
 	http.HandleFunc("/", webhook.ConventionHandler(ctx, addSpringBootConventions))
 	log.Fatal(webhook.NewConventionServer(ctx, fmt.Sprintf(":%s", port)))
 }
