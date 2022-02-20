@@ -23,11 +23,11 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/go-logr/logr"
+	"github.com/go-logr/zapr"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/go-logr/logr"
-	"github.com/go-logr/zapr"
 	"github.com/vmware-tanzu/cartographer-conventions/samples/spring-convention-server/resources"
 	"github.com/vmware-tanzu/cartographer-conventions/webhook"
 )
@@ -75,7 +75,11 @@ func main() {
 		port = "9000"
 	}
 
-	zapLog, _ := zap.NewProductionConfig().Build()
+	zapLog, err := zap.NewProductionConfig().Build()
+	if err != nil {
+		log.Fatalf("failed to create logger: %v", err)
+	}
+
 	logger := zapr.NewLogger(zapLog)
 	ctx = logr.NewContext(ctx, logger)
 

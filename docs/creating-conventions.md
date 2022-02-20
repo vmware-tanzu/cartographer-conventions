@@ -73,9 +73,9 @@ For example, adding a prometheus sidecar to web apps, or adding a `workload-type
             "net/http"
             "os"
             ...
-            "go.uber.org/zap"
             "github.com/go-logr/logr"
-	          "github.com/go-logr/zapr"
+            "github.com/go-logr/zapr"
+            "go.uber.org/zap"
             ...
         )
         ...

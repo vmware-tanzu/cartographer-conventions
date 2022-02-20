@@ -22,7 +22,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -30,9 +29,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/go-logr/logr"
 	webhookv1alpha1 "github.com/vmware-tanzu/cartographer-conventions/webhook/api/v1alpha1"
 )
 
@@ -103,7 +102,7 @@ func ConventionHandler(ctx context.Context, convention Convention) func(http.Res
 		pts := wc.Spec.Template.DeepCopy()
 		appliedConventions, err := convention(pts, wc.Spec.ImageConfig)
 		if err != nil {
-			logger.Error(err, "error applying conventions", "namespace", wc.Namespace, "name", wc.Name, "kind", wc.Kind)
+			logger.Error(err, "error applying conventions")
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 		wc.Status.AppliedConventions = appliedConventions
@@ -170,7 +169,7 @@ func (w *certWatcher) Load(ctx context.Context) error {
 		}
 	}
 	w.keyPair = &keyPair
-	logger.Info(fmt.Sprintf("loaded TLS key pair (valid until %q)", leaf.NotAfter))
+	logger.Info("loaded TLS key pair", "not-after", leaf.NotAfter)
 	return nil
 }
 
