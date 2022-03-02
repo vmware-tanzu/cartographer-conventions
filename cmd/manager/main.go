@@ -24,6 +24,7 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/v1/cache"
 	"github.com/vmware-labs/reconciler-runtime/reconcilers"
+	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/runtime"
 	webhookutil "k8s.io/apiserver/pkg/util/webhook"
 	"k8s.io/client-go/kubernetes"
@@ -71,9 +72,13 @@ func main() {
 	flag.StringVar(&probesAddr, "probes-addr", ":8081", "The address health probes bind to.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
+	opts := zap.Options{
+		TimeEncoder: zapcore.RFC3339NanoTimeEncoder,
+	}
+	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
 
-	ctrl.SetLogger(zap.New())
+	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
