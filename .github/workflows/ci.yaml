@@ -14,7 +14,7 @@ jobs:
   unit:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2.4.0
+    - uses: actions/checkout@v3
     - uses: actions/setup-go@v3
       with:
         go-version: 1.17.x
@@ -41,7 +41,7 @@ jobs:
       KO_DOCKER_REPO: registry.local/conventions
       BUNDLE: registry.local/conventions/bundle
     steps:
-    - uses: actions/checkout@v2.4.0
+    - uses: actions/checkout@v3
     - uses: actions/setup-go@v3
       with:
         go-version: 1.17.x
@@ -208,7 +208,7 @@ jobs:
       REGISTRY_NAME: registry.local
       BUNDLE: registry.local/conventions/bundle
     steps:
-    - uses: actions/checkout@v2.4.0
+    - uses: actions/checkout@v3
     - uses: actions/setup-go@v3
       with:
         go-version: 1.17.x
