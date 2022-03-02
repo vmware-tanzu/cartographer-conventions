@@ -2,6 +2,45 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+  name: app-viewer
+  labels:
+    # Add these permissions to the "app-viewer" role.
+    apps.tanzu.vmware.com/aggregate-to-app-viewer: "true"
+rules:
+- apiGroups: ["conventions.carto.run"]
+  resources: ["podintents"]
+  verbs: ["get","list","watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: app-viewer-cluster-access
+  labels:
+    # Add these permissions to the "app-viewer-cluster-access" role.
+    apps.tanzu.vmware.com/aggregate-to-app-viewer-cluster-access: "true"
+rules:
+- apiGroups: ["conventions.carto.run"]
+  resources: ["clusterpodconventions"]
+  verbs: ["get","list","watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: app-operator-cluster-access
+  labels:
+    # Add these permissions to the "app-operator-cluster-access" role.
+    apps.tanzu.vmware.com/aggregate-to-app-operator-cluster-access: "true"
+rules:
+- apiGroups: ["conventions.carto.run"]
+  resources: ["clusterpodconventions"]
+  verbs: ["get","list","watch","create","patch","update","delete","deletecollection"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
   name: role
   labels:
     # Add these permissions to the "edit" default role.

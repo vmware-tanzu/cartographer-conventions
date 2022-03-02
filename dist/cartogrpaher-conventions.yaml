@@ -6375,6 +6375,62 @@ rules:
   verbs:
   - create
 ---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    apps.tanzu.vmware.com/aggregate-to-app-operator-cluster-access: "true"
+    component: conventions.carto.run
+  name: cartographer-conventions-app-operator-cluster-access
+rules:
+- apiGroups:
+  - conventions.carto.run
+  resources:
+  - clusterpodconventions
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - patch
+  - update
+  - delete
+  - deletecollection
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    apps.tanzu.vmware.com/aggregate-to-app-viewer: "true"
+    component: conventions.carto.run
+  name: cartographer-conventions-app-viewer
+rules:
+- apiGroups:
+  - conventions.carto.run
+  resources:
+  - podintents
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    apps.tanzu.vmware.com/aggregate-to-app-viewer-cluster-access: "true"
+    component: conventions.carto.run
+  name: cartographer-conventions-app-viewer-cluster-access
+rules:
+- apiGroups:
+  - conventions.carto.run
+  resources:
+  - clusterpodconventions
+  verbs:
+  - get
+  - list
+  - watch
+---
 aggregationRule:
   clusterRoleSelectors:
   - matchLabels:
