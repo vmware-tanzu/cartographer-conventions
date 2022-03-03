@@ -319,11 +319,11 @@ jobs:
             help: "https://kind.sigs.k8s.io/docs/user/local-registry/"
         EOF
     - name: Download staged Cartographer Conventions build
-      uses: actions/download-artifact@v2.1.0
+      uses: actions/download-artifact@v3
       with:
         name: cartographer-conventions-controller-bundle.tar
     - name: Download staged Cartographer Conventions build
-      uses: actions/download-artifact@v2.1.0
+      uses: actions/download-artifact@v3
       with:
         name: cartographer-conventions-samples-bundle.tar
     - name: Relocate bundles
@@ -580,11 +580,11 @@ jobs:
         release_name: Release ${{ steps.get_version.outputs.VERSION }}
         draft: true
     - name: Download staged Cartographer Conventions build
-      uses: actions/download-artifact@v2.1.0
+      uses: actions/download-artifact@v3
       with:
         name: cartographer-conventions-controller-bundle.tar
     - name: Download staged samples build
-      uses: actions/download-artifact@v2.1.0
+      uses: actions/download-artifact@v3
       with:
         name: cartographer-conventions-samples-bundle.tar
     - name: Upload Cartographer Conventions release
