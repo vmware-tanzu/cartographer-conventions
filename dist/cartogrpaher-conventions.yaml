@@ -6853,6 +6853,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: cartographer-conventions-system/cartographer-conventions-serving-cert
+    admissions.enforcer/disabled: "true"
   labels:
     component: conventions.carto.run
   name: cartographer-conventions-mutating-webhook-configuration
@@ -6903,6 +6904,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: cartographer-conventions-system/cartographer-conventions-serving-cert
+    admissions.enforcer/disabled: "true"
   labels:
     component: conventions.carto.run
   name: cartographer-conventions-validating-webhook-configuration

@@ -32,7 +32,9 @@ manifests:
 dist: dist/cartogrpaher-conventions.yaml
 
 dist/cartogrpaher-conventions.yaml: generate manifests
-	$(KUSTOMIZE) build config/default | $(YTT) -f - -f dist/strip-status.yaml > dist/cartogrpaher-conventions.yaml
+	$(KUSTOMIZE) build config/default \
+	  | $(YTT) -f - -f dist/strip-status.yaml -f dist/aks-webhooks.yaml \
+	  > dist/cartogrpaher-conventions.yaml
 
 dist/third-party: dist/third-party/cert-manager.yaml
 
