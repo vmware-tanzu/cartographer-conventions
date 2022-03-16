@@ -153,6 +153,12 @@ jobs:
             KO_DOCKER_REPO="${KO_DOCKER_REPO}/samples" ko resolve -B -f server.yaml > "${scratch}/convention-server/server.yaml"
           popd
 
+          mkdir -p ${scratch}/dumper-server
+          cp samples/dumper-server/*.{md,yaml} ${scratch}/dumper-server/
+          pushd samples/dumper-server
+            KO_DOCKER_REPO="${KO_DOCKER_REPO}/samples" ko resolve -B -f server.yaml > "${scratch}/dumper-server/server.yaml"
+          popd
+
           mkdir -p ${scratch}/spring-convention-server
           cp samples/spring-convention-server/*.{md,yaml} ${scratch}/spring-convention-server/
           pushd samples/spring-convention-server
@@ -161,6 +167,7 @@ jobs:
 
           kbld --imgpkg-lock-output "${scratch}/.imgpkg/images.yml" \
             -f "${scratch}/convention-server/server.yaml" \
+            -f "${scratch}/dumper-server/server.yaml" \
             -f "${scratch}/spring-convention-server/server.yaml" \
             > /dev/null
         echo "##[endgroup]"
@@ -406,6 +413,16 @@ jobs:
               --data-value-file ca_cert_data=${CERT_DIR}/ca.pem \
           )
 
+    - name: Deploy Convention Dumper
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        echo "##[group]Deploy convention server"
+          kapp deploy -a convention-dumper -n kube-system \
+            -f <(kbld -f convention-bundle/samples/dumper-server/server.yaml -f convention-bundle/samples/.imgpkg/images.yml) -y
+        echo "##[endgroup]"
     - name: Deploy Sample Convention Server
       run: |
         set -o errexit
@@ -473,11 +490,9 @@ jobs:
         echo "##[group]kapp-controller logs"
           kubectl logs -n kapp-controller -l app=kapp-controller -c kapp-controller --tail 1000
         echo "##[endgroup]"
-
         echo "##[group]Cartographer Conventions logs"
           kubectl logs -n cartographer-conventions-system -l component=conventions.carto.run,control-plane=controller-manager -c manager --tail 1000
         echo "##[endgroup]"
-        
         echo "##[group]Convention Server deployment"
           kubectl describe deployment webhook -n sample-conventions
         echo "##[endgroup]"
@@ -489,6 +504,10 @@ jobs:
           kubectl describe podintents.conventions.carto.run sample
           kubectl describe podintents.conventions.carto.run spring-sample
         echo "##[endgroup]"
+        echo "##[group]Convention Dumper logs"
+          # NOTE: uncomment if you need dumper logs, disabled because it can be very slow
+          # kubectl logs -n dumper-conventions -l app=webhook --tail 500
+        echo "##[endgroup]"
         echo "##[group]Convention Server logs"
           kubectl logs -l app=webhook -n sample-conventions --tail 100
         echo "##[endgroup]"
@@ -496,13 +515,13 @@ jobs:
           kubectl get deployments,pods,svc,secrets,cm -n sample-conventions
         echo "##[endgroup]"
         echo "##[group]Spring Convention Server deployment"
-          kubectl describe deployment spring-webhook -n spring-conventions
+          kubectl describe deployment spring-webhook -n sample-spring-conventions
         echo "##[endgroup]"
         echo "##[group]Spring Convention Server logs"
-          kubectl logs -l app=spring-webhook -n spring-conventions --tail 100
+          kubectl logs -l app=spring-webhook -n sample-spring-conventions --tail 100
         echo "##[endgroup]"
-        echo "##[group]Resources in spring spring-conventions namespace"
-          kubectl get deployments,pods,svc,secrets,cm -n spring-conventions
+        echo "##[group]Resources in sample-spring-conventions namespace"
+          kubectl get deployments,pods,svc,secrets,cm -n sample-spring-conventions
         echo "##[endgroup]"
         echo "##[group]Docker processes"
           docker ps
@@ -536,6 +555,7 @@ jobs:
         set -o pipefail
 
         echo "##[group]Delete sample convention servers"
+          kapp delete -a convention-dumper -n kube-system -y
           kapp delete -a convention-server -n kube-system -y
           kapp delete -a spring-convention-server -n kube-system -y
         echo "##[endgroup]"
