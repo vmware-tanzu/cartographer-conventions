@@ -6,7 +6,7 @@ replace github.com/vmware-tanzu/cartographer-conventions/webhook => ./webhook
 
 require (
 	dies.dev v0.3.0
-	github.com/go-logr/logr v1.2.2
+	github.com/go-logr/logr v1.2.3
 	github.com/google/go-cmp v0.5.7
 	github.com/google/go-containerregistry v0.8.0
 	github.com/google/go-containerregistry/pkg/authn/k8schain v0.0.0-20220105220605-d9bfbcb99e52
