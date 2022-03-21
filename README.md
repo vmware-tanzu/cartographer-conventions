@@ -57,6 +57,10 @@ We use [Golang 1.17+](https://golang.org) and [`ko`](https://github.com/google/k
 
   Apply custom conventions for Spring Boot workloads. This convention can detect if the workload is built from Spring Boot adding a label to the workload indicating the framework is `spring-boot`, and an annotation indicating the version of Spring Boot used.
 
+- [Dumper Server](./samples/dumper-server/)
+
+  Log the content of the webhook request to stdout. Useful for capturing the image metadata available to conventions.
+
 ## Contributing
 
 The Cartographer project team welcomes contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a Pull Request. For any questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq). For more detailed information, refer to [CONTRIBUTING.md](CONTRIBUTING.md).

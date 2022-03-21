@@ -21,6 +21,11 @@ updates:
     interval: daily
   open-pull-requests-limit: 10
 - package-ecosystem: gomod
+  directory: "/samples/dumper-server"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+- package-ecosystem: gomod
   directory: "/samples/spring-convention-server"
   schedule:
     interval: daily
