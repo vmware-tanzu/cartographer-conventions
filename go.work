@@ -1,0 +1,10 @@
+go 1.18
+
+use (
+	.
+	./hack
+	./samples/convention-server
+	./samples/dumper-server
+	./samples/spring-convention-server
+	./webhook
+)

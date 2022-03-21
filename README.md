@@ -17,7 +17,7 @@ This project requires access to a [container registry](https://docs.docker.com/r
 
 ### From Source
 
-We use [Golang 1.17+](https://golang.org) and [`ko`](https://github.com/google/ko) to build the controller, and recommend [`kapp`](https://get-kapp.io) to deploy.
+We use [Golang 1.18+](https://golang.org) and [`ko`](https://github.com/google/ko) to build the controller, and recommend [`kapp`](https://get-kapp.io) to deploy.
 
 1. Install cert-manager
 
