@@ -3,10 +3,11 @@ module github.com/vmware-tanzu/cartographer-conventions/samples/spring-conventio
 go 1.18
 
 require (
-	github.com/CycloneDX/cyclonedx-go v0.5.0
+	github.com/CycloneDX/cyclonedx-go v0.5.1
 	github.com/Masterminds/semver v1.5.0
 	github.com/go-logr/logr v1.2.3
 	github.com/go-logr/zapr v1.2.3
+	github.com/vmware-tanzu/cartographer-conventions/webhook v0.0.0
 	go.uber.org/zap v1.21.0
 	k8s.io/api v0.23.5
 	k8s.io/apimachinery v0.23.5
