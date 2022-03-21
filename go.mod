@@ -1,8 +1,6 @@
 module github.com/vmware-tanzu/cartographer-conventions
 
-go 1.17
-
-replace github.com/vmware-tanzu/cartographer-conventions/webhook => ./webhook
+go 1.18
 
 require (
 	dies.dev v0.3.0
@@ -11,7 +9,6 @@ require (
 	github.com/google/go-containerregistry v0.8.0
 	github.com/google/go-containerregistry/pkg/authn/k8schain v0.0.0-20220105220605-d9bfbcb99e52
 	github.com/vmware-labs/reconciler-runtime v0.4.0
-	github.com/vmware-tanzu/cartographer-conventions/webhook v0.0.0
 	go.uber.org/zap v1.21.0
 	k8s.io/api v0.23.5
 	k8s.io/apimachinery v0.23.5

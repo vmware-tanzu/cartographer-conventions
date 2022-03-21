@@ -1,13 +1,10 @@
 module github.com/vmware-tanzu/cartographer-conventions/samples/dumper-server
 
-go 1.17
-
-replace github.com/vmware-tanzu/cartographer-conventions/webhook => ../../webhook
+go 1.18
 
 require (
 	github.com/go-logr/logr v1.2.3
 	github.com/go-logr/zapr v1.2.3
-	github.com/vmware-tanzu/cartographer-conventions/webhook v0.0.0
 	go.uber.org/zap v1.21.0
 	sigs.k8s.io/yaml v1.3.0
 )
