@@ -122,6 +122,7 @@ jobs:
         cp LICENSE "${scratch}/LICENSE"
         cp CHANGELOG.md "${scratch}/CHANGELOG.md"
         cp dist/bundle.yaml "${scratch}/bundle.yaml"
+        cp dist/bundle.values.yaml "${scratch}/bundle.values.yaml"
         cp dist/ca-overlay.yaml "${scratch}/ca-overlay.yaml"
         cp dist/ca.pem "${scratch}/ca.pem"
 

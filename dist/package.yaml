@@ -48,6 +48,7 @@ spec:
           paths:
           - "-"
           - bundle.yaml
+          - bundle.values.yaml
           - ca-overlay.yaml
       deploy:
       - kapp: {}
