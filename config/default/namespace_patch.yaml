@@ -1,5 +1,0 @@
-- op: replace
-  path: /metadata/name
-  value: cartographer-conventions-system
-- op: remove
-  path: /metadata/labels/component

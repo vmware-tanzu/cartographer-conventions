@@ -25,10 +25,10 @@ We use [Golang 1.18+](https://golang.org) and [`ko`](https://github.com/google/k
    kapp deploy -n kube-system -a cert-manager -f dist/third-party/cert-manager.yaml
    ```
 
-2. Create a namespace to deploy components
+2. Create a namespace to deploy components, if it doesn't already exist
 
    ```sh
-   kubectl create ns cartographer-conventions-system
+   kubectl create ns cartographer-system
    ```
 
 3. Optional: Trust additional certificate authorities certificate
@@ -42,7 +42,15 @@ We use [Golang 1.18+](https://golang.org) and [`ko`](https://github.com/google/k
 4. Build and install Cartographer Conventions
 
     ```sh
-    kapp deploy -n cartographer-conventions-system -a controller -f <(ytt -f dist/cartogrpaher-conventions.yaml -f dist/ca-overlay.yaml --data-value-file ca_cert_data=${CA_DATA:-dist/ca.pem} | ko resolve -f -)
+    kapp deploy -n cartographer-system -a conventions \
+      -f <( \
+        ko resolve -f <( \
+          ytt \
+            -f dist/cartogrpaher-conventions.yaml \
+            -f dist/ca-overlay.yaml \
+            --data-value-file ca_cert_data=${CA_DATA:-dist/ca.pem} \
+          ) \
+      )
     ```
 
     Note: you'll need to `export KO_DOCKER_REPO=<ACCESSIBLE_DOCKER_REPO>` such that `ko` can push to the repository and your cluster can pull from it. Visit [the ko README](https://github.com/google/ko/blob/master/README.md#usage) for more information.
