@@ -30,6 +30,10 @@ spec:
           type: string
           description: "Optional: PEM Encoded certificate data for image registries with private CA."
           default: ""
+        stand_alone:
+          type: boolean
+          description: "Optional: run independent of Cartographer, creates the cartographer-system namespace"
+          default: false
   template:
     spec:
       fetch:
@@ -39,7 +43,6 @@ spec:
       - kbld:
           paths:
           - .imgpkg/images.yml
-          - config/namespace.yaml
           - config/cartogrpaher-conventions.yaml
       - ytt:
           paths:

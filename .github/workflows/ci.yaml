@@ -126,7 +126,6 @@ jobs:
         cp dist/ca.pem "${scratch}/ca.pem"
 
         echo "##[group]Build"
-          cp dist/namespace.yaml "${scratch}/config/namespace.yaml"
           cat hack/boilerplate.ytt.txt > "${scratch}/config/cartogrpaher-conventions.yaml"
           ko resolve -B -f dist/cartogrpaher-conventions.yaml >> "${scratch}/config/cartogrpaher-conventions.yaml"
           kbld -f "${scratch}/config/cartogrpaher-conventions.yaml" --imgpkg-lock-output "${scratch}/.imgpkg/images.yml" > /dev/null
@@ -388,6 +387,7 @@ jobs:
         set -o nounset
         set -o pipefail
 
+        kubectl create ns cartographer-system
         kapp deploy -a cartographer-conventions-controller -y \
           -f <( \
             ytt -f dist/package-install.yaml -f dist/package-install.values.yaml \
@@ -396,6 +396,7 @@ jobs:
           )
 
         kapp delete -a cartographer-conventions-controller --wait-timeout 5m -y
+        kubectl delete ns cartographer-system
 
     - name: Deploy Cartographer Conventions
       run: |
@@ -411,6 +412,7 @@ jobs:
               --data-value sync_period=10s \
               --data-value-yaml 'has_values=true' \
               --data-value-file ca_cert_data=${CERT_DIR}/ca.pem \
+              --data-value-yaml 'stand_alone=true'
           )
 
     - name: Deploy Convention Dumper
@@ -491,7 +493,7 @@ jobs:
           kubectl logs -n kapp-controller -l app=kapp-controller -c kapp-controller --tail 1000
         echo "##[endgroup]"
         echo "##[group]Cartographer Conventions logs"
-          kubectl logs -n cartographer-conventions-system -l component=conventions.carto.run,control-plane=controller-manager -c manager --tail 1000
+          kubectl logs -n cartographer-system -l component=conventions.carto.run,control-plane=controller-manager -c manager --tail 1000
         echo "##[endgroup]"
         echo "##[group]Convention Server deployment"
           kubectl describe deployment webhook -n sample-conventions
