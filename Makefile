@@ -29,12 +29,12 @@ manifests:
 	# cleanup duplicate resource generation
 	@rm -f config/*.yaml
 
-dist: dist/cartogrpaher-conventions.yaml
+dist: dist/cartographer-conventions.yaml
 
-dist/cartogrpaher-conventions.yaml: generate manifests
+dist/cartographer-conventions.yaml: generate manifests
 	$(KUSTOMIZE) build config/default \
 	  | $(YTT) -f - -f dist/strip-status.yaml -f dist/aks-webhooks.yaml \
-	  > dist/cartogrpaher-conventions.yaml
+	  > dist/cartographer-conventions.yaml
 
 dist/third-party: dist/third-party/cert-manager.yaml
 
