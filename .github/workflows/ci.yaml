@@ -46,6 +46,8 @@ jobs:
       with:
         go-version: 1.18.x
     - uses: vmware-tanzu/carvel-setup-action@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
     - name: Install ko
       run: |
         cd $(mktemp -d -t ko.XXXX)
@@ -127,14 +129,14 @@ jobs:
         cp dist/ca.pem "${scratch}/ca.pem"
 
         echo "##[group]Build"
-          cat hack/boilerplate.ytt.txt > "${scratch}/config/cartogrpaher-conventions.yaml"
-          ko resolve -B -f dist/cartogrpaher-conventions.yaml >> "${scratch}/config/cartogrpaher-conventions.yaml"
-          kbld -f "${scratch}/config/cartogrpaher-conventions.yaml" --imgpkg-lock-output "${scratch}/.imgpkg/images.yml" > /dev/null
+          cat hack/boilerplate.ytt.txt > "${scratch}/config/cartographer-conventions.yaml"
+          ko resolve -B -f dist/cartographer-conventions.yaml >> "${scratch}/config/cartographer-conventions.yaml"
+          kbld -f "${scratch}/config/cartographer-conventions.yaml" --imgpkg-lock-output "${scratch}/.imgpkg/images.yml" > /dev/null
         echo "##[endgroup]"
 
         echo "##[group]Create bundle"
           imgpkg push -f "${scratch}" -b "${BUNDLE}/controller"
-          imgpkg copy -b "${BUNDLE}/controller" --to-tar cartographer-conventions-controller-bundle.tar
+          imgpkg copy -b "${BUNDLE}/controller" --to-tar cartographer-conventions-bundle.tar
         echo "##[endgroup]"
     - name: Build samples
       run: |
@@ -178,8 +180,8 @@ jobs:
         echo "##[endgroup]"
     - uses: actions/upload-artifact@v2
       with:
-        name: cartographer-conventions-controller-bundle.tar
-        path: cartographer-conventions-controller-bundle.tar
+        name: cartographer-conventions-bundle.tar
+        path: cartographer-conventions-bundle.tar
         retention-days: 1
     - uses: actions/upload-artifact@v2
       with:
@@ -206,6 +208,7 @@ jobs:
     needs: stage
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         k8s:
         - 1.21.10
@@ -220,6 +223,8 @@ jobs:
       with:
         go-version: 1.18.x
     - uses: vmware-tanzu/carvel-setup-action@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
     - name: Install kind
       run: |
         cd $(mktemp -d -t kind.XXXX)
@@ -328,7 +333,7 @@ jobs:
     - name: Download staged Cartographer Conventions build
       uses: actions/download-artifact@v3
       with:
-        name: cartographer-conventions-controller-bundle.tar
+        name: cartographer-conventions-bundle.tar
     - name: Download staged Cartographer Conventions build
       uses: actions/download-artifact@v3
       with:
@@ -339,9 +344,7 @@ jobs:
         set -o nounset
         set -o pipefail
 
-        imgpkg version
-
-        imgpkg copy --tar cartographer-conventions-controller-bundle.tar --to-repo "${BUNDLE}/controller"
+        imgpkg copy --tar cartographer-conventions-bundle.tar --to-repo "${BUNDLE}/controller"
         mkdir -p convention-bundle/controller
         imgpkg pull -b "${BUNDLE}/controller" -o convention-bundle/controller
 
@@ -598,6 +601,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v3
     - name: Get the version
       id: get_version
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
@@ -613,7 +617,7 @@ jobs:
     - name: Download staged Cartographer Conventions build
       uses: actions/download-artifact@v3
       with:
-        name: cartographer-conventions-controller-bundle.tar
+        name: cartographer-conventions-bundle.tar
     - name: Download staged samples build
       uses: actions/download-artifact@v3
       with:
@@ -624,8 +628,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-        asset_path: cartographer-conventions-controller-bundle.tar
-        asset_name: cartographer-conventions-controller-bundle-${{ steps.get_version.outputs.VERSION }}.tar
+        asset_path: cartographer-conventions-bundle.tar
+        asset_name: cartographer-conventions-bundle-${{ steps.get_version.outputs.VERSION }}.tar
         asset_content_type: application/x-tar
     - name: Upload Convention samples
       uses: actions/upload-release-asset@v1.0.2
@@ -636,3 +640,116 @@ jobs:
         asset_path: cartographer-conventions-samples-bundle.tar
         asset_name: cartographer-conventions-samples-bundle-${{ steps.get_version.outputs.VERSION }}.tar
         asset_content_type: application/x-tar
+    - uses: vmware-tanzu/carvel-setup-action@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Install crane
+      run: |
+        cd $(mktemp -d -t kind.XXXX)
+        curl -L https://github.com/google/go-containerregistry/releases/download/v0.8.0/go-containerregistry_Linux_x86_64.tar.gz | tar -xz
+        chmod +x ./crane
+        sudo mv ./crane /usr/local/bin
+        cd -
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Relocate bundle to public registry
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        version=${{ steps.get_version.outputs.VERSION }}
+
+        imgpkg copy --tar cartographer-conventions-bundle.tar --to-repo "ghcr.io/${{ github.repository }}/bundle"
+        crane tag "ghcr.io/${{ github.repository }}/bundle" "${version}"
+        digest=$(crane digest "ghcr.io/${{ github.repository }}/bundle:${version}")
+
+        scratch=$(mktemp -d -t bundle.XXXX)
+        mkdir -p ${scratch}
+        imgpkg pull -b "ghcr.io/${{ github.repository }}/bundle:${version}@${digest}" -o ${scratch}
+
+        cp hack/boilerplate.ytt.txt cartographer-conventions.yaml
+        kbld -f ${scratch}/config/cartographer-conventions.yaml -f ${scratch}/.imgpkg/images.yml \
+          >> cartographer-conventions.yaml
+
+        cp hack/boilerplate.ytt.txt cartographer-conventions-package.yaml
+        ytt -f dist/package.yaml -f dist/package.values.yaml \
+          --data-value version=${version} \
+          --data-value image="ghcr.io/${{ github.repository }}/bundle:${version}@${digest}" \
+          >> cartographer-conventions-package.yaml
+    - name: Relocate samples to public registry
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        version=${{ steps.get_version.outputs.VERSION }}
+
+        imgpkg copy --tar cartographer-conventions-samples-bundle.tar --to-repo "ghcr.io/${{ github.repository }}/samples"
+        crane tag "ghcr.io/${{ github.repository }}/samples" "${version}"
+        digest=$(crane digest "ghcr.io/${{ github.repository }}/samples:${version}")
+
+        scratch=$(mktemp -d -t bundle.XXXX)
+        mkdir -p ${scratch}
+        imgpkg pull -b "ghcr.io/${{ github.repository }}/samples:${version}@${digest}" -o ${scratch}
+
+        cp hack/boilerplate.ytt.txt cartographer-conventions-samples-convention-server.yaml
+        kbld -f ${scratch}/convention-server/server.yaml -f ${scratch}/.imgpkg/images.yml \
+          >> cartographer-conventions-samples-convention-server.yaml
+
+        cp hack/boilerplate.ytt.txt cartographer-conventions-samples-dumper-server.yaml
+        kbld -f ${scratch}/dumper-server/server.yaml -f ${scratch}/.imgpkg/images.yml \
+          >> cartographer-conventions-samples-dumper-server.yaml
+
+        cp hack/boilerplate.ytt.txt cartographer-conventions-samples-spring-convention-server.yaml
+        kbld -f ${scratch}/spring-convention-server/server.yaml -f ${scratch}/.imgpkg/images.yml \
+          >> cartographer-conventions-samples-spring-convention-server.yaml
+    - name: Upload cartographer-conventions.yaml
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+        asset_path: cartographer-conventions.yaml
+        asset_name: cartographer-conventions-${{ steps.get_version.outputs.VERSION }}.yaml
+        asset_content_type: application/x-yaml
+    - name: Upload cartographer-conventions-package.yaml
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+        asset_path: cartographer-conventions-package.yaml
+        asset_name: cartographer-conventions-package-${{ steps.get_version.outputs.VERSION }}.yaml
+        asset_content_type: application/x-yaml
+    - name: Upload cartographer-conventions-samples-convention-server.yaml
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+        asset_path: cartographer-conventions-samples-convention-server.yaml
+        asset_name: cartographer-conventions-samples-convention-server-${{ steps.get_version.outputs.VERSION }}.yaml
+        asset_content_type: application/x-yaml
+    - name: Upload cartographer-conventions-samples-dumper-server.yaml
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+        asset_path: cartographer-conventions-samples-dumper-server.yaml
+        asset_name: cartographer-conventions-samples-dumper-server-${{ steps.get_version.outputs.VERSION }}.yaml
+        asset_content_type: application/x-yaml
+    - name: Upload cartographer-conventions-samples-spring-convention-server.yaml
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+        asset_path: cartographer-conventions-samples-spring-convention-server.yaml
+        asset_name: cartographer-conventions-samples-spring-convention-server-${{ steps.get_version.outputs.VERSION }}.yaml
+        asset_content_type: application/x-yaml

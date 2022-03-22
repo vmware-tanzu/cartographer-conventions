@@ -46,7 +46,7 @@ We use [Golang 1.18+](https://golang.org) and [`ko`](https://github.com/google/k
       -f <( \
         ko resolve -f <( \
           ytt \
-            -f dist/cartogrpaher-conventions.yaml \
+            -f dist/cartographer-conventions.yaml \
             -f dist/ca-overlay.yaml \
             --data-value-file ca_cert_data=${CA_DATA:-dist/ca.pem} \
           ) \

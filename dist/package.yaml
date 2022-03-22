@@ -43,7 +43,7 @@ spec:
       - kbld:
           paths:
           - .imgpkg/images.yml
-          - config/cartogrpaher-conventions.yaml
+          - config/cartographer-conventions.yaml
       - ytt:
           paths:
           - "-"
