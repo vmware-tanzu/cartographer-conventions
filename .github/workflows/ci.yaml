@@ -130,7 +130,7 @@ jobs:
 
         echo "##[group]Build"
           cat hack/boilerplate.ytt.txt > "${scratch}/config/cartographer-conventions.yaml"
-          ko resolve -B -f dist/cartographer-conventions.yaml >> "${scratch}/config/cartographer-conventions.yaml"
+          ko resolve -f dist/cartographer-conventions.yaml >> "${scratch}/config/cartographer-conventions.yaml"
           kbld -f "${scratch}/config/cartographer-conventions.yaml" --imgpkg-lock-output "${scratch}/.imgpkg/images.yml" > /dev/null
         echo "##[endgroup]"
 
@@ -152,19 +152,19 @@ jobs:
           mkdir -p ${scratch}/convention-server
           cp samples/convention-server/*.{md,yaml} ${scratch}/convention-server/
           pushd samples/convention-server
-            KO_DOCKER_REPO="${KO_DOCKER_REPO}/samples" ko resolve -B -f server.yaml > "${scratch}/convention-server/server.yaml"
+            ko resolve -f server.yaml > "${scratch}/convention-server/server.yaml"
           popd
 
           mkdir -p ${scratch}/dumper-server
           cp samples/dumper-server/*.{md,yaml} ${scratch}/dumper-server/
           pushd samples/dumper-server
-            KO_DOCKER_REPO="${KO_DOCKER_REPO}/samples" ko resolve -B -f server.yaml > "${scratch}/dumper-server/server.yaml"
+            ko resolve -f server.yaml > "${scratch}/dumper-server/server.yaml"
           popd
 
           mkdir -p ${scratch}/spring-convention-server
           cp samples/spring-convention-server/*.{md,yaml} ${scratch}/spring-convention-server/
           pushd samples/spring-convention-server
-            KO_DOCKER_REPO="${KO_DOCKER_REPO}/samples" ko resolve -B -f server.yaml > "${scratch}/spring-convention-server/server.yaml"
+            ko resolve -f server.yaml > "${scratch}/spring-convention-server/server.yaml"
           popd
 
           kbld --imgpkg-lock-output "${scratch}/.imgpkg/images.yml" \
