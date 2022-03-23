@@ -24,10 +24,6 @@ import (
 type PriorityLevel string
 
 const (
-	// WantInjectAnnotation is the annotation that specifies that a particular
-	// object wants injection of CAs.  It takes the form of a reference to a certificate
-	// as namespace/name.
-	WantInjectAnnotation = "conventions.carto.run/inject-ca-from"
 	// EarlyPriority defines Early priority level for ClusterPodConvention
 	EarlyPriority PriorityLevel = "Early"
 	// NormalPriority defines Normal priority level for ClusterPodConvention
@@ -47,6 +43,13 @@ type ClusterPodConventionSpec struct {
 type ClusterPodConventionWebhook struct {
 	// ClientConfig defines how to communicate with the convention.
 	ClientConfig admissionregistrationv1.WebhookClientConfig `json:"clientConfig"`
+	// Certificate references a cert-manager Certificate resource whose CA should be trusted.
+	Certificate *ClusterPodConventionWebhookCertificate `json:"certificate,omitempty"`
+}
+
+type ClusterPodConventionWebhookCertificate struct {
+	Namespace string `json:"namespace"`
+	Name      string `json:"name"`
 }
 
 // +kubebuilder:object:root=true

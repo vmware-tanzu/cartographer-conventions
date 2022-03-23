@@ -101,10 +101,11 @@ apiVersion: conventions.carto.run/v1alpha1
 kind: ClusterPodConvention
 metadata:
   name: spring-sample
-  annotations:
-    conventions.carto.run/inject-ca-from: "sample-spring-conventions/spring-webhook-cert"
 spec:
   webhook:
+    certificate:
+      namespace: sample-spring-conventions
+      name: spring-webhook-cert
     clientConfig:
       service:
         name: spring-webhook

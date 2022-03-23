@@ -61,3 +61,16 @@ func (d *ClusterPodConventionWebhookDie) ClientConfigDie(fn func(d *dieadmission
 		r.ClientConfig = d.DieRelease()
 	})
 }
+
+func (d *ClusterPodConventionWebhookDie) CertificateDie(fn func(d *ClusterPodConventionWebhookCertificateDie)) *ClusterPodConventionWebhookDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.ClusterPodConventionWebhook) {
+		d := ClusterPodConventionWebhookCertificateBlank.
+			DieImmutable(false).
+			DieFeedPtr(r.Certificate)
+		fn(d)
+		r.Certificate = d.DieReleasePtr()
+	})
+}
+
+// +die
+type _ = conventionsv1alpha1.ClusterPodConventionWebhookCertificate

@@ -101,11 +101,12 @@ apiVersion: conventions.carto.run/v1alpha1
 kind: ClusterPodConvention
 metadata:
   name: dumper
-  annotations:
-    conventions.carto.run/inject-ca-from: "dumper-conventions/webhook-cert"
 spec:
   priority: Early
   webhook:
+    certificate:
+      namespace: dumper-conventions
+      name: webhook-cert
     clientConfig:
       service:
         name: webhook

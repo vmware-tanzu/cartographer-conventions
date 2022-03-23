@@ -329,6 +329,92 @@ func (d *ClusterPodConventionWebhookDie) ClientConfig(v admissionregistrationv1.
 	})
 }
 
+// Certificate references a cert-manager Certificate resource whose CA should be trusted.
+func (d *ClusterPodConventionWebhookDie) Certificate(v *conventionsv1alpha1.ClusterPodConventionWebhookCertificate) *ClusterPodConventionWebhookDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.ClusterPodConventionWebhook) {
+		r.Certificate = v
+	})
+}
+
+var ClusterPodConventionWebhookCertificateBlank = (&ClusterPodConventionWebhookCertificateDie{}).DieFeed(conventionsv1alpha1.ClusterPodConventionWebhookCertificate{})
+
+type ClusterPodConventionWebhookCertificateDie struct {
+	mutable bool
+	r       conventionsv1alpha1.ClusterPodConventionWebhookCertificate
+}
+
+// DieImmutable returns a new die for the current die's state that is either mutable (`false`) or immutable (`true`).
+func (d *ClusterPodConventionWebhookCertificateDie) DieImmutable(immutable bool) *ClusterPodConventionWebhookCertificateDie {
+	if d.mutable == !immutable {
+		return d
+	}
+	d = d.DeepCopy()
+	d.mutable = !immutable
+	return d
+}
+
+// DieFeed returns a new die with the provided resource.
+func (d *ClusterPodConventionWebhookCertificateDie) DieFeed(r conventionsv1alpha1.ClusterPodConventionWebhookCertificate) *ClusterPodConventionWebhookCertificateDie {
+	if d.mutable {
+		d.r = r
+		return d
+	}
+	return &ClusterPodConventionWebhookCertificateDie{
+		mutable: d.mutable,
+		r:       r,
+	}
+}
+
+// DieFeedPtr returns a new die with the provided resource pointer. If the resource is nil, the empty value is used instead.
+func (d *ClusterPodConventionWebhookCertificateDie) DieFeedPtr(r *conventionsv1alpha1.ClusterPodConventionWebhookCertificate) *ClusterPodConventionWebhookCertificateDie {
+	if r == nil {
+		r = &conventionsv1alpha1.ClusterPodConventionWebhookCertificate{}
+	}
+	return d.DieFeed(*r)
+}
+
+// DieRelease returns the resource managed by the die.
+func (d *ClusterPodConventionWebhookCertificateDie) DieRelease() conventionsv1alpha1.ClusterPodConventionWebhookCertificate {
+	if d.mutable {
+		return d.r
+	}
+	return *d.r.DeepCopy()
+}
+
+// DieReleasePtr returns a pointer to the resource managed by the die.
+func (d *ClusterPodConventionWebhookCertificateDie) DieReleasePtr() *conventionsv1alpha1.ClusterPodConventionWebhookCertificate {
+	r := d.DieRelease()
+	return &r
+}
+
+// DieStamp returns a new die with the resource passed to the callback function. The resource is mutable.
+func (d *ClusterPodConventionWebhookCertificateDie) DieStamp(fn func(r *conventionsv1alpha1.ClusterPodConventionWebhookCertificate)) *ClusterPodConventionWebhookCertificateDie {
+	r := d.DieRelease()
+	fn(&r)
+	return d.DieFeed(r)
+}
+
+// DeepCopy returns a new die with equivalent state. Useful for snapshotting a mutable die.
+func (d *ClusterPodConventionWebhookCertificateDie) DeepCopy() *ClusterPodConventionWebhookCertificateDie {
+	r := *d.r.DeepCopy()
+	return &ClusterPodConventionWebhookCertificateDie{
+		mutable: d.mutable,
+		r:       r,
+	}
+}
+
+func (d *ClusterPodConventionWebhookCertificateDie) Namespace(v string) *ClusterPodConventionWebhookCertificateDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.ClusterPodConventionWebhookCertificate) {
+		r.Namespace = v
+	})
+}
+
+func (d *ClusterPodConventionWebhookCertificateDie) Name(v string) *ClusterPodConventionWebhookCertificateDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.ClusterPodConventionWebhookCertificate) {
+		r.Name = v
+	})
+}
+
 var PodIntentBlank = (&PodIntentDie{}).DieFeed(conventionsv1alpha1.PodIntent{})
 
 type PodIntentDie struct {

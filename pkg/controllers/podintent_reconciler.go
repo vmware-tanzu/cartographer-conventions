@@ -109,8 +109,8 @@ func ResolveConventions(c reconcilers.Config) reconcilers.SubReconciler {
 				}
 				if source.Spec.Webhook != nil {
 					clientConfig := source.Spec.Webhook.ClientConfig.DeepCopy()
-					if certRaw, configured := source.Annotations[conventionsv1alpha1.WantInjectAnnotation]; configured {
-						caBundle, err := getCABundle(ctx, c, certRaw, parent)
+					if source.Spec.Webhook.Certificate != nil {
+						caBundle, err := getCABundle(ctx, c, source.Spec.Webhook.Certificate, parent)
 						if err != nil {
 							conditionManager.MarkFalse(conventionsv1alpha1.PodIntentConditionConventionsApplied, "CABundleResolutionFailed", "failed to authenticate: %v", err.Error())
 							c.Log.Error(err, "failed to get CABundle", "ClusterPodConvention", source.Name)
@@ -211,19 +211,15 @@ func BuildRegistryConfig(c reconcilers.Config, rc binding.RegistryConfig) reconc
 	}
 }
 
-func getCABundle(ctx context.Context, c reconcilers.Config, certRawName string, parent *conventionsv1alpha1.PodIntent) ([]byte, error) {
-	certNamespacedName := splitNamespacedName(certRawName)
-	if certNamespacedName.Namespace == "" {
-		return nil, fmt.Errorf("invalid certificate name; needs a namespace/ prefix")
-	}
+func getCABundle(ctx context.Context, c reconcilers.Config, certRef *conventionsv1alpha1.ClusterPodConventionWebhookCertificate, parent *conventionsv1alpha1.PodIntent) ([]byte, error) {
 	allCertReqs := &certmanagerv1.CertificateRequestList{}
-	if err := c.List(ctx, allCertReqs, client.InNamespace(certNamespacedName.Namespace)); err != nil {
+	if err := c.List(ctx, allCertReqs, client.InNamespace(certRef.Namespace)); err != nil {
 		return nil, fmt.Errorf("Failed to fetch associated certificate requests: %v", err)
 	}
 
 	certReqs := []certmanagerv1.CertificateRequest{}
 	for _, certReq := range allCertReqs.Items {
-		if certReq.Annotations == nil || certReq.Annotations["cert-manager.io/certificate-name"] != certNamespacedName.Name {
+		if certReq.Annotations == nil || certReq.Annotations["cert-manager.io/certificate-name"] != certRef.Name {
 			// request is for a different certificate
 			continue
 		}
@@ -245,7 +241,7 @@ func getCABundle(ctx context.Context, c reconcilers.Config, certRawName string, 
 	}
 
 	if len(certReqs) == 0 {
-		return nil, fmt.Errorf("unable to find valid certificaterequests for certificate %q", certRawName)
+		return nil, fmt.Errorf("unable to find valid certificaterequests for certificate %q", fmt.Sprintf("%s/%s", certRef.Namespace, certRef.Name))
 	}
 
 	// take the most recent 3 certificate request CAs

@@ -62,6 +62,16 @@ spec:
                 type: array
               webhook:
                 properties:
+                  certificate:
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    required:
+                    - name
+                    - namespace
+                    type: object
                   clientConfig:
                     properties:
                       caBundle:
