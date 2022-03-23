@@ -64,8 +64,10 @@ jobs:
         echo "CERT_DIR=$CERT_DIR" >> $GITHUB_ENV
 
         echo "##[group]Install cfssl"
-          go install github.com/cloudflare/cfssl/cmd/cfssl@v1.6.1
-          go install github.com/cloudflare/cfssl/cmd/cfssljson@v1.6.1
+          curl -L https://github.com/cloudflare/cfssl/releases/download/v1.6.1/cfssl_1.6.1_linux_amd64 -o cfssl
+          curl -L https://github.com/cloudflare/cfssl/releases/download/v1.6.1/cfssljson_1.6.1_linux_amd64 -o cfssljson
+          chmod +x cfssl*
+          sudo mv cfssl* /usr/local/bin
         echo "##[endgroup]"
 
         echo "##[group]Generate CA"
@@ -187,21 +189,6 @@ jobs:
         name: cartographer-conventions-samples-bundle.tar
         path: cartographer-conventions-samples-bundle.tar
         retention-days: 1
-    - name: Grype scan
-      run: |
-        echo "##[group]Install grype"
-          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
-        echo "##[endgroup]"
-        echo "##[group]Scan source ."
-          grype dir:. --exclude ./hack
-        echo "##[endgroup]"
-        echo "##[group]Scan source ./webhook"
-          grype dir:webhook --exclude ./hack
-        echo "##[endgroup]"
-        echo "##[group]Scan manager image"
-          grype registry:registry.local/conventions/manager:latest
-        echo "##[endgroup]"
-      continue-on-error: true
 
   acceptance:
     needs: stage
@@ -241,8 +228,10 @@ jobs:
         echo "CERT_DIR=$CERT_DIR" >> $GITHUB_ENV
 
         echo "##[group]Install cfssl"
-          go install github.com/cloudflare/cfssl/cmd/cfssl@v1.6.1
-          go install github.com/cloudflare/cfssl/cmd/cfssljson@v1.6.1
+          curl -L https://github.com/cloudflare/cfssl/releases/download/v1.6.1/cfssl_1.6.1_linux_amd64 -o cfssl
+          curl -L https://github.com/cloudflare/cfssl/releases/download/v1.6.1/cfssljson_1.6.1_linux_amd64 -o cfssljson
+          chmod +x cfssl*
+          sudo mv cfssl* /usr/local/bin
         echo "##[endgroup]"
 
         echo "##[group]Generate CA"
@@ -585,11 +574,128 @@ jobs:
       run: kind delete cluster
       if: always()
 
-  # aggregate the unit and acceptance test results into a single job
+  security:
+    needs: stage
+    runs-on: ubuntu-latest
+    env:
+      REGISTRY_NAME: registry.local
+      BUNDLE: registry.local/conventions/bundle
+    steps:
+    - uses: actions/checkout@v3
+    - uses: vmware-tanzu/carvel-setup-action@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Generate certs
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        CERT_DIR=$(mktemp -d -t certs.XXXX)
+        echo "CERT_DIR=$CERT_DIR" >> $GITHUB_ENV
+
+        echo "##[group]Install cfssl"
+          curl -L https://github.com/cloudflare/cfssl/releases/download/v1.6.1/cfssl_1.6.1_linux_amd64 -o cfssl
+          curl -L https://github.com/cloudflare/cfssl/releases/download/v1.6.1/cfssljson_1.6.1_linux_amd64 -o cfssljson
+          chmod +x cfssl*
+          sudo mv cfssl* /usr/local/bin
+        echo "##[endgroup]"
+
+        echo "##[group]Generate CA"
+          cfssl gencert -initca .github/tls/root-csr.json \
+            | cfssljson -bare ${CERT_DIR}/root-ca
+          cfssl gencert -ca ${CERT_DIR}/root-ca.pem -ca-key ${CERT_DIR}/root-ca-key.pem \
+            -config=".github/tls/config.json" \
+            -profile="intermediate" .github/tls/intermediate-csr.json \
+            | cfssljson -bare ${CERT_DIR}/signing-ca
+          cat ${CERT_DIR}/signing-ca.pem ${CERT_DIR}/root-ca.pem > ${CERT_DIR}/ca.pem
+        echo "##[endgroup]"
+        echo "##[group]Install CA"
+          # https://ubuntu.com/server/docs/security-trust-store
+          sudo apt-get install -y ca-certificates
+          sudo cp ${CERT_DIR}/ca.pem /usr/local/share/ca-certificates/ca.crt
+          sudo update-ca-certificates
+        echo "##[endgroup]"
+
+        echo "##[group]Generate cert"
+          cfssl gencert -ca ${CERT_DIR}/signing-ca.pem -ca-key ${CERT_DIR}/signing-ca-key.pem \
+            -config=".github/tls/config.json" \
+            -profile="server" \
+            -hostname="${REGISTRY_NAME},local-registry" \
+            .github/tls/server-csr.json \
+            | cfssljson -bare ${CERT_DIR}/server
+        echo "##[endgroup]"
+    - name: Setup local registry
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        # Run a registry.
+        docker run -d \
+          --restart=always \
+          --name local-registry \
+          -v ${CERT_DIR}:/certs \
+          -e REGISTRY_HTTP_ADDR=0.0.0.0:443 \
+          -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/server.pem \
+          -e REGISTRY_HTTP_TLS_KEY=/certs/server-key.pem \
+          -p "443:443" \
+          registry:2
+
+        # Make the $REGISTRY_NAME -> local-registry
+        echo "$(hostname -I | cut -d' ' -f1) $REGISTRY_NAME" | sudo tee -a /etc/hosts
+    - name: Install grype
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+    - name: Download staged Cartographer Conventions bundle
+      uses: actions/download-artifact@v3
+      with:
+        name: cartographer-conventions-bundle.tar
+    - name: Scan source
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        echo "##[group]Scan source ."
+          grype dir:.
+        echo "##[endgroup]"
+        echo "##[group]Scan source ./webhook"
+          grype dir:webhook
+        echo "##[endgroup]"
+    - name: Scan bundle images
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        imgpkg copy --tar cartographer-conventions-bundle.tar --to-repo "${BUNDLE}/controller"
+        mkdir -p convention-bundle/controller
+        imgpkg pull -b "${BUNDLE}/controller" -o convention-bundle/controller
+
+        # scan each image from .imgpkg/images.yml
+        buffer=""
+        for line in $(yq -o=json '.images[]' convention-bundle/controller/.imgpkg/images.yml) ; do
+          buffer="${buffer}${line}"
+          if [ "$line" = "}" ] ; then
+            echo "##[group]Scan image $(jq -r '.annotations["kbld.carvel.dev/id"]' <(echo "$buffer"))"
+              grype registry:$(jq -r '.image' <(echo "$buffer"))
+            echo "##[endgroup]"
+
+            buffer=""
+          fi
+        done
+
+  # aggregate the unit, acceptance, and security results into a single job
   test:
     needs:
     - unit
     - acceptance
+    - security
     runs-on: ubuntu-latest
     steps:
     - run: echo "it passed"
