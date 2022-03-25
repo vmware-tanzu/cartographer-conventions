@@ -1,0 +1,3 @@
+**/zz_generated.*.go linguist-generated=true
+hack/** linguist-generated=true
+vendor/** linguist-generated=true
