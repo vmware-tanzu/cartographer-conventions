@@ -20,11 +20,7 @@ jobs:
         go-version: 1.18.x
     - name: Test
       run: make test
-    # TODO setup project with codecov
-    # - name: Report coverage
-    #   run: bash <(curl -s https://codecov.io/bash)
-    #   env:
-    #     CODECOV_TOKEN: ...
+    - uses: codecov/codecov-action@v2
     - name: Build
       run: |
         set -o errexit
