@@ -131,7 +131,7 @@ jobs:
 
         echo "##[group]Create bundle"
           imgpkg push -f "${scratch}" -b "${BUNDLE}/controller"
-          imgpkg copy -b "${BUNDLE}/controller" --to-tar cartographer-conventions-bundle.tar
+          imgpkg copy -b "${BUNDLE}/controller" --to-tar cartographer-conventions-bundle.tar --cosign-signatures
         echo "##[endgroup]"
     - name: Build samples
       run: |
@@ -171,7 +171,7 @@ jobs:
 
         echo "##[group]Create sample bundle"
           imgpkg push -f "${scratch}" -b "${BUNDLE}/samples"
-          imgpkg copy -b "${BUNDLE}/samples" --to-tar cartographer-conventions-samples-bundle.tar
+          imgpkg copy -b "${BUNDLE}/samples" --to-tar cartographer-conventions-samples-bundle.tar --cosign-signatures
         echo "##[endgroup]"
     - uses: actions/upload-artifact@v2
       with:
@@ -339,11 +339,11 @@ jobs:
         set -o nounset
         set -o pipefail
 
-        imgpkg copy --tar cartographer-conventions-bundle.tar --to-repo "${BUNDLE}/controller"
+        imgpkg copy --tar cartographer-conventions-bundle.tar --to-repo "${BUNDLE}/controller" --cosign-signatures
         mkdir -p convention-bundle/controller
         imgpkg pull -b "${BUNDLE}/controller" -o convention-bundle/controller
 
-        imgpkg copy --tar cartographer-conventions-samples-bundle.tar --to-repo "${BUNDLE}/samples"
+        imgpkg copy --tar cartographer-conventions-samples-bundle.tar --to-repo "${BUNDLE}/samples" --cosign-signatures
         mkdir -p convention-bundle/samples
         imgpkg pull -b "${BUNDLE}/samples" -o convention-bundle/samples 
     - name: Install kapp-controller
@@ -659,7 +659,7 @@ jobs:
 
         version=${{ steps.get_version.outputs.VERSION }}
 
-        imgpkg copy --tar cartographer-conventions-bundle.tar --to-repo "ghcr.io/${{ github.repository }}/bundle"
+        imgpkg copy --tar cartographer-conventions-bundle.tar --to-repo "ghcr.io/${{ github.repository }}/bundle" --cosign-signatures
         crane tag "ghcr.io/${{ github.repository }}/bundle" "${version}"
         digest=$(crane digest "ghcr.io/${{ github.repository }}/bundle:${version}")
 
@@ -684,7 +684,7 @@ jobs:
 
         version=${{ steps.get_version.outputs.VERSION }}
 
-        imgpkg copy --tar cartographer-conventions-samples-bundle.tar --to-repo "ghcr.io/${{ github.repository }}/samples"
+        imgpkg copy --tar cartographer-conventions-samples-bundle.tar --to-repo "ghcr.io/${{ github.repository }}/samples" --cosign-signatures
         crane tag "ghcr.io/${{ github.repository }}/samples" "${version}"
         digest=$(crane digest "ghcr.io/${{ github.repository }}/samples:${version}")
 
