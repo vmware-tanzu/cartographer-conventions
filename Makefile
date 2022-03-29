@@ -39,7 +39,7 @@ dist/cartographer-conventions.yaml: generate manifests
 dist/third-party: dist/third-party/cert-manager.yaml
 
 dist/third-party/cert-manager.yaml: Makefile
-	curl -Ls https://github.com/jetstack/cert-manager/releases/download/v1.4.1/cert-manager.yaml > dist/third-party/cert-manager.yaml	
+	curl -Ls https://github.com/cert-manager/cert-manager/releases/download/v1.7.2/cert-manager.yaml > dist/third-party/cert-manager.yaml	
 
 # Run go fmt against code
 .PHONY: fmt
