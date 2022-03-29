@@ -7,7 +7,7 @@ require (
 	github.com/k14s/ytt v0.39.0
 	golang.org/x/tools v0.1.10
 	sigs.k8s.io/controller-tools v0.8.0
-	sigs.k8s.io/kustomize/kustomize/v4 v4.5.3
+	sigs.k8s.io/kustomize/kustomize/v4 v4.5.4
 )
 
 require (
@@ -69,9 +69,9 @@ require (
 	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed // indirect
 	sigs.k8s.io/json v0.0.0-20211020170558-c049b76a60c6 // indirect
-	sigs.k8s.io/kustomize/api v0.11.3 // indirect
-	sigs.k8s.io/kustomize/cmd/config v0.10.5 // indirect
-	sigs.k8s.io/kustomize/kyaml v0.13.4 // indirect
+	sigs.k8s.io/kustomize/api v0.11.4 // indirect
+	sigs.k8s.io/kustomize/cmd/config v0.10.6 // indirect
+	sigs.k8s.io/kustomize/kyaml v0.13.6 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
