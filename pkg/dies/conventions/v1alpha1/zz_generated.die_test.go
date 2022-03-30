@@ -54,6 +54,15 @@ func TestClusterPodConventionWebhookDie_MissingMethods(t *testingx.T) {
 	}
 }
 
+func TestClusterPodConventionWebhookCertificateDie_MissingMethods(t *testingx.T) {
+	die := ClusterPodConventionWebhookCertificateBlank
+	ignore := []string{}
+	diff := testing.DieFieldDiff(die).Delete(ignore...)
+	if diff.Len() != 0 {
+		t.Errorf("found missing fields for ClusterPodConventionWebhookCertificateDie: %s", diff.List())
+	}
+}
+
 func TestPodIntentDie_MissingMethods(t *testingx.T) {
 	die := PodIntentBlank
 	ignore := []string{"TypeMeta", "ObjectMeta"}

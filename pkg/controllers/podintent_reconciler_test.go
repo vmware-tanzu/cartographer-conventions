@@ -627,12 +627,15 @@ func TestResolveConventions(t *testing.T) {
 				testConvention.
 					MetadataDie(func(d *diemetav1.ObjectMetaDie) {
 						d.CreationTimestamp(now)
-						d.AddAnnotation(conventionsv1alpha1.WantInjectAnnotation, fmt.Sprintf("%s/%s", namespace, cname))
 					}).
 					SpecDie(func(d *dieconventionsv1alpha1.ClusterPodConventionSpecDie) {
 						d.WebookDie(func(d *dieconventionsv1alpha1.ClusterPodConventionWebhookDie) {
 							d.ClientConfigDie(func(d *dieadmissionregistrationv1.WebhookClientConfigDie) {
 								d.Service(serviceReference)
+							})
+							d.CertificateDie(func(d *dieconventionsv1alpha1.ClusterPodConventionWebhookCertificateDie) {
+								d.Namespace(namespace)
+								d.Name(cname)
 							})
 						})
 					}),
@@ -750,12 +753,15 @@ func TestResolveConventions(t *testing.T) {
 				testConvention.
 					MetadataDie(func(d *diemetav1.ObjectMetaDie) {
 						d.CreationTimestamp(now)
-						d.AddAnnotation(conventionsv1alpha1.WantInjectAnnotation, fmt.Sprintf("%s/%s", namespace, cname))
 					}).
 					SpecDie(func(d *dieconventionsv1alpha1.ClusterPodConventionSpecDie) {
 						d.WebookDie(func(d *dieconventionsv1alpha1.ClusterPodConventionWebhookDie) {
 							d.ClientConfigDie(func(d *dieadmissionregistrationv1.WebhookClientConfigDie) {
 								d.Service(serviceReference)
+							})
+							d.CertificateDie(func(d *dieconventionsv1alpha1.ClusterPodConventionWebhookCertificateDie) {
+								d.Namespace(namespace)
+								d.Name(cname)
 							})
 						})
 					}),
@@ -784,51 +790,21 @@ func TestResolveConventions(t *testing.T) {
 					}},
 			},
 		}, {
-			Name:   "bad annotation key",
-			Parent: parent,
-			GivenObjects: []client.Object{
-				testConvention.
-					MetadataDie(func(d *diemetav1.ObjectMetaDie) {
-						d.CreationTimestamp(now)
-						d.AddAnnotation(conventionsv1alpha1.WantInjectAnnotation, "no-namespace-ca")
-					}).
-					SpecDie(func(d *dieconventionsv1alpha1.ClusterPodConventionSpecDie) {
-						d.WebookDie(func(d *dieconventionsv1alpha1.ClusterPodConventionWebhookDie) {
-							d.ClientConfigDie(func(d *dieadmissionregistrationv1.WebhookClientConfigDie) {
-								d.Service(serviceReference)
-							})
-						})
-					}),
-			},
-			ExpectParent: parent.
-				StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
-					d.ConditionsDie(
-						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
-							Status(metav1.ConditionFalse).
-							Reason("CABundleResolutionFailed").
-							Message("failed to authenticate: invalid certificate name; needs a namespace/ prefix"),
-						dieconventionsv1alpha1.PodIntentConditionReadyBlank.
-							Status(metav1.ConditionFalse).
-							Reason("CABundleResolutionFailed").
-							Message("failed to authenticate: invalid certificate name; needs a namespace/ prefix"),
-					)
-				}),
-			ExpectStashedValues: map[reconcilers.StashKey]interface{}{
-				controllers.ConventionsStashKey: nil,
-			},
-		}, {
 			Name:   "cert request not present",
 			Parent: parent,
 			GivenObjects: []client.Object{
 				testConvention.
 					MetadataDie(func(d *diemetav1.ObjectMetaDie) {
 						d.CreationTimestamp(now)
-						d.AddAnnotation(conventionsv1alpha1.WantInjectAnnotation, "ns/wrong-ca")
 					}).
 					SpecDie(func(d *dieconventionsv1alpha1.ClusterPodConventionSpecDie) {
 						d.WebookDie(func(d *dieconventionsv1alpha1.ClusterPodConventionWebhookDie) {
 							d.ClientConfigDie(func(d *dieadmissionregistrationv1.WebhookClientConfigDie) {
 								d.Service(serviceReference)
+							})
+							d.CertificateDie(func(d *dieconventionsv1alpha1.ClusterPodConventionWebhookCertificateDie) {
+								d.Namespace("ns")
+								d.Name("wrong-ca")
 							})
 						})
 					}),
@@ -860,12 +836,15 @@ func TestResolveConventions(t *testing.T) {
 				testConvention.
 					MetadataDie(func(d *diemetav1.ObjectMetaDie) {
 						d.CreationTimestamp(now)
-						d.AddAnnotation(conventionsv1alpha1.WantInjectAnnotation, fmt.Sprintf("%s/%s", namespace, cname))
 					}).
 					SpecDie(func(d *dieconventionsv1alpha1.ClusterPodConventionSpecDie) {
 						d.WebookDie(func(d *dieconventionsv1alpha1.ClusterPodConventionWebhookDie) {
 							d.ClientConfigDie(func(d *dieadmissionregistrationv1.WebhookClientConfigDie) {
 								d.Service(serviceReference)
+							})
+							d.CertificateDie(func(d *dieconventionsv1alpha1.ClusterPodConventionWebhookCertificateDie) {
+								d.Namespace(namespace)
+								d.Name(cname)
 							})
 						})
 					}),
@@ -899,12 +878,15 @@ func TestResolveConventions(t *testing.T) {
 				testConvention.
 					MetadataDie(func(d *diemetav1.ObjectMetaDie) {
 						d.CreationTimestamp(now)
-						d.AddAnnotation(conventionsv1alpha1.WantInjectAnnotation, fmt.Sprintf("%s/%s", namespace, cname))
 					}).
 					SpecDie(func(d *dieconventionsv1alpha1.ClusterPodConventionSpecDie) {
 						d.WebookDie(func(d *dieconventionsv1alpha1.ClusterPodConventionWebhookDie) {
 							d.ClientConfigDie(func(d *dieadmissionregistrationv1.WebhookClientConfigDie) {
 								d.Service(serviceReference)
+							})
+							d.CertificateDie(func(d *dieconventionsv1alpha1.ClusterPodConventionWebhookCertificateDie) {
+								d.Namespace(namespace)
+								d.Name(cname)
 							})
 						})
 					}),
@@ -938,12 +920,15 @@ func TestResolveConventions(t *testing.T) {
 				testConvention.
 					MetadataDie(func(d *diemetav1.ObjectMetaDie) {
 						d.CreationTimestamp(now)
-						d.AddAnnotation(conventionsv1alpha1.WantInjectAnnotation, fmt.Sprintf("%s/%s", namespace, cname))
 					}).
 					SpecDie(func(d *dieconventionsv1alpha1.ClusterPodConventionSpecDie) {
 						d.WebookDie(func(d *dieconventionsv1alpha1.ClusterPodConventionWebhookDie) {
 							d.ClientConfigDie(func(d *dieadmissionregistrationv1.WebhookClientConfigDie) {
 								d.Service(serviceReference)
+							})
+							d.CertificateDie(func(d *dieconventionsv1alpha1.ClusterPodConventionWebhookCertificateDie) {
+								d.Namespace(namespace)
+								d.Name(cname)
 							})
 						})
 					}),

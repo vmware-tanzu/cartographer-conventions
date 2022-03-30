@@ -206,7 +206,7 @@ While difficult to enforce centrally, well-behaved conventions have these charac
 * **Convergent**: reapplying the same convention sequentially should not change the result. Equivalent to [`reinvocationPolicy: IfNeeded`](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#reinvocation-policy).
 * **Conservative**: preserve the user's intent. When a value is specified, favor keeping rather than replacing that value. In other words, a user should be able to override a convention by explicitly configuring the value.
 
-Webhook based conventions are defined at `.spec.webhook` and are modeled after admission webhooks. The transport must be HTTPS with a trusted certificate matching the resolved host name. If the certificate is not already trusted by the cluster, the certificate authority must be specified at `.spec.webhook.clientConfig.caBundle`. A custom CA certificate may also be defined by referencing a cert-manager `Certificate` resource via the `conventions.carto.run/inject-ca-from` annotation with the value in the form of `{namespace}/{name}`.
+Webhook based conventions are defined at `.spec.webhook` and are modeled after admission webhooks. The transport must be HTTPS with a trusted certificate matching the resolved host name. A cert-manager `Certificate` is recommended to secure the transport from the controller to the webhook server, it can be specified at `.spec.webhook.certificate`. If not using cert-manager and the certificate is not already trusted by the cluster, the certificate authority must be specified at `.spec.webhook.clientConfig.caBundle`. 
 
 #### PodConventionContext (webhooks.conventions.carto.run/v1alpha1)
 

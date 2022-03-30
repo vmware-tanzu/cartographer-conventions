@@ -223,6 +223,44 @@ func TestClusterPodConventionValidate(t *testing.T) {
 			}},
 		}, "selector", 0).ViaField("spec"),
 	}, {
+		name: "with certificate",
+		target: &ClusterPodConvention{
+			Spec: ClusterPodConventionSpec{
+				Priority: "Normal",
+				Webhook: &ClusterPodConventionWebhook{
+					ClientConfig: admissionregistrationv1.WebhookClientConfig{
+						Service: &validaServiceRef,
+					},
+					Certificate: &ClusterPodConventionWebhookCertificate{
+						Namespace: "default",
+						Name:      "my-cert",
+					},
+				},
+			},
+		},
+		expected: validation.FieldErrors{},
+	}, {
+		name: "invalid certificate",
+		target: &ClusterPodConvention{
+			Spec: ClusterPodConventionSpec{
+				Priority: "Normal",
+				Webhook: &ClusterPodConventionWebhook{
+					ClientConfig: admissionregistrationv1.WebhookClientConfig{
+						Service: &validaServiceRef,
+					},
+					Certificate: &ClusterPodConventionWebhookCertificate{
+						Namespace: "",
+						Name:      "",
+					},
+				},
+			},
+		},
+		expected: validation.FieldErrors{}.Also(
+			validation.FieldErrors{
+				field.Required(field.NewPath("spec.webhook.certificate.namespace"), ""),
+				field.Required(field.NewPath("spec.webhook.certificate.name"), ""),
+			}),
+	}, {
 		name: "wrong priority level",
 		target: &ClusterPodConvention{
 			Spec: ClusterPodConventionSpec{

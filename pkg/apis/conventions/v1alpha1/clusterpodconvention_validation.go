@@ -85,7 +85,26 @@ func (s *ClusterPodConventionSpec) Validate() validation.FieldErrors {
 func (s *ClusterPodConventionWebhook) Validate() validation.FieldErrors {
 	errs := validation.FieldErrors{}
 
-	return errs.Also(ValidateClientConfig(s.ClientConfig).ViaField("clientConfig"))
+	errs = errs.Also(ValidateClientConfig(s.ClientConfig).ViaField("clientConfig"))
+	errs = errs.Also(s.Certificate.Validate().ViaField("certificate"))
+
+	return errs
+}
+
+func (s *ClusterPodConventionWebhookCertificate) Validate() validation.FieldErrors {
+	errs := validation.FieldErrors{}
+
+	if s == nil {
+		return errs
+	}
+	if s.Namespace == "" {
+		errs = errs.Also(validation.ErrMissingField("namespace"))
+	}
+	if s.Name == "" {
+		errs = errs.Also(validation.ErrMissingField("name"))
+	}
+
+	return errs
 }
 
 func ValidateClientConfig(clientConfig admissionregistrationv1.WebhookClientConfig) validation.FieldErrors {
