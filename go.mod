@@ -9,13 +9,14 @@ require (
 	github.com/google/go-containerregistry v0.8.0
 	github.com/google/go-containerregistry/pkg/authn/k8schain v0.0.0-20220105220605-d9bfbcb99e52
 	github.com/vmware-labs/reconciler-runtime v0.4.0
+	github.com/vmware-tanzu/cartographer-conventions/webhook v0.0.0
 	go.uber.org/zap v1.21.0
 	k8s.io/api v0.23.5
 	k8s.io/apimachinery v0.23.5
 	k8s.io/apiserver v0.23.5
 	k8s.io/client-go v0.23.5
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed
-	sigs.k8s.io/controller-runtime v0.11.1
+	sigs.k8s.io/controller-runtime v0.11.2
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -30,6 +31,7 @@ require (
 	github.com/Azure/go-autorest/autorest/validation v0.1.0 // indirect
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
+	github.com/CycloneDX/cyclonedx-go v0.5.0 // indirect
 	github.com/aws/aws-sdk-go v1.35.24 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
@@ -103,7 +105,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
-	k8s.io/apiextensions-apiserver v0.23.3 // indirect
+	k8s.io/apiextensions-apiserver v0.23.5 // indirect
 	k8s.io/cloud-provider v0.21.1 // indirect
 	k8s.io/component-base v0.23.5 // indirect
 	k8s.io/klog/v2 v2.30.0 // indirect
