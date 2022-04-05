@@ -12,6 +12,7 @@
     - [PodIntent (conventions.carto.run/v1alpha1)](#podintent-conventionscartorunv1alpha1)
     - [ClusterPodConvention (conventions.carto.run/v1alpha1)](#clusterpodconvention-conventionscartorunv1alpha1)
     - [PodConventionContext (webhooks.conventions.carto.run/v1alpha1)](#podconventioncontext-webhooksconventionscartorunv1alpha1)
+  - [Webhook contract](#webhook-contract) 
 - [Lifecycle](#lifecycle)
   - [Security](#security)
   - [Supportability](#supportability)
@@ -236,6 +237,21 @@ status: # the response
 ```
 
 In the future other mechanisms may be defined to provide conventions other than webhooks. In particular, mechanisms that are safe to execute within the controller process like a YTT overlay or WebAssembly. Each mechanism will define the specifics of its own contract similar in scope to the `PodConventionContext`.
+
+#### Webhook Contract 
+
+In order for the conventions controller to apply a set of conventions, it requires these conventions to be authored in the form of a webhook. 
+
+The authored webhook is registered as follows:
+  ```
+  http.HandleFunc(< url >, webhook.ConventionHandler(ctx, conventions_name))
+  ```
+  The convention controller handler function expects a `ctx Context`  and a function describing conventions to be applied. See [springboot-convetions example](../samples/spring-convention-server/server.go)
+  ```
+  http.HandleFunc("/", webhook.ConventionHandler(ctx, addSpringBootConventions))
+  ```
+
+  The ```HandleFunc``` in ```cartographer-conventions``` is therefore responsible for invoking various reconcilers to apply the various conventions ordered by priority.
 
 ## Lifecycle 
 
