@@ -4,7 +4,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.8.0
   labels:
-    component: conventions.carto.run
+    app.kubernetes.io/component: conventions
   name: clusterpodconventions.conventions.carto.run
 spec:
   group: conventions.carto.run
@@ -112,7 +112,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.8.0
   labels:
-    component: conventions.carto.run
+    app.kubernetes.io/component: conventions
     duck.knative.dev/podspecable: "true"
   name: podintents.conventions.carto.run
 spec:
@@ -6328,7 +6328,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   labels:
-    component: conventions.carto.run
+    app.kubernetes.io/component: conventions
   name: cartographer-conventions-leader-election-role
   namespace: cartographer-system
 rules:
@@ -6390,7 +6390,7 @@ kind: ClusterRole
 metadata:
   creationTimestamp: null
   labels:
-    component: conventions.carto.run
+    app.kubernetes.io/component: conventions
   name: cartographer-conventions-manager-role
 rules:
 - apiGroups:
@@ -6474,7 +6474,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
-    component: conventions.carto.run
+    app.kubernetes.io/component: conventions
   name: cartographer-conventions-proxy-role
 rules:
 - apiGroups:
@@ -6494,7 +6494,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   labels:
-    component: conventions.carto.run
+    app.kubernetes.io/component: conventions
   name: cartographer-conventions-leader-election-rolebinding
   namespace: cartographer-system
 roleRef:
@@ -6510,7 +6510,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
-    component: conventions.carto.run
+    app.kubernetes.io/component: conventions
   name: cartographer-conventions-manager-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -6525,7 +6525,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
-    component: conventions.carto.run
+    app.kubernetes.io/component: conventions
   name: cartographer-conventions-proxy-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -6542,7 +6542,7 @@ data:
 kind: Secret
 metadata:
   labels:
-    component: conventions.carto.run
+    app.kubernetes.io/component: conventions
     control-plane: controller-manager
   name: cartographer-conventions-ca-certificates
   namespace: cartographer-system
@@ -6556,7 +6556,7 @@ metadata:
     prometheus.io/scheme: https
     prometheus.io/scrape: "true"
   labels:
-    component: conventions.carto.run
+    app.kubernetes.io/component: conventions
     control-plane: controller-manager
   name: cartographer-conventions-controller-manager-metrics-service
   namespace: cartographer-system
@@ -6566,14 +6566,14 @@ spec:
     port: 8443
     targetPort: https
   selector:
-    component: conventions.carto.run
+    app.kubernetes.io/component: conventions
     control-plane: controller-manager
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    component: conventions.carto.run
+    app.kubernetes.io/component: conventions
   name: cartographer-conventions-webhook-service
   namespace: cartographer-system
 spec:
@@ -6581,14 +6581,14 @@ spec:
   - port: 443
     targetPort: 9443
   selector:
-    component: conventions.carto.run
+    app.kubernetes.io/component: conventions
     control-plane: controller-manager
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    component: conventions.carto.run
+    app.kubernetes.io/component: conventions
     control-plane: controller-manager
   name: cartographer-conventions-controller-manager
   namespace: cartographer-system
@@ -6596,12 +6596,12 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      component: conventions.carto.run
+      app.kubernetes.io/component: conventions
       control-plane: controller-manager
   template:
     metadata:
       labels:
-        component: conventions.carto.run
+        app.kubernetes.io/component: conventions
         control-plane: controller-manager
     spec:
       containers:
@@ -6664,7 +6664,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   labels:
-    component: conventions.carto.run
+    app.kubernetes.io/component: conventions
   name: cartographer-conventions-serving-cert
   namespace: cartographer-system
 spec:
@@ -6681,7 +6681,7 @@ apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   labels:
-    component: conventions.carto.run
+    app.kubernetes.io/component: conventions
   name: cartographer-conventions-selfsigned-issuer
   namespace: cartographer-system
 spec:
@@ -6694,7 +6694,7 @@ metadata:
     cert-manager.io/inject-ca-from: cartographer-system/cartographer-conventions-serving-cert
     admissions.enforcer/disabled: "true"
   labels:
-    component: conventions.carto.run
+    app.kubernetes.io/component: conventions
   name: cartographer-conventions-mutating-webhook-configuration
 webhooks:
 - admissionReviewVersions:
@@ -6745,7 +6745,7 @@ metadata:
     cert-manager.io/inject-ca-from: cartographer-system/cartographer-conventions-serving-cert
     admissions.enforcer/disabled: "true"
   labels:
-    component: conventions.carto.run
+    app.kubernetes.io/component: conventions
   name: cartographer-conventions-validating-webhook-configuration
 webhooks:
 - admissionReviewVersions:
