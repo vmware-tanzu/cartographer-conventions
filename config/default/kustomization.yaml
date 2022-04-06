@@ -10,7 +10,7 @@ namePrefix: cartographer-conventions-
 
 # Labels to add to all resources and selectors.
 commonLabels:
-  component: conventions.carto.run
+  app.kubernetes.io/component: conventions
 
 bases:
 - ../crd

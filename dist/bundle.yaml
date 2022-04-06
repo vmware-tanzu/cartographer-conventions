@@ -35,7 +35,7 @@ type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: e30K
 
-#@overlay/match by=overlay.subset({"apiVersion":"apps/v1","kind":"Deployment","metadata":{"labels":{"component":"conventions.carto.run"}}})
+#@overlay/match by=overlay.subset({"apiVersion":"apps/v1","kind":"Deployment","metadata":{"labels":{"app.kubernetes.io/component":"conventions"}}})
 ---
 spec:
   template:
