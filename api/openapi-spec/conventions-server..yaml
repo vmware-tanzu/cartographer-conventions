@@ -1,0 +1,90 @@
+openapi: 3.0.0
+info:
+  title: Conventions server 
+  description: >-
+    "a sample conventions server"
+  version: 1.0.0
+  license:
+    name: Apache-2.0
+    url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
+paths:
+  /webhook:
+    post:
+      description: "a sample conventions server"
+      responses:
+        200:
+          description: Successfully applied defined conventions
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/PodConventionContext'
+        400:
+          description: Error decoding PodConventionContext from request body or request body is nil 
+        500:
+          description: Internal server error
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    PodConventionContext: 
+      type: object
+      properties:
+        spec:
+          $ref: "#/components/schemas/PodConventionContextSpec"
+        status:
+          $ref: "#/components/schemas/PodConventionContextStatus"
+    PodConventionContextSpec:
+      type: object
+      properties:
+        Template:
+          $ref: "#/components/schemas/PodTemplateSpec"
+        ImageConfig:
+          $ref: "#/components/schemas/ImageConfig"
+    PodConventionContextStatus:
+      type: object 
+      properties:
+        Template: 
+          $ref: "#/components/schemas/PodTemplateSpec"
+        appliedConventions:
+          description: a string array of conventions to be applied 
+          type: object 
+    ImageConfig:
+      type: object 
+      properties: 
+        image: 
+          type: string 
+          description: a string reference to the image name and tag or associated digest
+        boms:
+          $ref: "#/components/schemas/BOM"
+        config: 
+          type: object 
+          description: "a ggcrv1 config file object"
+    BOM: 
+      type: object 
+      properties:
+        name: 
+          type: string 
+        raw: 
+          description: an array of bytes 
+          type: array
+          items:
+            type: object
+    PodTemplateSpec:
+      type: object 
+      properties: 
+        spec: 
+          $ref: "kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#pod-v1-core"
+          description: specification of the desired behavior of a pod
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          $ref: "#/components/schemas/Error"
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Some unexpected error"

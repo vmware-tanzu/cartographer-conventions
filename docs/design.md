@@ -244,14 +244,14 @@ In order for the conventions controller to apply a set of conventions, it requir
 
 The authored webhook is registered as follows:
   ```
-  http.HandleFunc(< url >, webhook.ConventionHandler(ctx, conventions_name))
+  http.HandleFunc(< path >, webhook.ConventionHandler(ctx, conventions_name))
   ```
-  The convention controller handler function expects a `ctx Context`  and a function describing conventions to be applied. See [springboot-convetions example](../samples/spring-convention-server/server.go)
+  The convention controller handler function expects a `context Context` and a function describing conventions to be applied. See [springboot-convetions example](../samples/spring-convention-server/server.go)
   ```
   http.HandleFunc("/", webhook.ConventionHandler(ctx, addSpringBootConventions))
   ```
-
-  The ```HandleFunc``` in ```cartographer-conventions``` is therefore responsible for invoking various reconcilers to apply the various conventions ordered by priority.
+  The `Handler` is called from the controller in priority order as defined by the `ClusterPodConvention`. 
+  The Open API Specification for the webhook is documented [here](/api/openapi-spec/conventions-server.yaml) 
 
 ## Lifecycle 
 
