@@ -12,7 +12,7 @@
     - [PodIntent (conventions.carto.run/v1alpha1)](#podintent-conventionscartorunv1alpha1)
     - [ClusterPodConvention (conventions.carto.run/v1alpha1)](#clusterpodconvention-conventionscartorunv1alpha1)
     - [PodConventionContext (webhooks.conventions.carto.run/v1alpha1)](#podconventioncontext-webhooksconventionscartorunv1alpha1)
-  - [Webhook contract](#webhook-contract) 
+  - [Webhook Helper Library](#webhook-helper-library) 
 - [Lifecycle](#lifecycle)
   - [Security](#security)
   - [Supportability](#supportability)
@@ -238,7 +238,7 @@ status: # the response
 
 In the future other mechanisms may be defined to provide conventions other than webhooks. In particular, mechanisms that are safe to execute within the controller process like a YTT overlay or WebAssembly. Each mechanism will define the specifics of its own contract similar in scope to the `PodConventionContext`.
 
-#### Webhook Contract 
+#### Webhook Helper Library  
 
 In order for the conventions controller to apply a set of conventions, it requires these conventions to be authored in the form of a webhook. 
 

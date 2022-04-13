@@ -19,7 +19,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PodConventionContext'
         400:
-          description: Error decoding PodConventionContext from request body or request body is nil 
+          description: Error decoding PodConventionContext from the request body or request body is nil 
         500:
           description: Internal server error
           content:
@@ -31,6 +31,15 @@ components:
     PodConventionContext: 
       type: object
       properties:
+        apiVersions: 
+          type: string
+        kind: 
+          type: string
+        metadata:
+          type: object 
+          properties:
+            name: 
+              type: string
         spec:
           $ref: "#/components/schemas/PodConventionContextSpec"
         status:
@@ -38,26 +47,42 @@ components:
     PodConventionContextSpec:
       type: object
       properties:
-        Template:
+        template:
           $ref: "#/components/schemas/PodTemplateSpec"
-        ImageConfig:
-          $ref: "#/components/schemas/ImageConfig"
-    PodConventionContextStatus:
+        imageConfig:
+          type: array 
+          description: an array of imageConfig objects
+          items:
+            $ref: "#/components/schemas/ImageConfig"
+    PodTemplateSpec:
       type: object 
       properties:
-        Template: 
-          $ref: "#/components/schemas/PodTemplateSpec"
-        appliedConventions:
-          description: a string array of conventions to be applied 
-          type: object 
+        spec: 
+          type: object
+          description: specification of the desired behavior of a pod
+        metadata:
+          type: object
+          properties:
+            annotations:
+              type: object
+              additionalProperties:
+                type: string
+            labels:
+              type: object
+              additionalProperties:
+                type: string
     ImageConfig:
       type: object 
       properties: 
         image: 
           type: string 
           description: a string reference to the image name and tag or associated digest
-        boms:
-          $ref: "#/components/schemas/BOM"
+          example: "example.com/repository/nginx:alpine"
+        BOMs:
+          type: array
+          description: "an array of bill of matearials (BOMs)"
+          items:
+            $ref: "#/components/schemas/BOM"
         config: 
           type: object 
           description: "a ggcrv1 config file object"
@@ -67,21 +92,18 @@ components:
         name: 
           type: string 
         raw: 
-          description: an array of bytes 
-          type: array
-          items:
-            type: object
-    PodTemplateSpec:
+          description: a base64 encoded string  
+          type: string
+    PodConventionContextStatus:
       type: object 
-      properties: 
-        spec: 
-          $ref: "kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#pod-v1-core"
-          description: specification of the desired behavior of a pod
-    ErrorResponse:
-      type: object
       properties:
-        error:
-          $ref: "#/components/schemas/Error"
+        template: 
+          $ref: "#/components/schemas/PodTemplateSpec"
+        appliedConventions:
+          description: a string array of conventions to be applied 
+          type: array 
+          items:
+            type: string        
     Error:
       type: object
       properties:
