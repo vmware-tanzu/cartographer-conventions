@@ -240,18 +240,15 @@ In the future other mechanisms may be defined to provide conventions other than 
 
 #### Webhook Helper Library  
 
-In order for the conventions controller to apply a set of conventions, it requires these conventions to be authored in the form of a webhook. 
+A conventions author can provide a set of conventions to the conventions controller in various ways. One way to do this, is by creating a webhook which can be written in any programming language. See the [Open API Specification](/api/openapi-spec/conventions-server.yaml) that defines how to to create your own conventions server.
 
-The authored webhook is registered as follows:
-  ```
-  http.HandleFunc(< path >, webhook.ConventionHandler(ctx, conventions_name))
-  ```
-  The convention controller handler function expects a `context Context` and a function describing conventions to be applied. See [springboot-convetions example](../samples/spring-convention-server/server.go)
+_Go Spring Boot example_
+
+In the`go` [springboot conventions example](/samples/spring-convention-server/) implementation provided in the `/samples` directory, the author has defined a set of conventions to be applied to a spring boot application using a webhook which is registered as follows:-   
   ```
   http.HandleFunc("/", webhook.ConventionHandler(ctx, addSpringBootConventions))
   ```
-  The `Handler` is called from the controller in priority order as defined by the `ClusterPodConvention`. 
-  The Open API Specification for the webhook is documented [here](/api/openapi-spec/conventions-server.yaml) 
+  The convention controller handler function expects a `context Context` and a function describing conventions to be applied. The `Handler` is called from the controller in priority order as defined by the `ClusterPodConvention`. 
 
 ## Lifecycle 
 

@@ -1,37 +1,49 @@
 openapi: 3.0.0
 info:
   title: Conventions server 
-  description: >-
-    "a sample conventions server"
+  description: a sample conventions server
   version: 1.0.0
   license:
     name: Apache-2.0
-    url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
+    url: "https://www.apache.org/licenses/LICENSE-2.0.html"
 paths:
   /webhook:
     post:
-      description: "a sample conventions server"
+      description: a sample conventions server
+      requestBody:
+        description: |
+          Contains data required to allow the conventions controller to be able to apply a 
+          set of defined conventions.
+        content:
+           "application/json":
+              schema: 
+               $ref: "#/components/schemas/PodConventionContext"
       responses:
         200:
           description: Successfully applied defined conventions
+          content: 
+            "application/json":
+              schema:
+               $ref: "#/components/schemas/PodConventionContext"
+        400:
+          description: Return error if unable to decode request body into a PodConventionContext type or if request body is nil 
           content:
             "application/json":
               schema:
-                $ref: '#/components/schemas/PodConventionContext'
-        400:
-          description: Error decoding PodConventionContext from the request body or request body is nil 
+                $ref: "#/components/schemas/ErrorResponse"
         500:
           description: Internal server error
           content:
             "application/json":
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
-    PodConventionContext: 
+    PodConventionContext:
+      description: a wrapper for the PodConventionContextSpec and the PodConventionContextStatus
       type: object
-      properties:
-        apiVersions: 
+      properteies:
+        apiVersion: 
           type: string
         kind: 
           type: string
@@ -46,12 +58,13 @@ components:
           $ref: "#/components/schemas/PodConventionContextStatus"
     PodConventionContextSpec:
       type: object
+      description: a wrapper of the PodTemplateSpec and the ImageConfig provided in the request body of the server
       properties:
         template:
           $ref: "#/components/schemas/PodTemplateSpec"
         imageConfig:
           type: array 
-          description: an array of imageConfig objects
+          description: an array of imageConfig objects with each image configuration object holding the name of the image, the BOM, and the OCI image configuration with image metadata from the repository.
           items:
             $ref: "#/components/schemas/ImageConfig"
     PodTemplateSpec:
@@ -59,7 +72,7 @@ components:
       properties:
         spec: 
           type: object
-          description: specification of the desired behavior of a pod
+          description: defines the PodTemplateSpec to be enriched by conventions
         metadata:
           type: object
           properties:
@@ -80,21 +93,23 @@ components:
           example: "example.com/repository/nginx:alpine"
         BOMs:
           type: array
-          description: "an array of bill of matearials (BOMs)"
+          description: an array of Bills of Materials (BOMs) describing the software components and their dependencies.
           items:
             $ref: "#/components/schemas/BOM"
         config: 
           type: object 
-          description: "a ggcrv1 config file object"
+          description: a ggcrv1 config file object
     BOM: 
       type: object 
       properties:
         name: 
+          description: bom-name
           type: string 
         raw: 
-          description: a base64 encoded string  
+          description: a byte array with the encoded content of the BOM
           type: string
     PodConventionContextStatus:
+      description: status type used to represent the current status of the context retrieved by the request
       type: object 
       properties:
         template: 
@@ -110,3 +125,9 @@ components:
         message:
           type: string
           example: "Some unexpected error"
+          
+    ErrorResponse:
+      type: object 
+      properties:
+        error:
+          $ref: "#/components/schemas/Error"
