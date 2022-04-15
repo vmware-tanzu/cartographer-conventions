@@ -44,7 +44,8 @@ func addSpringBootConventions(template *corev1.PodTemplateSpec, images []webhook
 		container := &template.Spec.Containers[i]
 		image, ok := imageMap[container.Image]
 		if !ok {
-			return nil, fmt.Errorf("missing image metadata for %q", container.Image)
+			// skip containers without metadata, this may be a container without an image
+			continue
 		}
 		dependencyMetadata := resources.NewDependenciesBOM(image.BOMs)
 		applicationProperties := resources.SpringApplicationProperties{}
