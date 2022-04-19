@@ -240,7 +240,7 @@ In the future other mechanisms may be defined to provide conventions other than 
 
 #### Webhook Helper Library  
 
-A conventions author can provide a set of conventions to the conventions controller in various ways. One way to do this, is by creating a webhook which can be written in any programming language. See the [Open API Specification](/api/openapi-spec/conventions-server.yaml) that defines how to to create your own conventions server. Applied conventions defined in the conventions server implementation created by a conventions author need to be defined as pure functions.
+An extentions author can provide a set of conventions to the conventions controller in various ways. One way to do this, is by creating a webhook which can be written in any programming language. See the [Open API Specification](/api/openapi-spec/conventions-server.yaml) that defines how to to create your own conventions server. Applied conventions defined in the conventions server implementation created by a extensions author need to be defined as pure functions.
 
 _Go Spring Boot example_
 

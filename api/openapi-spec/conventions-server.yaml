@@ -2,31 +2,27 @@ openapi: 3.0.0
 info:
   title: Conventions server 
   description: a sample conventions server.
-  version: 1.0.0
+  version: 1.0.0        
   license:
     name: Apache-2.0
     url: "https://www.apache.org/licenses/LICENSE-2.0.html"
 paths:
   /webhook:
-    post:
-      description: a sample conventions server.
+    post:  
       requestBody:
-        description: |
-          The PodConventionContext as defined in the API object webhooks.conventions.apps.tanzu.vmware.com API group 
-          is the structure used for both request and response from the convention server.
         content:
            "application/json":
               schema: 
                $ref: "#/components/schemas/PodConventionContext"
       responses:
         200:
-          description: Successfully applied defined conventions
+          description: Return a succes message once all conventions are applied successfully
           content: 
             "application/json":
               schema:
                $ref: "#/components/schemas/PodConventionContext"
         400:
-          description: Return error if unable to decode request body into a PodConventionContext type or if request body is nil. 
+          description: Return an error if unable to decode request body into a PodConventionContext type or if request body is nil. 
           content:
             "application/json":
               schema:
@@ -40,7 +36,9 @@ paths:
 components:
   schemas:
     PodConventionContext:
-      description: a wrapper for the PodConventionContextSpec and the PodConventionContextStatus.
+      description: | 
+        A wrapper for the PodConventionContextSpec and the PodConventionContextStatus. The PodConventionContext as defined in the API object 
+        webhooks.conventions.carto.run/v1alpha1 API group is the structure used for both request and response from the convention server.
       type: object
       properties:
         apiVersion: 
@@ -115,7 +113,7 @@ components:
           description: bom-name
           type: string 
         raw: 
-          description: a byte array with the encoded content of the BOM.
+          description: a base64 encoded string with the encoded content of the BOM.
           type: string
       example: | 
         {
