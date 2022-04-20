@@ -240,15 +240,8 @@ In the future other mechanisms may be defined to provide conventions other than 
 
 #### Webhook Helper Library  
 
-An extentions author can provide a set of conventions to the conventions controller in various ways. One way to do this, is by creating a webhook which can be written in any programming language. See the [Open API Specification](/api/openapi-spec/conventions-server.yaml) that defines how to to create your own conventions server. Applied conventions defined in the conventions server implementation created by a extensions author need to be defined as pure functions.
-
-_Go Spring Boot example_
-
-In the`go` [springboot conventions example](/samples/spring-convention-server/) implementation provided in the `/samples` directory, the author has defined a set of conventions to be applied to a spring boot application using a webhook which is registered as follows:-   
-  ```
-  http.HandleFunc("/", webhook.ConventionHandler(ctx, addSpringBootConventions))
-  ```
-  The convention controller handler function expects a `context Context` and applied conventions which are provided as a function called `addSpringBootConventions`. This function defines conventions to be applied to any springboot application.
+Extentions author can define convention by creating a webhook server which is registered with the controller via the `ClusterPodConvention` resource. The webhook server can be written in any programming language. See the [Open API Specification](/api/openapi-spec/conventions-server.yaml) that defines how to to create your own conventions server. 
+Go developers can use a [helper library](https://pkg.go.dev/github.com/vmware-tanzu/cartographer-conventions/webhook) that streamlines handling the http response for the webhook.
 
 ## Lifecycle 
 

@@ -1,8 +1,9 @@
 openapi: 3.0.0
 info:
-  title: Conventions server 
-  description: a sample conventions server.
-  version: 1.0.0        
+  title: Conventions Server API
+  description: |
+    This API must be implemented in order to relay conventions to be be applied.
+  version: 1.0.0-alpha.1   
   license:
     name: Apache-2.0
     url: "https://www.apache.org/licenses/LICENSE-2.0.html"
@@ -73,9 +74,11 @@ components:
       properties:
         spec: 
           type: object
+          additionalProperties: true
           description: defines the PodTemplateSpec to be enriched by conventions.
         metadata:
           type: object
+          additionalProperties: true
           properties:
             annotations:
               type: object
@@ -92,20 +95,16 @@ components:
           type: string 
           description: a string reference to the image name and tag or associated digest.
           example: "example.com/repository/nginx:alpine"
-        BOMs:
+        boms:
           type: array
           description: | 
             an array of Bills of Materials (BOMs) describing the software components and their dependencies and may be zero or more per image.
           items:
             $ref: "#/components/schemas/BOM"
-          example: | 
-            "boms": [{
-                "name": "bom-name",
-                "raw": "a byte array"
-            }],
         config: 
           type: object 
-          description: a ggcrv1 config file object.
+          description: OCI image metadata
+          additionalProperties: true
     BOM: 
       type: object 
       properties:
@@ -118,7 +117,7 @@ components:
       example: | 
         {
           "name": "bom-name",
-          "raw": "some byte array"
+          "raw": "c29tZSBieXRlIGFycmF5"
         }
     PodConventionContextStatus:
       description: status type used to represent the current status of the context retrieved by the request.
