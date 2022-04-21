@@ -2,9 +2,7 @@ openapi: 3.0.0
 info:
   title: Pod convention webhook
   description: |
-    This API defines the expected request and response format from the conventions server. The webhook path can be configured in the ClusterPodConvention 
-    on either .spec.webhook.clientConfig.url or .spec.webhook.clientConfig.service.path with the later preferred if the 
-    convention server is to run on the same cluster as workoads.
+    This API defines the expected request and response format from the conventions server. 
   version: 1.0.0-alpha.1   
   license:
     name: Apache-2.0
@@ -12,6 +10,13 @@ info:
 paths:
   /webhook:
     post:  
+      description: |
+        The path defined above is arbitrary and can be overridden to any value by the ClusterPodConvention resource. 
+        The webhook path can be configured in the ClusterPodConvention on either .spec.webhook.clientConfig.url or 
+        .spec.webhook.clientConfig.service.path with the later preferred if the convention server is to run on the same cluster as workoads. 
+        The webhook request and response both use the PodConventionContext with the request defining 
+        the .spec and the response defining the status.
+        status 
       requestBody:
         content:
            "application/json":
@@ -19,22 +24,24 @@ paths:
                $ref: "#/components/schemas/PodConventionContext"
       responses:
         200:
-          description: Expected response once all conventions are applied successfully
+          description: expected response once all conventions are applied successfully. 
           content: 
             "application/json":
               schema:
                $ref: "#/components/schemas/PodConventionContext"
         400:
-          description: Return an error if unable to decode request body into a PodConventionContext type or if request body is nil. 
+          description: | 
+            return code 400 if the request body is nil or if unable to to decode request body into a PodConventionContext. 
         500:
-          description: Return an error if unable to apply conventions.
+          description: |
+           return code 500 if unable to apply conventions at all. 
 
 components:
   schemas:
     PodConventionContext:
       description: | 
-        A wrapper for the PodConventionContextSpec and the PodConventionContextStatus. The PodConventionContext as defined in the API object 
-        webhooks.conventions.carto.run/v1alpha1 API group is the structure used for both request and response from the convention server.
+        A wrapper for the PodConventionContextSpec and the PodConventionContextStatus which is the structure used for both requests 
+        and responses from the convention server.
       type: object
       properties:
         apiVersion: 
@@ -43,6 +50,7 @@ components:
           type: string
         metadata:
           type: object 
+          additionalProperties: true 
           properties:
             name: 
               type: string
@@ -52,16 +60,16 @@ components:
           $ref: "#/components/schemas/PodConventionContextStatus"
     PodConventionContextSpec:
       type: object
-      description: a wrapper of the PodTemplateSpec and the ImageConfig provided in the request body of the server.
+      description: a wrapper of the PodTemplateSpec and list of ImageConfigs provided in the request body of the server.
       properties:
         template:
           $ref: "#/components/schemas/PodTemplateSpec"
         imageConfig:
-          type: array 
           description: |
             an array of imageConfig objects with each image configuration object holding the name of the image, the BOM, and the OCI image
             configuration with image metadata from the repository. Each of the image config array entries have a 1:1 mapping to 
             images referenced in the PodTemplateSpec. 
+          type: array 
           items:
             $ref: "#/components/schemas/ImageConfig"
     PodTemplateSpec:
@@ -75,12 +83,9 @@ components:
           type: object
           additionalProperties: true
           properties:
-            annotations:
-              type: object
-              additionalProperties: true 
-            labels:
-              type: object
-              additionalProperties: true
+            name:
+              type: string 
+            additionalProperties: true 
     ImageConfig:
       type: object 
       properties: 
@@ -119,13 +124,14 @@ components:
         template: 
           $ref: "#/components/schemas/PodTemplateSpec"
         appliedConventions:
-          description: list of names of conventions applied
+          description: a list of string with names of conventions to be applied
           type: array 
           items:
-            type: string
+            type: string 
           example: |
               "appliedConventions": [ 
                 "convention-1", 
                 "convention-2",
                 "convention-4" 
               ] 
+   
