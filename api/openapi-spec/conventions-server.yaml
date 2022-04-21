@@ -105,7 +105,7 @@ components:
           description: bom-name
           type: string 
         raw: 
-          description: a base64 encoded string with the encoded content of the BOM.
+          description: base64 encoded bytes with the encoded content of the BOM.
           type: string
       example: | 
         {
