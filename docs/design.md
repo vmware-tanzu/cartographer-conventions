@@ -241,6 +241,9 @@ In the future other mechanisms may be defined to provide conventions other than 
 #### Webhook Helper Library  
 
 Extentions author can define convention by creating a webhook server which is registered with the controller via the `ClusterPodConvention` resource. The webhook server can be written in any programming language. See the [Open API Specification](/api/openapi-spec/conventions-server.yaml) that defines how to to create your own conventions server. 
+
+The webhook path can be configured by setting the ClusterPoodConvention's `.spec.webhook.clientConfig.url` or `.spec.webhook.clientConfig.service.path`. If the convention server is to be deployed in the same cluster as your target workloads, then the service path is preferred.
+
 Go developers can use a [helper library](https://pkg.go.dev/github.com/vmware-tanzu/cartographer-conventions/webhook) that streamlines handling the http response for the webhook.
 
 ## Lifecycle 
