@@ -196,7 +196,7 @@ spec:
       <admissionregistrationv1.WebhookClientConfig>
 ```
 
-Priority can be defined for each `ClusterPodDefinition` by specifying `.spec.priority` using any of the following available options `Early|Normal|Late`. If a priority is not specified, the default value of `Normal` is set.
+Priority can be defined for each `ClusterPodConvention` by specifying `.spec.priority` using any of the following available options `Early|Normal|Late`. If a priority is not specified, the default value of `Normal` is set.
 
 A label selector defined at `.spec.selectors` may be used for individual workloads to opt-in to a specific convention. The convention is applied if the `PodTemplateSpec`'s `.metadata.labels` match any of the selectors, or no selectors are defined.
 
