@@ -12,6 +12,7 @@
     - [PodIntent (conventions.carto.run/v1alpha1)](#podintent-conventionscartorunv1alpha1)
     - [ClusterPodConvention (conventions.carto.run/v1alpha1)](#clusterpodconvention-conventionscartorunv1alpha1)
     - [PodConventionContext (webhooks.conventions.carto.run/v1alpha1)](#podconventioncontext-webhooksconventionscartorunv1alpha1)
+  - [Webhook Helper Library](#webhook-helper-library) 
 - [Lifecycle](#lifecycle)
   - [Security](#security)
   - [Supportability](#supportability)
@@ -241,6 +242,14 @@ status: # the response
 ```
 
 In the future other mechanisms may be defined to provide conventions other than webhooks. In particular, mechanisms that are safe to execute within the controller process like a YTT overlay or WebAssembly. Each mechanism will define the specifics of its own contract similar in scope to the `PodConventionContext`.
+
+#### Webhook Helper Library  
+
+Extentions author can define convention by creating a webhook server which is registered with the controller via the `ClusterPodConvention` resource. The webhook server can be written in any programming language. See the [Open API Specification](/api/openapi-spec/conventions-server.yaml) that defines how to to create your own conventions server. 
+
+The webhook path can be configured by setting the ClusterPoodConvention's `.spec.webhook.clientConfig.url` or `.spec.webhook.clientConfig.service.path`. If the convention server is to be deployed in the same cluster as your target workloads, then the service path is preferred.
+
+Go developers can use a [helper library](https://pkg.go.dev/github.com/vmware-tanzu/cartographer-conventions/webhook) that streamlines handling the http response for the webhook.
 
 ## Lifecycle 
 
