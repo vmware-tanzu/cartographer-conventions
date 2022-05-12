@@ -151,6 +151,12 @@ func (m *ObjectMeta) GetClusterName() string {
 func (m *ObjectMeta) SetClusterName(clusterName string) {
 	panic(fmt.Errorf("SetClusterName is not implemented"))
 }
+func (m *ObjectMeta) GetZZZDeprecatedClusterName() string {
+	panic(fmt.Errorf("GetZZZDeprecatedClusterName is not implemented"))
+}
+func (m *ObjectMeta) SetZZZDeprecatedClusterName(clusterName string) {
+	panic(fmt.Errorf("SetZZZDeprecatedClusterName is not implemented"))
+}
 func (m *ObjectMeta) GetManagedFields() []metav1.ManagedFieldsEntry {
 	panic(fmt.Errorf("GetManagedFields is not implemented"))
 }
