@@ -92,8 +92,7 @@ github.com/Azure/go-autorest/tracing v0.6.0 h1:TYi4+3m5t6K48TGI9AUdb+IzbnSxvnvUM
 github.com/Azure/go-autorest/tracing v0.6.0/go.mod h1:+vhtPC754Xsa23ID7GlGsrdKBpUA79WCAKPPZVC2DeU=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/CycloneDX/cyclonedx-go v0.5.0 h1:RWCnu2OrWUTF5C9DA3L0qVziUD2HlxSUWcL2OXlxfqE=
-github.com/CycloneDX/cyclonedx-go v0.5.0/go.mod h1:nQXAzrejxO39b14JFz2SvsUElegYfwBDowIzqjdUMk4=
+github.com/CycloneDX/cyclonedx-go v0.5.2 h1:CkdGw2R/tZWmEbSypJVZG+3+2SAsDjJirfIrG/RbIVg=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/GoogleCloudPlatform/k8s-cloud-provider v0.0.0-20200415212048-7901bc822317/go.mod h1:DF8FZRxMHMGv/vP2lQP6h+dYzzjpuRn24VeRiYn3qjQ=
 github.com/Microsoft/go-winio v0.4.11/go.mod h1:VhR8bwka0BXejwEJY73c50VrPtXAaKcyvVC4A4RozmA=
@@ -921,8 +920,8 @@ github.com/vishvananda/netlink v1.1.1-0.20201029203352-d40f9887b852/go.mod h1:tw
 github.com/vishvananda/netns v0.0.0-20180720170159-13995c7128cc/go.mod h1:ZjcWmFBXmLKZu9Nxj3WKYEafiSqer2rnvPr0en9UNpI=
 github.com/vishvananda/netns v0.0.0-20191106174202-0a2b9b5464df/go.mod h1:JP3t17pCcGlemwknint6hfoeCVQrEMVwxRLRjXpq+BU=
 github.com/vishvananda/netns v0.0.0-20200728191858-db3c7e526aae/go.mod h1:DD4vA1DwXk04H54A1oHXtwZmA0grkVMdPxx/VGLCah0=
-github.com/vmware-labs/reconciler-runtime v0.4.0 h1:Pcuzt+m6mW9+4RhxhndKmcErLSa+cvBN8gvRWkySXEo=
-github.com/vmware-labs/reconciler-runtime v0.4.0/go.mod h1:Z9ZA9wMnhi2vbbKWpuuQfWpaxVjAYz6M3492vrc99DY=
+github.com/vmware-labs/reconciler-runtime v0.5.0 h1:e167re6eD8BoIjvmnFJaa4Iit/kyGRNVCaNR97XEUnk=
+github.com/vmware-labs/reconciler-runtime v0.5.0/go.mod h1:T1tBdp+m9MW3OS/addHIle+qZE4IwcU0u+nTC+PdbPk=
 github.com/vmware-tanzu/cartographer-conventions/webhook v0.0.0 h1:iTAphUoCVCP4fL1KY0+vfCOHrSUsT+6yY9N35PGyKYs=
 github.com/vmware-tanzu/cartographer-conventions/webhook v0.0.0/go.mod h1:UvbtrhH1PUGMIGtjP3sKB3eFwPLJ5YeMwKZjKuIbut0=
 github.com/vmware/govmomi v0.20.3/go.mod h1:URlwyTFZX72RmxtxuaFL2Uj3fD1JTvZdx59bHWk6aFU=

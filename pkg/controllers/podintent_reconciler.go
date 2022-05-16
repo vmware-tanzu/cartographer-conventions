@@ -23,6 +23,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/go-logr/logr"
 	"github.com/google/go-containerregistry/pkg/authn/k8schain"
 	"github.com/vmware-labs/reconciler-runtime/apis"
 	"github.com/vmware-labs/reconciler-runtime/reconcilers"
@@ -70,14 +71,13 @@ var (
 // +kubebuilder:rbac:groups=core,resources=events,verbs=get;list;watch;create;update;patch;delete
 
 func PodIntentReconciler(c reconcilers.Config, wc binding.WebhookConfig, rc binding.RegistryConfig) *reconcilers.ParentReconciler {
-	c.Log = c.Log.WithName("PodIntent")
-
 	return &reconcilers.ParentReconciler{
+		Name: "PodIntent",
 		Type: &conventionsv1alpha1.PodIntent{},
 		Reconciler: reconcilers.Sequence{
-			ResolveConventions(c),
-			BuildRegistryConfig(c, rc),
-			ApplyConventionsReconciler(c, wc),
+			ResolveConventions(),
+			BuildRegistryConfig(rc),
+			ApplyConventionsReconciler(wc),
 		},
 
 		Config: c,
@@ -88,11 +88,12 @@ func PodIntentReconciler(c reconcilers.Config, wc binding.WebhookConfig, rc bind
 // +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch
 // +kubebuilder:rbac:groups=cert-manager.io,resources=certificaterequests,verbs=get;list;watch
 
-func ResolveConventions(c reconcilers.Config) reconcilers.SubReconciler {
-	c.Log = c.Log.WithName("ResolveConventions")
-
+func ResolveConventions() reconcilers.SubReconciler {
 	return &reconcilers.SyncReconciler{
+		Name: "ResolveConventions",
 		Sync: func(ctx context.Context, parent *conventionsv1alpha1.PodIntent) error {
+			log := logr.FromContextOrDiscard(ctx)
+			c := reconcilers.RetrieveConfigOrDie(ctx)
 			sources := &conventionsv1alpha1.ClusterPodConventionList{}
 			if err := c.List(ctx, sources); err != nil {
 				return err
@@ -113,7 +114,7 @@ func ResolveConventions(c reconcilers.Config) reconcilers.SubReconciler {
 						caBundle, err := getCABundle(ctx, c, source.Spec.Webhook.Certificate, parent)
 						if err != nil {
 							conditionManager.MarkFalse(conventionsv1alpha1.PodIntentConditionConventionsApplied, "CABundleResolutionFailed", "failed to authenticate: %v", err.Error())
-							c.Log.Error(err, "failed to get CABundle", "ClusterPodConvention", source.Name)
+							log.Error(err, "failed to get CABundle", "ClusterPodConvention", source.Name)
 							return nil
 						}
 						// inject the CA data
@@ -130,21 +131,22 @@ func ResolveConventions(c reconcilers.Config) reconcilers.SubReconciler {
 		Setup: func(ctx context.Context, mgr ctrl.Manager, bldr *builder.Builder) error {
 			// register an informer to watch ClusterPodConventions
 			bldr.Watches(&source.Kind{Type: &conventionsv1alpha1.ClusterPodConvention{}}, &handler.Funcs{})
-			bldr.Watches(&source.Kind{Type: &certmanagerv1.CertificateRequest{}}, reconcilers.EnqueueTracked(&certmanagerv1.CertificateRequest{}, c.Tracker, c.Scheme()))
+			bldr.Watches(&source.Kind{Type: &certmanagerv1.CertificateRequest{}}, reconcilers.EnqueueTracked(ctx, &certmanagerv1.CertificateRequest{}))
 
 			return nil
 		},
-		Config: c,
 	}
 }
 
 // +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch
 // +kubebuilder:rbac:groups=core,resources=serviceaccounts,verbs=get;list;watch
 
-func BuildRegistryConfig(c reconcilers.Config, rc binding.RegistryConfig) reconcilers.SubReconciler {
-	c.Log = c.Log.WithName("BuildRegistryConfig")
+func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler {
 	return &reconcilers.SyncReconciler{
+		Name: "BuildRegistryConfig",
 		Sync: func(ctx context.Context, parent *conventionsv1alpha1.PodIntent) (ctrl.Result, error) {
+			log := logr.FromContextOrDiscard(ctx)
+			c := reconcilers.RetrieveConfigOrDie(ctx)
 			if rc.Client == nil {
 				return ctrl.Result{}, fmt.Errorf("kubernetes client is not set")
 			}
@@ -156,7 +158,7 @@ func BuildRegistryConfig(c reconcilers.Config, rc binding.RegistryConfig) reconc
 				imagePullSecrets = append(imagePullSecrets, ips.Name)
 				// track ref for updates
 				key := tracker.NewKey(secretGVK, types.NamespacedName{Namespace: parent.Namespace, Name: ips.Name})
-				c.Tracker.Track(key, parentNamespacedName)
+				c.Tracker.Track(ctx, key, parentNamespacedName)
 			}
 
 			serviceAccountName := parent.Spec.ServiceAccountName
@@ -168,19 +170,14 @@ func BuildRegistryConfig(c reconcilers.Config, rc binding.RegistryConfig) reconc
 			})
 			if err != nil {
 				conditionManager.MarkFalse(conventionsv1alpha1.PodIntentConditionConventionsApplied, "ImageResolutionFailed", "failed to authenticate: %v", err.Error())
-				c.Log.Error(err, "fetching authentication for Images failed")
+				log.Error(err, "fetching authentication for Images failed")
 				return ctrl.Result{}, nil
 			}
 
 			serviceAccountNamespacedName := types.NamespacedName{Namespace: parent.Namespace, Name: serviceAccountName}
-
-			// track ref for updates
-			key := tracker.NewKey(serviceAccountGVK, serviceAccountNamespacedName)
-			c.Tracker.Track(key, parentNamespacedName)
 			sa := &corev1.ServiceAccount{}
-
-			if err = c.Get(ctx, serviceAccountNamespacedName, sa); err != nil {
-				c.Log.Error(err, "fetching serviceAccount failed")
+			if err = c.TrackAndGet(ctx, serviceAccountNamespacedName, sa); err != nil {
+				log.Error(err, "fetching serviceAccount failed")
 				// should not happen mostly.
 				conditionManager.MarkFalse(conventionsv1alpha1.PodIntentConditionConventionsApplied, "ImageResolutionFailed", fmt.Sprintf("failed to authenticate: %v", err.Error()))
 				return ctrl.Result{}, nil
@@ -189,7 +186,7 @@ func BuildRegistryConfig(c reconcilers.Config, rc binding.RegistryConfig) reconc
 			for _, secretReference := range sa.ImagePullSecrets {
 				// track ref for updates
 				key := tracker.NewKey(secretGVK, types.NamespacedName{Namespace: parent.Namespace, Name: secretReference.Name})
-				c.Tracker.Track(key, parentNamespacedName)
+				c.Tracker.Track(ctx, key, parentNamespacedName)
 			}
 
 			StashRegistryConfig(ctx, binding.RegistryConfig{
@@ -200,12 +197,11 @@ func BuildRegistryConfig(c reconcilers.Config, rc binding.RegistryConfig) reconc
 			})
 			return ctrl.Result{}, nil
 		},
-		Config: c,
 		Setup: func(ctx context.Context, mgr reconcilers.Manager, bldr *reconcilers.Builder) error {
 			// register an informer to watch Secret
-			bldr.Watches(&source.Kind{Type: &corev1.Secret{}}, reconcilers.EnqueueTracked(&corev1.Secret{}, c.Tracker, c.Scheme()))
+			bldr.Watches(&source.Kind{Type: &corev1.Secret{}}, reconcilers.EnqueueTracked(ctx, &corev1.Secret{}))
 			// register an informer to watch ServiceAccount
-			bldr.Watches(&source.Kind{Type: &corev1.ServiceAccount{}}, reconcilers.EnqueueTracked(&corev1.ServiceAccount{}, c.Tracker, c.Scheme()))
+			bldr.Watches(&source.Kind{Type: &corev1.ServiceAccount{}}, reconcilers.EnqueueTracked(ctx, &corev1.ServiceAccount{}))
 			return nil
 		},
 	}
@@ -259,11 +255,12 @@ func getCABundle(ctx context.Context, c reconcilers.Config, certRef *conventions
 	return caData.Bytes(), nil
 }
 
-func ApplyConventionsReconciler(c reconcilers.Config, wc binding.WebhookConfig) reconcilers.SubReconciler {
-	c.Log = c.Log.WithName("ApplyConventions")
-
+func ApplyConventionsReconciler(wc binding.WebhookConfig) reconcilers.SubReconciler {
 	return &reconcilers.SyncReconciler{
+		Name: "ApplyConventions",
 		Sync: func(ctx context.Context, parent *conventionsv1alpha1.PodIntent) (ctrl.Result, error) {
+			log := logr.FromContextOrDiscard(ctx)
+
 			sources := RetrieveConventions(ctx)
 			workload := &parent.Spec.Template
 
@@ -276,13 +273,13 @@ func ApplyConventionsReconciler(c reconcilers.Config, wc binding.WebhookConfig) 
 			filteredAndSortedConventions, err := sources.FilterAndSort(labels.Set(workload.GetLabels()))
 			if err != nil {
 				conditionManager.MarkFalse(conventionsv1alpha1.PodIntentConditionConventionsApplied, "LabelSelector", "filtering conventions failed: %v", err.Error())
-				c.Log.Error(err, "failed to filter sources")
+				log.Error(err, "failed to filter sources")
 				return ctrl.Result{}, nil
 			}
 			if workload.Annotations == nil {
 				workload.Annotations = map[string]string{}
 			}
-			updatedWorkload, err := filteredAndSortedConventions.Apply(ctx, c.Log, parent, wc, RetrieveRegistryConfig(ctx))
+			updatedWorkload, err := filteredAndSortedConventions.Apply(ctx, parent, wc, RetrieveRegistryConfig(ctx))
 			if err != nil {
 				conditionManager.MarkFalse(conventionsv1alpha1.PodIntentConditionConventionsApplied, "ConventionsApplied", "%v", err.Error())
 				return ctrl.Result{Requeue: true}, nil
@@ -292,8 +289,6 @@ func ApplyConventionsReconciler(c reconcilers.Config, wc binding.WebhookConfig) 
 
 			return ctrl.Result{}, nil
 		},
-
-		Config: c,
 	}
 }
 
