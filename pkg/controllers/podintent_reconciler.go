@@ -130,11 +130,10 @@ func ResolveConventions(c reconcilers.Config) reconcilers.SubReconciler {
 		Setup: func(ctx context.Context, mgr ctrl.Manager, bldr *builder.Builder) error {
 			// register an informer to watch ClusterPodConventions
 			bldr.Watches(&source.Kind{Type: &conventionsv1alpha1.ClusterPodConvention{}}, &handler.Funcs{})
-			bldr.Watches(&source.Kind{Type: &certmanagerv1.CertificateRequest{}}, reconcilers.EnqueueTracked(&certmanagerv1.CertificateRequest{}, c.Tracker, c.Scheme()))
+			bldr.Watches(&source.Kind{Type: &certmanagerv1.CertificateRequest{}}, reconcilers.EnqueueTracked(ctx, &certmanagerv1.CertificateRequest{}))
 
 			return nil
 		},
-		Config: c,
 	}
 }
 
@@ -156,7 +155,7 @@ func BuildRegistryConfig(c reconcilers.Config, rc binding.RegistryConfig) reconc
 				imagePullSecrets = append(imagePullSecrets, ips.Name)
 				// track ref for updates
 				key := tracker.NewKey(secretGVK, types.NamespacedName{Namespace: parent.Namespace, Name: ips.Name})
-				c.Tracker.Track(key, parentNamespacedName)
+				c.Tracker.Track(ctx, key, parentNamespacedName)
 			}
 
 			serviceAccountName := parent.Spec.ServiceAccountName
@@ -176,7 +175,7 @@ func BuildRegistryConfig(c reconcilers.Config, rc binding.RegistryConfig) reconc
 
 			// track ref for updates
 			key := tracker.NewKey(serviceAccountGVK, serviceAccountNamespacedName)
-			c.Tracker.Track(key, parentNamespacedName)
+			c.Tracker.Track(ctx, key, parentNamespacedName)
 			sa := &corev1.ServiceAccount{}
 
 			if err = c.Get(ctx, serviceAccountNamespacedName, sa); err != nil {
@@ -189,7 +188,7 @@ func BuildRegistryConfig(c reconcilers.Config, rc binding.RegistryConfig) reconc
 			for _, secretReference := range sa.ImagePullSecrets {
 				// track ref for updates
 				key := tracker.NewKey(secretGVK, types.NamespacedName{Namespace: parent.Namespace, Name: secretReference.Name})
-				c.Tracker.Track(key, parentNamespacedName)
+				c.Tracker.Track(ctx, key, parentNamespacedName)
 			}
 
 			StashRegistryConfig(ctx, binding.RegistryConfig{
@@ -200,12 +199,11 @@ func BuildRegistryConfig(c reconcilers.Config, rc binding.RegistryConfig) reconc
 			})
 			return ctrl.Result{}, nil
 		},
-		Config: c,
 		Setup: func(ctx context.Context, mgr reconcilers.Manager, bldr *reconcilers.Builder) error {
 			// register an informer to watch Secret
-			bldr.Watches(&source.Kind{Type: &corev1.Secret{}}, reconcilers.EnqueueTracked(&corev1.Secret{}, c.Tracker, c.Scheme()))
+			bldr.Watches(&source.Kind{Type: &corev1.Secret{}}, reconcilers.EnqueueTracked(ctx, &corev1.Secret{}))
 			// register an informer to watch ServiceAccount
-			bldr.Watches(&source.Kind{Type: &corev1.ServiceAccount{}}, reconcilers.EnqueueTracked(&corev1.ServiceAccount{}, c.Tracker, c.Scheme()))
+			bldr.Watches(&source.Kind{Type: &corev1.ServiceAccount{}}, reconcilers.EnqueueTracked(ctx, &corev1.ServiceAccount{}))
 			return nil
 		},
 	}
@@ -292,8 +290,6 @@ func ApplyConventionsReconciler(c reconcilers.Config, wc binding.WebhookConfig) 
 
 			return ctrl.Result{}, nil
 		},
-
-		Config: c,
 	}
 }
 

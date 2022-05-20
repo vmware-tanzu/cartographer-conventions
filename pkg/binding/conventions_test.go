@@ -27,6 +27,8 @@ import (
 	"path"
 	"testing"
 
+	logrtesting "github.com/go-logr/logr/testing"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-containerregistry/pkg/authn/k8schain"
 	"github.com/google/go-containerregistry/pkg/crane"
@@ -287,7 +289,7 @@ func TestConventionApply(t *testing.T) {
 	}
 
 	rc := binding.RegistryConfig{Keys: kc, Cache: testCache}
-	log := rtesting.TestLogger(t)
+	log := logrtesting.NewTestLogger(t)
 	namespace := "test-namespace"
 	name := "my-template"
 	tests := []struct {
@@ -588,7 +590,7 @@ func TestNilRegistryConfig(t *testing.T) {
 		},
 	}}
 	rc := binding.RegistryConfig{}
-	log := rtesting.TestLogger(t)
+	log := logrtesting.NewTestLogger(t)
 	namespace := "test-namespace"
 	name := "my-template"
 	workload := conventionsv1alpha1.PodIntent{
@@ -683,7 +685,7 @@ func TestRepositoryConfigWithAdditionalCert(t *testing.T) {
 	}
 
 	rc := binding.RegistryConfig{Keys: kc, Cache: testCache, CACertPath: cert.Name()}
-	log := rtesting.TestLogger(t)
+	log := logrtesting.NewTestLogger(t)
 	namespace := "test-namespace"
 	name := "my-template"
 	tests := []struct {
