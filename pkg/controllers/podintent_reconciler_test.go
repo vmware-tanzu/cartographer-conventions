@@ -953,7 +953,7 @@ func TestResolveConventions(t *testing.T) {
 	}
 
 	rts.Run(t, scheme, func(t *testing.T, rtc *rtesting.SubReconcilerTestCase, c reconcilers.Config) reconcilers.SubReconciler {
-		return controllers.ResolveConventions(c)
+		return controllers.ResolveConventions()
 	})
 }
 
@@ -1282,7 +1282,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 	}
 
 	rts.Run(t, scheme, func(t *testing.T, rtc *rtesting.SubReconcilerTestCase, c reconcilers.Config) reconcilers.SubReconciler {
-		return controllers.ApplyConventionsReconciler(c, wc)
+		return controllers.ApplyConventionsReconciler(wc)
 	})
 }
 
@@ -1346,6 +1346,6 @@ func TestNilClientBuildRegistryConfig(t *testing.T) {
 	}}
 	rc := binding.RegistryConfig{}
 	rts.Run(t, scheme, func(t *testing.T, rtc *rtesting.SubReconcilerTestCase, c reconcilers.Config) reconcilers.SubReconciler {
-		return controllers.BuildRegistryConfig(c, rc)
+		return controllers.BuildRegistryConfig(rc)
 	})
 }

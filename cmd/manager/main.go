@@ -134,7 +134,6 @@ func main() {
 	setupLog.Info("starting metrics reconciler")
 	if err = (&controllers.MetricsReconciler{
 		Client:    mgr.GetClient(),
-		Log:       setupLog.WithName("controllers").WithName("MetricsReconciler"),
 		Namespace: namespace,
 		Name:      metricsconfigMapName,
 	}).SetupWithManager(ctx, mgr); err != nil {

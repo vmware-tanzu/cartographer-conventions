@@ -287,7 +287,6 @@ func TestConventionApply(t *testing.T) {
 	}
 
 	rc := binding.RegistryConfig{Keys: kc, Cache: testCache}
-	log := rtesting.TestLogger(t)
 	namespace := "test-namespace"
 	name := "my-template"
 	tests := []struct {
@@ -549,7 +548,7 @@ func TestConventionApply(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			var input binding.Conventions
 			input = append(input, test.convetions...)
-			updatedSpec, err := input.Apply(context.Background(), log, test.workload, wc, rc)
+			updatedSpec, err := input.Apply(context.Background(), test.workload, wc, rc)
 			if (err != nil) != test.shouldErr {
 				t.Errorf("Apply() error = %v, ExpectErr %v", err, test.shouldErr)
 			}
@@ -588,7 +587,6 @@ func TestNilRegistryConfig(t *testing.T) {
 		},
 	}}
 	rc := binding.RegistryConfig{}
-	log := rtesting.TestLogger(t)
 	namespace := "test-namespace"
 	name := "my-template"
 	workload := conventionsv1alpha1.PodIntent{
@@ -608,7 +606,7 @@ func TestNilRegistryConfig(t *testing.T) {
 		},
 	}
 
-	if _, err = input.Apply(context.Background(), log, &workload, wc, rc); err == nil {
+	if _, err = input.Apply(context.Background(), &workload, wc, rc); err == nil {
 		t.Error("Apply() expected error but got nil")
 	}
 }
@@ -683,7 +681,6 @@ func TestRepositoryConfigWithAdditionalCert(t *testing.T) {
 	}
 
 	rc := binding.RegistryConfig{Keys: kc, Cache: testCache, CACertPath: cert.Name()}
-	log := rtesting.TestLogger(t)
 	namespace := "test-namespace"
 	name := "my-template"
 	tests := []struct {
@@ -749,7 +746,7 @@ func TestRepositoryConfigWithAdditionalCert(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			var input binding.Conventions
 			input = append(input, test.convetions...)
-			updatedSpec, err := input.Apply(context.Background(), log, test.workload, wc, rc)
+			updatedSpec, err := input.Apply(context.Background(), test.workload, wc, rc)
 			if (err != nil) != test.shouldErr {
 				t.Errorf("Apply() error = %v, ExpectErr %v", err, test.shouldErr)
 			}

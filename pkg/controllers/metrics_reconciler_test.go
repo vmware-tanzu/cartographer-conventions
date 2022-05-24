@@ -273,7 +273,6 @@ func TestMetricsReconciler(t *testing.T) {
 	rts.Run(t, scheme, func(t *testing.T, rtc *rtesting.ReconcilerTestCase, c reconcilers.Config) reconcile.Reconciler {
 		return &controllers.MetricsReconciler{
 			Client:    c.Client,
-			Log:       c.Log,
 			Namespace: testNamespace,
 			Name:      testName,
 		}

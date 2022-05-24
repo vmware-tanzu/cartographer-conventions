@@ -53,7 +53,6 @@ const (
 // MetricsReconciler reconciles workload intent, cluster convention objects
 type MetricsReconciler struct {
 	client.Client
-	Log       logr.Logger
 	Namespace string
 	Name      string
 }
@@ -63,7 +62,8 @@ type MetricsReconciler struct {
 // +kubebuilder:rbac:groups=conventions.carto.run,resources=clusterpodconventions,verbs=get;list;watch
 
 func (r *MetricsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := r.Log.WithValues("configmap", req.NamespacedName)
+	log := logr.FromContextOrDiscard(ctx).WithName("MetricsReconciler")
+	ctx = logr.NewContext(ctx, log)
 
 	if req.Namespace != r.Namespace || req.Name != r.Name {
 		// ignore other configmaps, should never get here
@@ -78,10 +78,11 @@ func (r *MetricsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	if configMap.GetDeletionTimestamp() != nil {
 		return ctrl.Result{}, nil
 	}
-	return r.reconcile(ctx, log, &configMap)
+	return r.reconcile(ctx, &configMap)
 }
 
-func (r *MetricsReconciler) reconcile(ctx context.Context, log logr.Logger, configMap *corev1.ConfigMap) (ctrl.Result, error) {
+func (r *MetricsReconciler) reconcile(ctx context.Context, configMap *corev1.ConfigMap) (ctrl.Result, error) {
+	log := logr.FromContextOrDiscard(ctx)
 
 	var intents conventionsv1alpha1.PodIntentList
 	if err := r.List(ctx, &intents); err != nil {
@@ -96,13 +97,13 @@ func (r *MetricsReconciler) reconcile(ctx context.Context, log logr.Logger, conf
 	}
 
 	if configMap.Name == "" {
-		configMap, err := r.createConfigMap(ctx, log, buildConfigMapData(intents.Items, clusterSources.Items))
+		configMap, err := r.createConfigMap(ctx, buildConfigMapData(intents.Items, clusterSources.Items))
 		if err != nil {
 			log.Error(err, "Failed to create ConfigMap", "configmap", configMap)
 			return ctrl.Result{}, err
 		}
 	} else {
-		configMap, err := r.reconcileConfigMap(ctx, log, configMap, buildConfigMapData(intents.Items, clusterSources.Items))
+		configMap, err := r.reconcileConfigMap(ctx, configMap, buildConfigMapData(intents.Items, clusterSources.Items))
 		if err != nil {
 			log.Error(err, "Failed to reconcile ConfigMap", "configmap", configMap)
 			return ctrl.Result{}, err
@@ -151,7 +152,9 @@ func buildConfigMapData(podIntents []conventionsv1alpha1.PodIntent, clusterPodCo
 	return metricsConfigMap
 }
 
-func (r *MetricsReconciler) reconcileConfigMap(ctx context.Context, log logr.Logger, existingConfigMap *corev1.ConfigMap, configMapContents map[string]string) (*corev1.ConfigMap, error) {
+func (r *MetricsReconciler) reconcileConfigMap(ctx context.Context, existingConfigMap *corev1.ConfigMap, configMapContents map[string]string) (*corev1.ConfigMap, error) {
+	log := logr.FromContextOrDiscard(ctx)
+
 	configMap := existingConfigMap.DeepCopy()
 	configMap.Data = configMapContents
 
@@ -162,7 +165,9 @@ func (r *MetricsReconciler) reconcileConfigMap(ctx context.Context, log logr.Log
 	return configMap, r.Update(ctx, configMap)
 }
 
-func (r *MetricsReconciler) createConfigMap(ctx context.Context, log logr.Logger, configMapContents map[string]string) (*corev1.ConfigMap, error) {
+func (r *MetricsReconciler) createConfigMap(ctx context.Context, configMapContents map[string]string) (*corev1.ConfigMap, error) {
+	log := logr.FromContextOrDiscard(ctx)
+
 	configMap := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      r.Name,
