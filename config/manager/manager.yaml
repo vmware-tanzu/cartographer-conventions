@@ -51,6 +51,7 @@ spec:
       - name: ca-certs
         secret:
           secretName: ca-certificates
+      serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 10
 ---
 apiVersion: v1
