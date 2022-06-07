@@ -6662,6 +6662,7 @@ spec:
           name: cache-volume
         - mountPath: /var/conventions/tls
           name: ca-certs
+      serviceAccountName: cartographer-conventions-controller-manager
       terminationGracePeriodSeconds: 10
       volumes:
       - name: cert

@@ -58,7 +58,7 @@ import (
 )
 
 const (
-	controllerManagerSAName = "cartographer-conventions-controller-manager"
+	defaultSAName = "default"
 )
 
 const HelloDigest = "sha256:fede69b4ce95775cc92af3605555c2078b9b6d5eb3fb45d2d67fd6ac7a0209b7"
@@ -107,10 +107,10 @@ func TestPodIntentReconciler(t *testing.T) {
 			d.Namespace(namespace)
 			d.Name(secretName)
 		})
-	controllerManagerSA := diecorev1.ServiceAccountBlank.
+	defaultSA := diecorev1.ServiceAccountBlank.
 		MetadataDie(func(d *diemetav1.ObjectMetaDie) {
 			d.Namespace(namespace)
-			d.Name(controllerManagerSAName)
+			d.Name(defaultSAName)
 			d.CreationTimestamp(now)
 		})
 
@@ -124,7 +124,7 @@ func TestPodIntentReconciler(t *testing.T) {
 	},
 		&corev1.ServiceAccount{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      controllerManagerSAName,
+				Name:      defaultSAName,
 				Namespace: namespace,
 			},
 		},
@@ -142,7 +142,7 @@ func TestPodIntentReconciler(t *testing.T) {
 		Name: "in sync",
 		Key:  key,
 		GivenObjects: []client.Object{
-			controllerManagerSA,
+			defaultSA,
 			secret,
 			parent.
 				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
@@ -177,7 +177,7 @@ func TestPodIntentReconciler(t *testing.T) {
 		},
 		ExpectTracks: []rtesting.TrackRequest{
 			rtesting.NewTrackRequest(secret, parent, scheme),
-			rtesting.NewTrackRequest(controllerManagerSA, parent, scheme),
+			rtesting.NewTrackRequest(defaultSA, parent, scheme),
 		},
 	}}
 
@@ -234,7 +234,7 @@ func TestBuildRegistryConfig(t *testing.T) {
 	testClient := fakeclient.NewSimpleClientset(
 		&corev1.ServiceAccount{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      controllerManagerSAName,
+				Name:      defaultSAName,
 				Namespace: namespace,
 			},
 		},
@@ -289,10 +289,10 @@ func TestBuildRegistryConfig(t *testing.T) {
 		ImagePullSecretsDie(
 			diecorev1.LocalObjectReferenceBlank.Name(secretName),
 		)
-	controllerManagerSA := diecorev1.ServiceAccountBlank.
+	defaultSA := diecorev1.ServiceAccountBlank.
 		MetadataDie(func(d *diemetav1.ObjectMetaDie) {
 			d.Namespace(namespace)
-			d.Name(controllerManagerSAName)
+			d.Name(defaultSAName)
 			d.CreationTimestamp(now)
 		})
 
@@ -300,7 +300,7 @@ func TestBuildRegistryConfig(t *testing.T) {
 		Name: "image pull secret",
 		Key:  key,
 		GivenObjects: []client.Object{
-			controllerManagerSA,
+			defaultSA,
 			parent.
 				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
 					d.ImagePullSecretsDie(
@@ -317,7 +317,7 @@ func TestBuildRegistryConfig(t *testing.T) {
 		},
 		ExpectTracks: []rtesting.TrackRequest{
 			rtesting.NewTrackRequest(secret, parent, scheme),
-			rtesting.NewTrackRequest(controllerManagerSA, parent, scheme),
+			rtesting.NewTrackRequest(defaultSA, parent, scheme),
 		},
 		ExpectEvents: []rtesting.Event{
 			rtesting.NewEvent(parent, scheme, corev1.EventTypeNormal, "StatusUpdated", `Updated status`),
