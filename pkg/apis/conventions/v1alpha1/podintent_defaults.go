@@ -29,6 +29,6 @@ func (r *PodIntent) Default() {
 
 func (s *PodIntentSpec) Default() {
 	if s.ServiceAccountName == "" {
-		s.ServiceAccountName = "default"
+		s.ServiceAccountName = "cartographer-conventions-controller-manager"
 	}
 }

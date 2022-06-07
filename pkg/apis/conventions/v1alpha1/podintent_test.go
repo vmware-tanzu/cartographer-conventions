@@ -37,7 +37,7 @@ func TestPodIntentDefault(t *testing.T) {
 		in:   &PodIntent{},
 		want: &PodIntent{
 			Spec: PodIntentSpec{
-				ServiceAccountName: "default",
+				ServiceAccountName: "cartographer-conventions-controller-manager",
 			},
 		},
 	}}

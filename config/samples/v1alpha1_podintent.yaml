@@ -3,7 +3,7 @@ kind: PodIntent
 metadata:
   name: podintent-sample
 spec:
-  serviceAccountName: default
+  serviceAccountName: controller-manager
   template:
     spec:
       restartPolicy: Never
