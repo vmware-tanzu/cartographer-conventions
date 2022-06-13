@@ -34,6 +34,10 @@ spec:
           type: boolean
           description: "Optional: run independent of Cartographer, creates the cartographer-system namespace"
           default: false
+        aws_iam_role_arn:
+          type: string
+          description: 'Optional: Arn role that has access to pull images from ECR container registry'
+          default: ""
   template:
     spec:
       fetch:
