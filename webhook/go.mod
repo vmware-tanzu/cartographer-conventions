@@ -6,7 +6,7 @@ require (
 	github.com/CycloneDX/cyclonedx-go v0.5.2
 	github.com/go-logr/logr v1.2.3
 	github.com/google/go-containerregistry v0.9.0
-	k8s.io/api v0.24.0
+	k8s.io/api v0.24.2
 	k8s.io/apimachinery v0.24.2
 	sigs.k8s.io/controller-runtime v0.12.0
 )
