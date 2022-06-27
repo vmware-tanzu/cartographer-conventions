@@ -3,12 +3,12 @@ module github.com/vmware-tanzu/cartographer-conventions
 go 1.18
 
 require (
-	dies.dev v0.4.0
+	dies.dev v0.5.0
 	github.com/go-logr/logr v1.2.3
 	github.com/google/go-cmp v0.5.8
 	github.com/google/go-containerregistry v0.10.0
 	github.com/google/go-containerregistry/pkg/authn/k8schain v0.0.0-20220105220605-d9bfbcb99e52
-	github.com/vmware-labs/reconciler-runtime v0.5.0
+	github.com/vmware-labs/reconciler-runtime v0.7.1
 	github.com/vmware-tanzu/cartographer-conventions/webhook v0.1.0
 	go.uber.org/zap v1.21.0
 	k8s.io/api v0.24.2
@@ -104,6 +104,8 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
+	gomodules.xyz/jsonpatch/v3 v3.0.1 // indirect
+	gomodules.xyz/orderedmap v0.1.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220107163113-42d7afdf6368 // indirect
 	google.golang.org/grpc v1.43.0 // indirect
