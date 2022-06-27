@@ -3,7 +3,7 @@ module github.com/vmware-tanzu/cartographer-conventions/tools
 go 1.18
 
 require (
-	dies.dev/diegen v0.4.0
+	dies.dev/diegen v0.5.0
 	github.com/k14s/ytt v0.39.0
 	golang.org/x/tools v0.1.11
 	sigs.k8s.io/controller-tools v0.8.0
@@ -67,7 +67,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.0 // indirect
 	k8s.io/api v0.24.0 // indirect
 	k8s.io/apiextensions-apiserver v0.24.0 // indirect
-	k8s.io/apimachinery v0.24.0 // indirect
+	k8s.io/apimachinery v0.24.1 // indirect
 	k8s.io/klog/v2 v2.60.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20220401212409-b28bf2818661 // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
