@@ -28,3 +28,4 @@ sync_period: 10m
 has_values: false
 ca_cert_data: ""
 stand_alone: false
+aws_iam_role_arn: ""

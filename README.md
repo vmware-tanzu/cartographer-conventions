@@ -5,6 +5,7 @@ Conventions allow an operator to define cross cutting behavior that are directly
 - [Pre-requisites](#pre-requisites)
 - [Install](#install)
   - [From Source](#from-source)
+- [Install on AWS](#running-cartographer-convention-on-an-aws)
 - [Samples](#samples)
 - [Contributing](#contributing)
 - [License](#license)
@@ -54,6 +55,38 @@ We use [Golang 1.18+](https://golang.org) and [`ko`](https://github.com/google/k
     ```
 
     Note: you'll need to `export KO_DOCKER_REPO=<ACCESSIBLE_DOCKER_REPO>` such that `ko` can push to the repository and your cluster can pull from it. Visit [the ko README](https://github.com/google/ko/blob/master/README.md#usage) for more information.
+
+## Running cartographer convention on an AWS cluster
+
+In order to [attach an IAM role](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) to the service account that the controller uses, provide the role [arn](https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html) during installation phase.
+
+  ```sh
+  kapp deploy -n cartographer-system -a conventions \
+    -f <( \
+      ko resolve -f <( \
+        ytt \
+          -f dist/cartographer-conventions.yaml \
+          -f dist/ca-overlay.yaml \
+          -f dist/sa-arn-annotation-overlay.yaml \
+          --data-value-file ca_cert_data=${CA_DATA:-dist/ca.pem} \
+          --data-value aws_iam_role_arn="eks.amazonaws.com/role-arn: arn:aws:iam::133523324:role/role_name"
+        ) \
+    )
+  ```
+
+The service account `cartographer-conventions-controller-manager` would have the role arn added as annotation
+
+  ```sh
+  apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    labels:
+      app.kubernetes.io/component: conventions
+    name: cartographer-conventions-controller-manager
+    namespace: cartographer-system
+    annotations:
+      eks.amazonaws.com/role-arn: 'eks.amazonaws.com/role-arn: arn:aws:iam::133523324:role/role_name'
+  ```
 
 ## Samples
 
