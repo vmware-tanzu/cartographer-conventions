@@ -34,6 +34,8 @@ type PodIntentSpec struct {
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 	// Template defines the workload pod temple
 	Template PodTemplateSpec `json:"template"`
+	//+kubebuilder:default=Template
+	SelectorTarget string `json:"selectorTarget"`
 }
 
 type PodIntentStatus struct {

@@ -1089,6 +1089,77 @@ func TestApplyConventionsReconciler(t *testing.T) {
 				}),
 		},
 		{
+			Name: "sources label selector on the pod intent",
+			Parent: workload.
+				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
+					d.SelectorTarget("Intent")
+					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
+						d.MetadataDie(func(d *diemetav1.ObjectMetaDie) {
+							d.AddLabel("foo", "bar")
+							d.AddLabel("zoo", "zebra")
+						})
+					})
+				}).
+				MetadataDie(func(d *diemetav1.ObjectMetaDie) {
+					d.AddLabel("environment", "development")
+				}),
+			GivenStashedValues: map[reconcilers.StashKey]interface{}{
+				controllers.RegistryConfigKey: rc,
+				controllers.ConventionsStashKey: []binding.Convention{
+					{
+						Name: testConventions,
+						Selectors: []metav1.LabelSelector{{
+							MatchLabels: map[string]string{"environment": "development"},
+						}},
+						Priority: conventionsv1alpha1.EarlyPriority,
+						ClientConfig: admissionregistrationv1.WebhookClientConfig{
+							Service: &admissionregistrationv1.ServiceReference{
+								Namespace: "default",
+								Name:      "webhook-test",
+								Path:      rtesting.StringPtr(fmt.Sprintf("hellosidecar;host=%s", registryUrl.Host)),
+							},
+							CABundle: caCert,
+						},
+					},
+				},
+			},
+			ExpectParent: workload.
+				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
+					d.SelectorTarget("Intent")
+					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
+						d.MetadataDie(func(d *diemetav1.ObjectMetaDie) {
+							d.AddLabel("foo", "bar")
+							d.AddLabel("zoo", "zebra")
+						})
+					})
+				}).MetadataDie(func(d *diemetav1.ObjectMetaDie) {
+				d.AddLabel("environment", "development")
+			}).
+				StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
+					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
+						d.MetadataDie(func(d *diemetav1.ObjectMetaDie) {
+							d.AddLabel("foo", "bar")
+							d.AddLabel("zoo", "zebra")
+							d.AddAnnotation("conventions.carto.run/applied-conventions", "my-conventions/path/hellosidecar")
+						})
+						d.SpecDie(func(d *diecorev1.PodSpecDie) {
+							d.ContainerDie("hellosidecar", func(d *diecorev1.ContainerDie) {
+								d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+								d.Command("/bin/sleep", "100")
+							})
+						})
+					})
+					d.ConditionsDie(
+						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
+							Status(metav1.ConditionTrue).
+							Reason("Applied"),
+						dieconventionsv1alpha1.PodIntentConditionReadyBlank.
+							Status(metav1.ConditionTrue).
+							Reason("ConventionsApplied"),
+					)
+				}),
+		},
+		{
 			Name: "sources with label selector",
 			Parent: workload.
 				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {

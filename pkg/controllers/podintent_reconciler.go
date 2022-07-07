@@ -270,7 +270,12 @@ func ApplyConventionsReconciler(wc binding.WebhookConfig) reconcilers.SubReconci
 				return ctrl.Result{}, nil
 			}
 
-			filteredAndSortedConventions, err := sources.FilterAndSort(labels.Set(workload.GetLabels()))
+			selectorLabels := workload.GetLabels()
+			if parent.Spec.SelectorTarget == "Intent" {
+				selectorLabels = parent.ObjectMeta.GetLabels()
+			}
+
+			filteredAndSortedConventions, err := sources.FilterAndSort(labels.Set(selectorLabels))
 			if err != nil {
 				conditionManager.MarkFalse(conventionsv1alpha1.PodIntentConditionConventionsApplied, "LabelSelector", "filtering conventions failed: %v", err.Error())
 				log.Error(err, "failed to filter sources")
