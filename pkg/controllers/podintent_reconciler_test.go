@@ -1089,7 +1089,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 				}),
 		},
 		{
-			Name: "sources label selector on the pod intent",
+			Name: "selector target set to Intent and labels specified on both PodIntent.spec.metadata.template and .metadata",
 			Parent: workload.
 				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
 					d.SelectorTarget("Intent")
@@ -1160,7 +1160,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 				}),
 		},
 		{
-			Name: "sources with label selector",
+			Name: "selector target not set and labels specified on both PodIntent.spec.metadata.template and .metadata",
 			Parent: workload.
 				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
 					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
