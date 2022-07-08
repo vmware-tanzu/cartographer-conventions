@@ -46,6 +46,9 @@ spec:
                       type: string
                   type: object
                 type: array
+              selectorTarget:
+                default: Template
+                type: string
               serviceAccountName:
                 type: string
               template:
@@ -3109,6 +3112,7 @@ spec:
                     type: object
                 type: object
             required:
+            - selectorTarget
             - template
             type: object
           status:
