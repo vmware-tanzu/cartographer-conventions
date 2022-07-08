@@ -1263,6 +1263,69 @@ func TestApplyConventionsReconciler(t *testing.T) {
 				}),
 		},
 		{
+			Name:   "apply all conventions if matching selector targets and labels not specified",
+			Parent: workload,
+			GivenStashedValues: map[reconcilers.StashKey]interface{}{
+				controllers.RegistryConfigKey: rc,
+				controllers.ConventionsStashKey: []binding.Convention{
+					{
+						Name:     "zoo-conventions",
+						Priority: conventionsv1alpha1.NormalPriority,
+						ClientConfig: admissionregistrationv1.WebhookClientConfig{
+							Service: &admissionregistrationv1.ServiceReference{
+								Namespace: "default",
+								Name:      "webhook-test",
+							},
+							CABundle: caCert,
+						},
+					},
+					{
+						Name:     testConventions,
+						Priority: conventionsv1alpha1.EarlyPriority,
+						ClientConfig: admissionregistrationv1.WebhookClientConfig{
+							Service: &admissionregistrationv1.ServiceReference{
+								Namespace: "default",
+								Name:      "webhook-test",
+								Path:      rtesting.StringPtr(fmt.Sprintf("hellosidecar;host=%s", registryUrl.Host)),
+							},
+							CABundle: caCert,
+						},
+					},
+				},
+			},
+			ExpectParent: workload.
+				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
+
+				}).
+				StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
+					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
+						d.MetadataDie(func(d *diemetav1.ObjectMetaDie) {
+							d.AddAnnotation(conventionsv1alpha1.AppliedConventionsAnnotationKey, "my-conventions/path/hellosidecar\nzoo-conventions/test-convention/default-label")
+						})
+						d.SpecDie(func(d *diecorev1.PodSpecDie) {
+							d.ContainerDie("hellosidecar", func(d *diecorev1.ContainerDie) {
+								d.Image(fmt.Sprintf("%s/hello:latest@%s", registryUrl.Host, HelloDigest))
+								d.Command("/bin/sleep", "100")
+							})
+							d.ContainerDie("test-workload", func(d *diecorev1.ContainerDie) {
+								d.Image("ubuntu")
+								d.EnvDie("KEY", func(d *diecorev1.EnvVarDie) {
+									d.Value("VALUE")
+								})
+							})
+						})
+					})
+					d.ConditionsDie(
+						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
+							Status(metav1.ConditionTrue).
+							Reason("Applied"),
+						dieconventionsv1alpha1.PodIntentConditionReadyBlank.
+							Status(metav1.ConditionTrue).
+							Reason("ConventionsApplied"),
+					)
+				}),
+		},
+		{
 			Name:   "bad matching expression",
 			Parent: workload,
 			GivenStashedValues: map[reconcilers.StashKey]interface{}{
