@@ -72,14 +72,17 @@ pMokZBC57nXx8krZVEu1SRA=
 
 func TestConventionFilter(t *testing.T) {
 	tests := []struct {
-		name           string
-		input          []binding.Convention
-		workloadLabels map[string]string
-		expects        []binding.Convention
-		expectErr      bool
+		name            string
+		input           []binding.Convention
+		collectedLabels map[string]labels.Set
+		podIntentLables map[string]string
+		expects         []binding.Convention
+		expectErr       bool
 	}{{
-		name:           "select all conventions",
-		workloadLabels: map[string]string{"foo": "bar"},
+		name: "select all conventions",
+		collectedLabels: map[string]labels.Set{
+			"podTemplateSpec": map[string]string{"foo": "bar"},
+		},
 		input: []binding.Convention{{
 			Name: "test",
 			Selectors: []metav1.LabelSelector{{
@@ -93,8 +96,10 @@ func TestConventionFilter(t *testing.T) {
 			}},
 		}},
 	}, {
-		name:           "source with no labels",
-		workloadLabels: map[string]string{"foo": "bar"},
+		name: "source with no labels",
+		collectedLabels: map[string]labels.Set{
+			"podTemplateSpec": map[string]string{"foo": "bar"},
+		},
 		input: []binding.Convention{{
 			Name: "test",
 		}},
@@ -102,8 +107,10 @@ func TestConventionFilter(t *testing.T) {
 			Name: "test",
 		}},
 	}, {
-		name:           "source with mix of labels and no labels",
-		workloadLabels: map[string]string{"foo": "bar"},
+		name: "source with mix of labels and no labels",
+		collectedLabels: map[string]labels.Set{
+			"podTemplateSpec": map[string]string{"foo": "bar"},
+		},
 		input: []binding.Convention{{
 			Name: "test",
 		}, {
@@ -121,8 +128,10 @@ func TestConventionFilter(t *testing.T) {
 			}},
 		}},
 	}, {
-		name:           "workload with no labels",
-		workloadLabels: map[string]string{},
+		name: "workload with no labels",
+		collectedLabels: map[string]labels.Set{
+			"podTemplateSpec": map[string]string{"foo": "bar"},
+		},
 		input: []binding.Convention{{
 			Name: "test",
 			Selectors: []metav1.LabelSelector{{
@@ -130,8 +139,10 @@ func TestConventionFilter(t *testing.T) {
 			}},
 		}},
 	}, {
-		name:           "source with invalid labels",
-		workloadLabels: map[string]string{},
+		name: "source with invalid labels",
+		collectedLabels: map[string]labels.Set{
+			"podTemplateSpec": map[string]string{"foo": "bar"},
+		},
 		input: []binding.Convention{{
 			Name: "test",
 			Selectors: []metav1.LabelSelector{{
@@ -149,7 +160,7 @@ func TestConventionFilter(t *testing.T) {
 			var actual, expects binding.Conventions
 			actual = test.input
 			expects = test.expects
-			filteredConventions, err := actual.FilterAndSort(labels.Set(test.workloadLabels))
+			filteredConventions, err := actual.FilterAndSort(test.collectedLabels)
 			if err == nil && test.expectErr {
 				t.Error("expected error but got none.")
 			}

@@ -617,8 +617,8 @@ func TestResolveConventions(t *testing.T) {
 
 	rts := rtesting.SubReconcilerTestSuite{
 		{
-			Name:   "stash convention",
-			Parent: parent,
+			Name:     "stash convention",
+			Resource: parent,
 			GivenObjects: []client.Object{
 				certReq.
 					MetadataDie(func(d *diemetav1.ObjectMetaDie) {
@@ -649,7 +649,7 @@ func TestResolveConventions(t *testing.T) {
 						})
 					}),
 			},
-			ExpectParent: parent,
+			ExpectResource: parent,
 			ExpectStashedValues: map[reconcilers.StashKey]interface{}{
 				controllers.ConventionsStashKey: []binding.Convention{
 					{
@@ -664,8 +664,8 @@ func TestResolveConventions(t *testing.T) {
 					}},
 			},
 		}, {
-			Name:   "error loading conventions",
-			Parent: parent,
+			Name:     "error loading conventions",
+			Resource: parent,
 			GivenObjects: []client.Object{
 				testConvention.
 					MetadataDie(func(d *diemetav1.ObjectMetaDie) {
@@ -691,14 +691,14 @@ func TestResolveConventions(t *testing.T) {
 			WithReactors: []rtesting.ReactionFunc{
 				rtesting.InduceFailure("list", "clusterpodconventionlist"),
 			},
-			ShouldErr:    true,
-			ExpectParent: parent,
+			ShouldErr:      true,
+			ExpectResource: parent,
 			ExpectStashedValues: map[reconcilers.StashKey]interface{}{
 				controllers.ConventionsStashKey: nil,
 			},
 		}, {
-			Name:   "use three most recent ready CAs",
-			Parent: parent,
+			Name:     "use three most recent ready CAs",
+			Resource: parent,
 			GivenObjects: []client.Object{
 				certReq.
 					MetadataDie(func(d *diemetav1.ObjectMetaDie) {
@@ -775,7 +775,7 @@ func TestResolveConventions(t *testing.T) {
 						})
 					}),
 			},
-			ExpectParent: parent,
+			ExpectResource: parent,
 			ExpectStashedValues: map[reconcilers.StashKey]interface{}{
 				controllers.ConventionsStashKey: []binding.Convention{
 					{
@@ -790,8 +790,8 @@ func TestResolveConventions(t *testing.T) {
 					}},
 			},
 		}, {
-			Name:   "cert request not present",
-			Parent: parent,
+			Name:     "cert request not present",
+			Resource: parent,
 			GivenObjects: []client.Object{
 				testConvention.
 					MetadataDie(func(d *diemetav1.ObjectMetaDie) {
@@ -809,7 +809,7 @@ func TestResolveConventions(t *testing.T) {
 						})
 					}),
 			},
-			ExpectParent: parent.
+			ExpectResource: parent.
 				StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
 					d.ConditionsDie(
 						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
@@ -826,8 +826,8 @@ func TestResolveConventions(t *testing.T) {
 				controllers.ConventionsStashKey: nil,
 			},
 		}, {
-			Name:   "cert request not owned by cert",
-			Parent: parent,
+			Name:     "cert request not owned by cert",
+			Resource: parent,
 			GivenObjects: []client.Object{
 				certReq.
 					MetadataDie(func(d *diemetav1.ObjectMetaDie) {
@@ -849,7 +849,7 @@ func TestResolveConventions(t *testing.T) {
 						})
 					}),
 			},
-			ExpectParent: parent.
+			ExpectResource: parent.
 				StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
 					d.ConditionsDie(
 						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
@@ -866,8 +866,8 @@ func TestResolveConventions(t *testing.T) {
 				controllers.ConventionsStashKey: nil,
 			},
 		}, {
-			Name:   "cert request not ready",
-			Parent: parent,
+			Name:     "cert request not ready",
+			Resource: parent,
 			GivenObjects: []client.Object{
 				certReq.
 					StatusDie(func(d *diecertmanagerv1.CertificateRequestStatusDie) {
@@ -891,7 +891,7 @@ func TestResolveConventions(t *testing.T) {
 						})
 					}),
 			},
-			ExpectParent: parent.
+			ExpectResource: parent.
 				StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
 					d.ConditionsDie(
 						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
@@ -908,8 +908,8 @@ func TestResolveConventions(t *testing.T) {
 				controllers.ConventionsStashKey: nil,
 			},
 		}, {
-			Name:   "cert request no ca",
-			Parent: parent,
+			Name:     "cert request no ca",
+			Resource: parent,
 			GivenObjects: []client.Object{
 				certReq.
 					StatusDie(func(d *diecertmanagerv1.CertificateRequestStatusDie) {
@@ -933,7 +933,7 @@ func TestResolveConventions(t *testing.T) {
 						})
 					}),
 			},
-			ExpectParent: parent.
+			ExpectResource: parent.
 				StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
 					d.ConditionsDie(
 						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
@@ -1045,8 +1045,8 @@ func TestApplyConventionsReconciler(t *testing.T) {
 
 	rts := rtesting.SubReconcilerTestSuite{
 		{
-			Name:   "resolved from service",
-			Parent: workload,
+			Name:     "resolved from service",
+			Resource: workload,
 			GivenStashedValues: map[reconcilers.StashKey]interface{}{
 				controllers.RegistryConfigKey: rc,
 				controllers.ConventionsStashKey: []binding.Convention{
@@ -1063,7 +1063,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 					},
 				},
 			},
-			ExpectParent: workload.
+			ExpectResource: workload.
 				StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
 					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
 						d.MetadataDie(func(d *diemetav1.ObjectMetaDie) {
@@ -1089,10 +1089,9 @@ func TestApplyConventionsReconciler(t *testing.T) {
 				}),
 		},
 		{
-			Name: "selector target set to Intent and labels specified on both PodIntent.spec.metadata.template and .metadata",
-			Parent: workload.
+			Name: "selector target is set to podTemplateSpec and matching label exists",
+			Resource: workload.
 				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
-					d.SelectorTarget("Intent")
 					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
 						d.MetadataDie(func(d *diemetav1.ObjectMetaDie) {
 							d.AddLabel("foo", "bar")
@@ -1107,9 +1106,10 @@ func TestApplyConventionsReconciler(t *testing.T) {
 				controllers.RegistryConfigKey: rc,
 				controllers.ConventionsStashKey: []binding.Convention{
 					{
-						Name: testConventions,
+						Name:           testConventions,
+						SelectorTarget: "podTemplateSpec",
 						Selectors: []metav1.LabelSelector{{
-							MatchLabels: map[string]string{"environment": "development"},
+							MatchLabels: map[string]string{"foo": "bar"},
 						}},
 						Priority: conventionsv1alpha1.EarlyPriority,
 						ClientConfig: admissionregistrationv1.WebhookClientConfig{
@@ -1121,11 +1121,26 @@ func TestApplyConventionsReconciler(t *testing.T) {
 							CABundle: caCert,
 						},
 					},
+					{
+						Name:           testConventions,
+						SelectorTarget: "podTemplateSpec",
+						Selectors: []metav1.LabelSelector{{
+							MatchLabels: map[string]string{"non-matching": "bar"},
+						}},
+						Priority: conventionsv1alpha1.EarlyPriority,
+						ClientConfig: admissionregistrationv1.WebhookClientConfig{
+							Service: &admissionregistrationv1.ServiceReference{
+								Namespace: "default",
+								Name:      "non-matching-webhook",
+								Path:      rtesting.StringPtr(fmt.Sprintf("hellosidecar;host=%s", registryUrl.Host)),
+							},
+							CABundle: caCert,
+						},
+					},
 				},
 			},
-			ExpectParent: workload.
+			ExpectResource: workload.
 				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
-					d.SelectorTarget("Intent")
 					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
 						d.MetadataDie(func(d *diemetav1.ObjectMetaDie) {
 							d.AddLabel("foo", "bar")
@@ -1160,27 +1175,25 @@ func TestApplyConventionsReconciler(t *testing.T) {
 				}),
 		},
 		{
-			Name: "selector target not set and labels specified on both PodIntent.spec.metadata.template and .metadata",
-			Parent: workload.
-				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
-					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
-						d.MetadataDie(func(d *diemetav1.ObjectMetaDie) {
-							d.AddLabel("foo", "bar")
-							d.AddLabel("zoo", "zebra")
-						})
+			Name: "multiple selector targets and matching labels exist on specified target",
+			Resource: workload.
+				MetadataDie(func(d *diemetav1.ObjectMetaDie) {
+					d.AddLabel("intentselector", "true")
+				}).SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
+				d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
+					d.MetadataDie(func(d *diemetav1.ObjectMetaDie) {
+						d.AddLabel("zoo", "zebra")
 					})
-				}),
+				})
+			}),
 			GivenStashedValues: map[reconcilers.StashKey]interface{}{
 				controllers.RegistryConfigKey: rc,
 				controllers.ConventionsStashKey: []binding.Convention{
 					{
-						Name: "zoo-conventions",
+						Name:           "zoo-conventions",
+						SelectorTarget: "podIntent",
 						Selectors: []metav1.LabelSelector{{
-							MatchExpressions: []metav1.LabelSelectorRequirement{{
-								Key:      "zoo",
-								Values:   []string{"elephant", "zebra"},
-								Operator: metav1.LabelSelectorOpIn,
-							}},
+							MatchLabels: map[string]string{"intentselector": "true"},
 						}},
 						Priority: conventionsv1alpha1.NormalPriority,
 						ClientConfig: admissionregistrationv1.WebhookClientConfig{
@@ -1192,7 +1205,8 @@ func TestApplyConventionsReconciler(t *testing.T) {
 						},
 					},
 					{
-						Name: testConventions,
+						Name:           testConventions,
+						SelectorTarget: "podTemplateSpec",
 						Selectors: []metav1.LabelSelector{{
 							MatchLabels: map[string]string{"foo": "bar"},
 						}},
@@ -1207,7 +1221,8 @@ func TestApplyConventionsReconciler(t *testing.T) {
 						},
 					},
 					{
-						Name: "mismatch-convention-label",
+						Name:           "mismatch-convention-label",
+						SelectorTarget: "podTemplateSpec",
 						Selectors: []metav1.LabelSelector{{
 							MatchLabels: map[string]string{"bar": "baz"},
 						}},
@@ -1223,11 +1238,13 @@ func TestApplyConventionsReconciler(t *testing.T) {
 					},
 				},
 			},
-			ExpectParent: workload.
+			ExpectResource: workload.
+				MetadataDie(func(d *diemetav1.ObjectMetaDie) {
+					d.AddLabel("intentselector", "true")
+				}).
 				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
 					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
 						d.MetadataDie(func(d *diemetav1.ObjectMetaDie) {
-							d.AddLabel("foo", "bar")
 							d.AddLabel("zoo", "zebra")
 						})
 					})
@@ -1235,15 +1252,11 @@ func TestApplyConventionsReconciler(t *testing.T) {
 				StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
 					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
 						d.MetadataDie(func(d *diemetav1.ObjectMetaDie) {
-							d.AddLabel("foo", "bar")
 							d.AddLabel("zoo", "zebra")
-							d.AddAnnotation(conventionsv1alpha1.AppliedConventionsAnnotationKey, "my-conventions/path/hellosidecar\nzoo-conventions/test-convention/default-label")
+							d.AddAnnotation(conventionsv1alpha1.AppliedConventionsAnnotationKey, "zoo-conventions/test-convention/default-label")
 						})
 						d.SpecDie(func(d *diecorev1.PodSpecDie) {
-							d.ContainerDie("hellosidecar", func(d *diecorev1.ContainerDie) {
-								d.Image(fmt.Sprintf("%s/hello:latest@%s", registryUrl.Host, HelloDigest))
-								d.Command("/bin/sleep", "100")
-							})
+
 							d.ContainerDie("test-workload", func(d *diecorev1.ContainerDie) {
 								d.Image("ubuntu")
 								d.EnvDie("KEY", func(d *diecorev1.EnvVarDie) {
@@ -1263,14 +1276,15 @@ func TestApplyConventionsReconciler(t *testing.T) {
 				}),
 		},
 		{
-			Name:   "apply all conventions if matching selector targets and labels not specified",
-			Parent: workload,
+			Name:     "apply all conventions if no convnetion matchers are set and no matching labels are available on the pod intent",
+			Resource: workload,
 			GivenStashedValues: map[reconcilers.StashKey]interface{}{
 				controllers.RegistryConfigKey: rc,
 				controllers.ConventionsStashKey: []binding.Convention{
 					{
-						Name:     "zoo-conventions",
-						Priority: conventionsv1alpha1.NormalPriority,
+						Name:           "zoo-conventions",
+						SelectorTarget: "podTemplateSpec",
+						Priority:       conventionsv1alpha1.NormalPriority,
 						ClientConfig: admissionregistrationv1.WebhookClientConfig{
 							Service: &admissionregistrationv1.ServiceReference{
 								Namespace: "default",
@@ -1280,8 +1294,9 @@ func TestApplyConventionsReconciler(t *testing.T) {
 						},
 					},
 					{
-						Name:     testConventions,
-						Priority: conventionsv1alpha1.EarlyPriority,
+						Name:           testConventions,
+						SelectorTarget: "podTemplateSpec",
+						Priority:       conventionsv1alpha1.EarlyPriority,
 						ClientConfig: admissionregistrationv1.WebhookClientConfig{
 							Service: &admissionregistrationv1.ServiceReference{
 								Namespace: "default",
@@ -1293,10 +1308,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 					},
 				},
 			},
-			ExpectParent: workload.
-				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
-
-				}).
+			ExpectResource: workload.
 				StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
 					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
 						d.MetadataDie(func(d *diemetav1.ObjectMetaDie) {
@@ -1326,8 +1338,8 @@ func TestApplyConventionsReconciler(t *testing.T) {
 				}),
 		},
 		{
-			Name:   "bad matching expression",
-			Parent: workload,
+			Name:     "bad matching expression",
+			Resource: workload,
 			GivenStashedValues: map[reconcilers.StashKey]interface{}{
 				controllers.RegistryConfigKey: rc,
 				controllers.ConventionsStashKey: []binding.Convention{
@@ -1348,7 +1360,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 				},
 			},
 			ExpectedResult: reconcile.Result{},
-			ExpectParent: workload.
+			ExpectResource: workload.
 				StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
 					d.ConditionsDie(
 						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
@@ -1364,7 +1376,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 		},
 		{
 			Name: "error applying conventions",
-			Parent: workload.
+			Resource: workload.
 				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
 					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
 						d.SpecDie(func(d *diecorev1.PodSpecDie) {
@@ -1390,7 +1402,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 				},
 			},
 			ExpectedResult: reconcile.Result{Requeue: true},
-			ExpectParent: workload.
+			ExpectResource: workload.
 				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
 					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
 						d.SpecDie(func(d *diecorev1.PodSpecDie) {
@@ -1475,7 +1487,7 @@ func TestNilClientBuildRegistryConfig(t *testing.T) {
 
 	rts := rtesting.SubReconcilerTestSuite{{
 		Name:      "empty client",
-		Parent:    parent,
+		Resource:  parent,
 		ShouldErr: true,
 	}}
 	rc := binding.RegistryConfig{}

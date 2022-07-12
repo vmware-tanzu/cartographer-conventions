@@ -270,8 +270,11 @@ func ApplyConventionsReconciler(wc binding.WebhookConfig) reconcilers.SubReconci
 				return ctrl.Result{}, nil
 			}
 
-			selectorLabels := getSelectorLabels(workload, parent)
-			filteredAndSortedConventions, err := sources.FilterAndSort(labels.Set(selectorLabels))
+			collectedLables := make(map[string]labels.Set)
+			collectedLables["podIntent"] = labels.Set(parent.ObjectMeta.GetLabels())
+			collectedLables["podTemplateSpec"] = labels.Set(workload.GetLabels())
+
+			filteredAndSortedConventions, err := sources.FilterAndSort(collectedLables)
 			if err != nil {
 				conditionManager.MarkFalse(conventionsv1alpha1.PodIntentConditionConventionsApplied, "LabelSelector", "filtering conventions failed: %v", err.Error())
 				log.Error(err, "failed to filter sources")
@@ -328,12 +331,4 @@ func splitNamespacedName(nameStr string) types.NamespacedName {
 		return types.NamespacedName{Name: nameStr}
 	}
 	return types.NamespacedName{Namespace: nameStr[:splitPoint], Name: nameStr[splitPoint+1:]}
-}
-
-func getSelectorLabels(workload *conventionsv1alpha1.PodTemplateSpec, parent *conventionsv1alpha1.PodIntent) map[string]string {
-	if parent.Spec.SelectorTarget == "Intent" {
-		return parent.ObjectMeta.GetLabels()
-	} else {
-		return workload.GetLabels()
-	}
 }

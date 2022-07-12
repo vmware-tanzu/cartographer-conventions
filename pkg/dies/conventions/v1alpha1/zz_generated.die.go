@@ -291,6 +291,12 @@ func (d *ClusterPodConventionSpecDie) Selectors(v ...metav1.LabelSelector) *Clus
 	})
 }
 
+func (d *ClusterPodConventionSpecDie) SelectorTarget(v string) *ClusterPodConventionSpecDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.ClusterPodConventionSpec) {
+		r.SelectorTarget = v
+	})
+}
+
 func (d *ClusterPodConventionSpecDie) Priority(v conventionsv1alpha1.PriorityLevel) *ClusterPodConventionSpecDie {
 	return d.DieStamp(func(r *conventionsv1alpha1.ClusterPodConventionSpec) {
 		r.Priority = v
@@ -777,12 +783,6 @@ func (d *PodIntentSpecDie) ImagePullSecrets(v ...corev1.LocalObjectReference) *P
 func (d *PodIntentSpecDie) Template(v conventionsv1alpha1.PodTemplateSpec) *PodIntentSpecDie {
 	return d.DieStamp(func(r *conventionsv1alpha1.PodIntentSpec) {
 		r.Template = v
-	})
-}
-
-func (d *PodIntentSpecDie) SelectorTarget(v string) *PodIntentSpecDie {
-	return d.DieStamp(func(r *conventionsv1alpha1.PodIntentSpec) {
-		r.SelectorTarget = v
 	})
 }
 

@@ -29,10 +29,11 @@ import (
 )
 
 type Convention struct {
-	Name         string
-	Selectors    []metav1.LabelSelector
-	Priority     conventionsv1alpha1.PriorityLevel
-	ClientConfig admissionregistrationv1.WebhookClientConfig
+	Name           string
+	SelectorTarget string
+	Selectors      []metav1.LabelSelector
+	Priority       conventionsv1alpha1.PriorityLevel
+	ClientConfig   admissionregistrationv1.WebhookClientConfig
 }
 
 func (o *Convention) Apply(ctx context.Context, conventionRequest *webhookv1alpha1.PodConventionContext, wc WebhookConfig) (*webhookv1alpha1.PodConventionContext, error) {
