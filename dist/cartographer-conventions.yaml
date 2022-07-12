@@ -35,6 +35,9 @@ spec:
             properties:
               priority:
                 type: string
+              selectorTarget:
+                default: podTemplateSpec
+                type: string
               selectors:
                 items:
                   properties:
@@ -98,6 +101,8 @@ spec:
                 required:
                 - clientConfig
                 type: object
+            required:
+            - selectorTarget
             type: object
         required:
         - spec
@@ -155,9 +160,6 @@ spec:
                       type: string
                   type: object
                 type: array
-              selectorTarget:
-                default: Template
-                type: string
               serviceAccountName:
                 type: string
               template:
@@ -3221,7 +3223,6 @@ spec:
                     type: object
                 type: object
             required:
-            - selectorTarget
             - template
             type: object
           status:
