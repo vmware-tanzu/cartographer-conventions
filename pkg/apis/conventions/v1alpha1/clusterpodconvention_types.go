@@ -36,7 +36,7 @@ type ClusterPodConventionSpec struct {
 	// Label selector for workloads.
 	// It must match the workload's pod template's labels.
 	Selectors []metav1.LabelSelector `json:"selectors,omitempty"`
-	//+kubebuilder:default=podTemplateSpec
+	// +optional
 	SelectorTarget string                       `json:"selectorTarget"`
 	Priority       PriorityLevel                `json:"priority,omitempty"`
 	Webhook        *ClusterPodConventionWebhook `json:"webhook,omitempty"`

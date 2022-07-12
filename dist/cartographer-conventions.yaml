@@ -36,7 +36,6 @@ spec:
               priority:
                 type: string
               selectorTarget:
-                default: podTemplateSpec
                 type: string
               selectors:
                 items:
@@ -101,8 +100,6 @@ spec:
                 required:
                 - clientConfig
                 type: object
-            required:
-            - selectorTarget
             type: object
         required:
         - spec
