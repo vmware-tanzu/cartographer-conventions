@@ -48,6 +48,11 @@ const (
 	TLSCAKey = "ca.crt"
 )
 
+const (
+	podIntentLabelsKey   = "podIntent"
+	podTemplateLabelsKey = "podTemplateSpec"
+)
+
 var (
 	secretGVK = schema.GroupVersionKind{
 		Kind:    "Secret",
@@ -271,8 +276,8 @@ func ApplyConventionsReconciler(wc binding.WebhookConfig) reconcilers.SubReconci
 			}
 
 			collectedLables := make(map[string]labels.Set)
-			collectedLables["podIntent"] = labels.Set(parent.ObjectMeta.GetLabels())
-			collectedLables["podTemplateSpec"] = labels.Set(workload.GetLabels())
+			collectedLables[podIntentLabelsKey] = labels.Set(parent.ObjectMeta.GetLabels())
+			collectedLables[podTemplateLabelsKey] = labels.Set(workload.GetLabels())
 
 			filteredAndSortedConventions, err := sources.FilterAndSort(collectedLables)
 			if err != nil {

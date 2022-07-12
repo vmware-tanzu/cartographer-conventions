@@ -1089,7 +1089,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 				}),
 		},
 		{
-			Name: "selector target is set to podTemplateSpec and matching label exists",
+			Name: "selector target and matcher set, maps to podTemplateSpec values",
 			Resource: workload.
 				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
 					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
@@ -1123,7 +1123,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 					},
 					{
 						Name:           testConventions,
-						SelectorTarget: "podTemplateSpec",
+						SelectorTarget: "podIntentSpec",
 						Selectors: []metav1.LabelSelector{{
 							MatchLabels: map[string]string{"non-matching": "bar"},
 						}},
