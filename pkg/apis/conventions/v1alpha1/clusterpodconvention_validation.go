@@ -72,12 +72,6 @@ func (s *ClusterPodConventionSpec) Validate() validation.FieldErrors {
 		})
 	}
 
-	if s.SelectorTarget != "podIntent" && s.SelectorTarget != "podTemplateSpec" {
-		errs = errs.Also(validation.FieldErrors{
-			field.Invalid(field.NewPath("selectorTarget"), s.SelectorTarget, "selector target values \"podIntent\" or \"podTemplateSpec\""),
-		})
-	}
-
 	// Webhook will be required mutually exclusive of other options that don't exist yet
 	if s.Webhook == nil {
 		errs = errs.Also(validation.ErrMissingField("webhook"))
