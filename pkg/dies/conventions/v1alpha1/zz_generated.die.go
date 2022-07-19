@@ -291,7 +291,7 @@ func (d *ClusterPodConventionSpecDie) Selectors(v ...metav1.LabelSelector) *Clus
 	})
 }
 
-func (d *ClusterPodConventionSpecDie) SelectorTarget(v string) *ClusterPodConventionSpecDie {
+func (d *ClusterPodConventionSpecDie) SelectorTarget(v conventionsv1alpha1.SelectorTargetSource) *ClusterPodConventionSpecDie {
 	return d.DieStamp(func(r *conventionsv1alpha1.ClusterPodConventionSpec) {
 		r.SelectorTarget = v
 	})

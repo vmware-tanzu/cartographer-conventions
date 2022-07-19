@@ -80,19 +80,19 @@ func TestConventionFilter(t *testing.T) {
 	}{{
 		name: "select all conventions",
 		collectedLabels: map[string]labels.Set{
-			"podTemplateSpec": map[string]string{"foo": "bar"},
-			"podIntent":       map[string]string{},
+			"PodTemplateSpec": map[string]string{"foo": "bar"},
+			"PodIntent":       map[string]string{},
 		},
 		input: []binding.Convention{{
 			Name:           "test",
-			SelectorTarget: "podTemplateSpec",
+			SelectorTarget: "PodTemplateSpec",
 			Selectors: []metav1.LabelSelector{{
 				MatchLabels: map[string]string{"foo": "bar"},
 			}},
 		}},
 		expects: []binding.Convention{{
 			Name:           "test",
-			SelectorTarget: "podTemplateSpec",
+			SelectorTarget: "PodTemplateSpec",
 			Selectors: []metav1.LabelSelector{{
 				MatchLabels: map[string]string{"foo": "bar"},
 			}},
@@ -100,8 +100,8 @@ func TestConventionFilter(t *testing.T) {
 	}, {
 		name: "source with no labels",
 		collectedLabels: map[string]labels.Set{
-			"podTemplateSpec": map[string]string{"foo": "bar"},
-			"podIntent":       map[string]string{},
+			"PodTemplateSpec": map[string]string{"foo": "bar"},
+			"PodIntent":       map[string]string{},
 		},
 		input: []binding.Convention{{
 			Name: "test",
@@ -112,14 +112,14 @@ func TestConventionFilter(t *testing.T) {
 	}, {
 		name: "source with mix of labels and no labels",
 		collectedLabels: map[string]labels.Set{
-			"podTemplateSpec": map[string]string{"foo": "bar"},
-			"podIntent":       map[string]string{},
+			"PodTemplateSpec": map[string]string{"foo": "bar"},
+			"PodIntent":       map[string]string{},
 		},
 		input: []binding.Convention{{
 			Name: "test",
 		}, {
 			Name:           "test1",
-			SelectorTarget: "podTemplateSpec",
+			SelectorTarget: "PodTemplateSpec",
 			Selectors: []metav1.LabelSelector{{
 				MatchLabels: map[string]string{"foo": "bar"},
 			}},
@@ -128,7 +128,7 @@ func TestConventionFilter(t *testing.T) {
 			Name: "test",
 		}, {
 			Name:           "test1",
-			SelectorTarget: "podTemplateSpec",
+			SelectorTarget: "PodTemplateSpec",
 			Selectors: []metav1.LabelSelector{{
 				MatchLabels: map[string]string{"foo": "bar"},
 			}},
@@ -137,12 +137,12 @@ func TestConventionFilter(t *testing.T) {
 		{
 			name: "workload with no labels",
 			collectedLabels: map[string]labels.Set{
-				"podTemplateSpec": map[string]string{},
-				"podIntent":       map[string]string{},
+				"PodTemplateSpec": map[string]string{},
+				"PodIntent":       map[string]string{},
 			},
 			input: []binding.Convention{{
 				Name:           "test",
-				SelectorTarget: "podTemplateSpec",
+				SelectorTarget: "PodTemplateSpec",
 				Selectors: []metav1.LabelSelector{{
 					MatchLabels: map[string]string{"foo": "bar"},
 				}},
@@ -150,12 +150,12 @@ func TestConventionFilter(t *testing.T) {
 		}, {
 			name: "source with invalid labels",
 			collectedLabels: map[string]labels.Set{
-				"podTemplateSpec": map[string]string{"foo": "bar"},
-				"podIntent":       map[string]string{},
+				"PodTemplateSpec": map[string]string{"foo": "bar"},
+				"PodIntent":       map[string]string{},
 			},
 			input: []binding.Convention{{
 				Name:           "test",
-				SelectorTarget: "podTemplateSpec",
+				SelectorTarget: "PodTemplateSpec",
 				Selectors: []metav1.LabelSelector{{
 					MatchExpressions: []metav1.LabelSelectorRequirement{{
 						Key:      "baz",

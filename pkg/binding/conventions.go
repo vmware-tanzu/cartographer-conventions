@@ -61,7 +61,7 @@ func (c *Conventions) Filter(collectedLabels map[string]labels.Set) (Conventions
 				return nil, fmt.Errorf("converting label selector for clusterPodConvention %q failed: %v", source.Name, err)
 			}
 
-			if sourceLabels.Matches(collectedLabels[source.SelectorTarget]) {
+			if sourceLabels.Matches(collectedLabels[string(source.SelectorTarget)]) {
 				filteredSources = append(filteredSources, source)
 				break
 			}

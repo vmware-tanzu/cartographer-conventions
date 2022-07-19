@@ -49,8 +49,8 @@ const (
 )
 
 const (
-	podIntentLabelsKey   = "podIntent"
-	podTemplateLabelsKey = "podTemplateSpec"
+	podIntentLabelsKey   = "PodIntent"
+	podTemplateLabelsKey = "PodTemplateSpec"
 )
 
 var (

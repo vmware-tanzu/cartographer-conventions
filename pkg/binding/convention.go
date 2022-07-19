@@ -30,7 +30,7 @@ import (
 
 type Convention struct {
 	Name           string
-	SelectorTarget string
+	SelectorTarget conventionsv1alpha1.SelectorTargetSource
 	Selectors      []metav1.LabelSelector
 	Priority       conventionsv1alpha1.PriorityLevel
 	ClientConfig   admissionregistrationv1.WebhookClientConfig

@@ -1089,7 +1089,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 				}),
 		},
 		{
-			Name: "selector target and matcher set, maps to podTemplateSpec values",
+			Name: "selector target and matcher defined matcheslabels in podTemplateSpec values",
 			Resource: workload.
 				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
 					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
@@ -1107,7 +1107,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 				controllers.ConventionsStashKey: []binding.Convention{
 					{
 						Name:           testConventions,
-						SelectorTarget: "podTemplateSpec",
+						SelectorTarget: "PodTemplateSpec",
 						Selectors: []metav1.LabelSelector{{
 							MatchLabels: map[string]string{"foo": "bar"},
 						}},
@@ -1123,9 +1123,9 @@ func TestApplyConventionsReconciler(t *testing.T) {
 					},
 					{
 						Name:           testConventions,
-						SelectorTarget: "podIntentSpec",
+						SelectorTarget: "PodIntent",
 						Selectors: []metav1.LabelSelector{{
-							MatchLabels: map[string]string{"non-matching": "bar"},
+							MatchLabels: map[string]string{"non-matching": "development"},
 						}},
 						Priority: conventionsv1alpha1.EarlyPriority,
 						ClientConfig: admissionregistrationv1.WebhookClientConfig{
@@ -1191,7 +1191,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 				controllers.ConventionsStashKey: []binding.Convention{
 					{
 						Name:           "zoo-conventions",
-						SelectorTarget: "podIntent",
+						SelectorTarget: "PodIntent",
 						Selectors: []metav1.LabelSelector{{
 							MatchLabels: map[string]string{"intentselector": "true"},
 						}},
@@ -1206,7 +1206,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 					},
 					{
 						Name:           testConventions,
-						SelectorTarget: "podTemplateSpec",
+						SelectorTarget: "PodTemplateSpec",
 						Selectors: []metav1.LabelSelector{{
 							MatchLabels: map[string]string{"foo": "bar"},
 						}},
@@ -1222,7 +1222,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 					},
 					{
 						Name:           "mismatch-convention-label",
-						SelectorTarget: "podTemplateSpec",
+						SelectorTarget: "PodTemplateSpec",
 						Selectors: []metav1.LabelSelector{{
 							MatchLabels: map[string]string{"bar": "baz"},
 						}},
@@ -1283,7 +1283,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 				controllers.ConventionsStashKey: []binding.Convention{
 					{
 						Name:           "zoo-conventions",
-						SelectorTarget: "podTemplateSpec",
+						SelectorTarget: "PodTemplateSpec",
 						Priority:       conventionsv1alpha1.NormalPriority,
 						ClientConfig: admissionregistrationv1.WebhookClientConfig{
 							Service: &admissionregistrationv1.ServiceReference{
@@ -1295,7 +1295,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 					},
 					{
 						Name:           testConventions,
-						SelectorTarget: "podTemplateSpec",
+						SelectorTarget: "PodTemplateSpec",
 						Priority:       conventionsv1alpha1.EarlyPriority,
 						ClientConfig: admissionregistrationv1.WebhookClientConfig{
 							Service: &admissionregistrationv1.ServiceReference{
