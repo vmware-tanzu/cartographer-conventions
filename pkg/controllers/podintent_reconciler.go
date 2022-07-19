@@ -275,11 +275,11 @@ func ApplyConventionsReconciler(wc binding.WebhookConfig) reconcilers.SubReconci
 				return ctrl.Result{}, nil
 			}
 
-			collectedLables := make(map[string]labels.Set)
-			collectedLables[podIntentLabelsKey] = labels.Set(parent.ObjectMeta.GetLabels())
-			collectedLables[podTemplateLabelsKey] = labels.Set(workload.GetLabels())
+			collectedLabels := make(map[string]labels.Set)
+			collectedLabels[podIntentLabelsKey] = labels.Set(parent.ObjectMeta.GetLabels())
+			collectedLabels[podTemplateLabelsKey] = labels.Set(workload.GetLabels())
 
-			filteredAndSortedConventions, err := sources.FilterAndSort(collectedLables)
+			filteredAndSortedConventions, err := sources.FilterAndSort(collectedLabels)
 			if err != nil {
 				conditionManager.MarkFalse(conventionsv1alpha1.PodIntentConditionConventionsApplied, "LabelSelector", "filtering conventions failed: %v", err.Error())
 				log.Error(err, "failed to filter sources")

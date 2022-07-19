@@ -79,7 +79,7 @@ func (s *ClusterPodConventionSpec) Validate() validation.FieldErrors {
 		errs = errs.Also(s.Webhook.Validate().ViaField("webhook"))
 	}
 
-	if s.SelectorTarget != PodTemplateSpecLables && s.SelectorTarget != PodIntentLables {
+	if s.SelectorTarget != PodTemplateSpecLabels && s.SelectorTarget != PodIntentLabels {
 		errs = errs.Also(validation.FieldErrors{
 			field.Invalid(field.NewPath("selectorTarget"), s.SelectorTarget,
 				"Accepted selector target values are \"PodIntent\" and \"PodTemplate\". The default value is set to \"PodTemplateSpec\""),

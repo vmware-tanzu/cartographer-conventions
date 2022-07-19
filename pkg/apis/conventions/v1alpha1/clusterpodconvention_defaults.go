@@ -38,7 +38,7 @@ func (s *ClusterPodConventionSpec) Default() {
 		s.Webhook.Default()
 	}
 	if s.SelectorTarget == "" {
-		s.SelectorTarget = PodTemplateSpecLables
+		s.SelectorTarget = PodTemplateSpecLabels
 	}
 }
 

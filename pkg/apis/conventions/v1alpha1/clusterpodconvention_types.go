@@ -34,8 +34,8 @@ const (
 )
 
 const (
-	PodTemplateSpecLables SelectorTargetSource = "PodTemplateSpec"
-	PodIntentLables       SelectorTargetSource = "PodIntent"
+	PodTemplateSpecLabels SelectorTargetSource = "PodTemplateSpec"
+	PodIntentLabels       SelectorTargetSource = "PodIntent"
 )
 
 type ClusterPodConventionSpec struct {
