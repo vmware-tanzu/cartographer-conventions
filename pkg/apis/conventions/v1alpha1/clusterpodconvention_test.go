@@ -290,7 +290,7 @@ func TestClusterPodConventionValidate(t *testing.T) {
 			},
 			expected: validation.FieldErrors{}.Also(
 				validation.FieldErrors{
-					field.Invalid(field.NewPath("spec.selectorTarget"), InvalidSelectorTarget, "Accepted selector target values are \"PodIntent\" and \"PodTemplate\". The default value is set to \"PodTemplateSpec\""),
+					field.Invalid(field.NewPath("spec.selectorTarget"), InvalidSelectorTarget, "Accepted selector target values are \"PodIntent\" and \"PodTemplateSpec\". The default value is set to \"PodTemplateSpec\""),
 				}),
 		},
 		{

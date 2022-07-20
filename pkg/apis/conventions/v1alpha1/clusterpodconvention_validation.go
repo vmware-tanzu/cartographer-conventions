@@ -82,7 +82,7 @@ func (s *ClusterPodConventionSpec) Validate() validation.FieldErrors {
 	if s.SelectorTarget != PodTemplateSpecLabels && s.SelectorTarget != PodIntentLabels {
 		errs = errs.Also(validation.FieldErrors{
 			field.Invalid(field.NewPath("selectorTarget"), s.SelectorTarget,
-				"Accepted selector target values are \"PodIntent\" and \"PodTemplate\". The default value is set to \"PodTemplateSpec\""),
+				"Accepted selector target values are \"PodIntent\" and \"PodTemplateSpec\". The default value is set to \"PodTemplateSpec\""),
 		})
 	}
 
