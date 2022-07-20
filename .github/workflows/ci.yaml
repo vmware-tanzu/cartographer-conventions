@@ -194,6 +194,7 @@ jobs:
       fail-fast: false
       matrix:
         k8s:
+        - 1.21.10
         - 1.22.7
         - 1.23.4
         - 1.24.2
@@ -211,7 +212,7 @@ jobs:
     - name: Install kind
       run: |
         cd $(mktemp -d -t kind.XXXX)
-        curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.12.0/kind-$(go env GOHOSTOS)-$(go env GOHOSTARCH)
+        curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.14.0/kind-$(go env GOHOSTOS)-$(go env GOHOSTARCH)
         chmod +x ./kind
         sudo mv ./kind /usr/local/bin
         cd -
