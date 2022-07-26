@@ -48,6 +48,11 @@ const (
 	TLSCAKey = "ca.crt"
 )
 
+const (
+	podIntentLabelsKey   = "PodIntent"
+	podTemplateLabelsKey = "PodTemplateSpec"
+)
+
 var (
 	secretGVK = schema.GroupVersionKind{
 		Kind:    "Secret",
@@ -270,7 +275,11 @@ func ApplyConventionsReconciler(wc binding.WebhookConfig) reconcilers.SubReconci
 				return ctrl.Result{}, nil
 			}
 
-			filteredAndSortedConventions, err := sources.FilterAndSort(labels.Set(workload.GetLabels()))
+			collectedLabels := make(map[string]labels.Set)
+			collectedLabels[podIntentLabelsKey] = labels.Set(parent.ObjectMeta.GetLabels())
+			collectedLabels[podTemplateLabelsKey] = labels.Set(workload.GetLabels())
+
+			filteredAndSortedConventions, err := sources.FilterAndSort(collectedLabels)
 			if err != nil {
 				conditionManager.MarkFalse(conventionsv1alpha1.PodIntentConditionConventionsApplied, "LabelSelector", "filtering conventions failed: %v", err.Error())
 				log.Error(err, "failed to filter sources")

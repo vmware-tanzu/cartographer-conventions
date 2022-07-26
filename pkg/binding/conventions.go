@@ -35,15 +35,15 @@ import (
 
 type Conventions []Convention
 
-func (c *Conventions) FilterAndSort(workloadLabelSet labels.Set) (Conventions, error) {
-	filteredConventions, err := c.Filter(workloadLabelSet)
+func (c *Conventions) FilterAndSort(collectedLabels map[string]labels.Set) (Conventions, error) {
+	filteredConventions, err := c.Filter(collectedLabels)
 	if err != nil {
 		return nil, err
 	}
 	return filteredConventions.Sort(), nil
 }
 
-func (c *Conventions) Filter(workloadLabelSet labels.Set) (Conventions, error) {
+func (c *Conventions) Filter(collectedLabels map[string]labels.Set) (Conventions, error) {
 	originalOrder := *c
 
 	var filteredSources Conventions
@@ -60,12 +60,14 @@ func (c *Conventions) Filter(workloadLabelSet labels.Set) (Conventions, error) {
 			if err != nil {
 				return nil, fmt.Errorf("converting label selector for clusterPodConvention %q failed: %v", source.Name, err)
 			}
-			if sourceLabels.Matches(workloadLabelSet) {
+
+			if sourceLabels.Matches(collectedLabels[string(source.SelectorTarget)]) {
 				filteredSources = append(filteredSources, source)
 				break
 			}
 		}
 	}
+
 	return filteredSources, nil
 }
 

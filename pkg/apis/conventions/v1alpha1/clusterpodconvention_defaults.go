@@ -37,6 +37,9 @@ func (s *ClusterPodConventionSpec) Default() {
 	if s.Webhook != nil {
 		s.Webhook.Default()
 	}
+	if s.SelectorTarget == "" {
+		s.SelectorTarget = PodTemplateSpecLabels
+	}
 }
 
 func (s *ClusterPodConventionWebhook) Default() {

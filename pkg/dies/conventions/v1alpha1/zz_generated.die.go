@@ -77,6 +77,14 @@ func (d *ClusterPodConventionDie) DieFeedPtr(r *conventionsv1alpha1.ClusterPodCo
 	return d.DieFeed(*r)
 }
 
+// DieFeedRawExtension returns the resource managed by the die as an raw extension.
+func (d *ClusterPodConventionDie) DieFeedRawExtension(raw runtime.RawExtension) *ClusterPodConventionDie {
+	b, _ := json.Marshal(raw)
+	r := conventionsv1alpha1.ClusterPodConvention{}
+	_ = json.Unmarshal(b, &r)
+	return d.DieFeed(r)
+}
+
 // DieRelease returns the resource managed by the die.
 func (d *ClusterPodConventionDie) DieRelease() conventionsv1alpha1.ClusterPodConvention {
 	if d.mutable {
@@ -98,6 +106,15 @@ func (d *ClusterPodConventionDie) DieReleaseUnstructured() runtime.Unstructured 
 	return &unstructured.Unstructured{
 		Object: u,
 	}
+}
+
+// DieReleaseRawExtension returns the resource managed by the die as an raw extension.
+func (d *ClusterPodConventionDie) DieReleaseRawExtension() runtime.RawExtension {
+	r := d.DieReleasePtr()
+	b, _ := json.Marshal(r)
+	raw := runtime.RawExtension{}
+	_ = json.Unmarshal(b, &raw)
+	return raw
 }
 
 // DieStamp returns a new die with the resource passed to the callback function. The resource is mutable.
@@ -143,6 +160,20 @@ func (d *ClusterPodConventionDie) UnmarshalJSON(b []byte) error {
 	err := json.Unmarshal(b, r)
 	*d = *d.DieFeed(*r)
 	return err
+}
+
+// APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+func (d *ClusterPodConventionDie) APIVersion(v string) *ClusterPodConventionDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.ClusterPodConvention) {
+		r.APIVersion = v
+	})
+}
+
+// Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+func (d *ClusterPodConventionDie) Kind(v string) *ClusterPodConventionDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.ClusterPodConvention) {
+		r.Kind = v
+	})
 }
 
 // MetadataDie stamps the resource's ObjectMeta field with a mutable die.
@@ -206,6 +237,14 @@ func (d *ClusterPodConventionSpecDie) DieFeedPtr(r *conventionsv1alpha1.ClusterP
 	return d.DieFeed(*r)
 }
 
+// DieFeedRawExtension returns the resource managed by the die as an raw extension.
+func (d *ClusterPodConventionSpecDie) DieFeedRawExtension(raw runtime.RawExtension) *ClusterPodConventionSpecDie {
+	b, _ := json.Marshal(raw)
+	r := conventionsv1alpha1.ClusterPodConventionSpec{}
+	_ = json.Unmarshal(b, &r)
+	return d.DieFeed(r)
+}
+
 // DieRelease returns the resource managed by the die.
 func (d *ClusterPodConventionSpecDie) DieRelease() conventionsv1alpha1.ClusterPodConventionSpec {
 	if d.mutable {
@@ -218,6 +257,15 @@ func (d *ClusterPodConventionSpecDie) DieRelease() conventionsv1alpha1.ClusterPo
 func (d *ClusterPodConventionSpecDie) DieReleasePtr() *conventionsv1alpha1.ClusterPodConventionSpec {
 	r := d.DieRelease()
 	return &r
+}
+
+// DieReleaseRawExtension returns the resource managed by the die as an raw extension.
+func (d *ClusterPodConventionSpecDie) DieReleaseRawExtension() runtime.RawExtension {
+	r := d.DieReleasePtr()
+	b, _ := json.Marshal(r)
+	raw := runtime.RawExtension{}
+	_ = json.Unmarshal(b, &raw)
+	return raw
 }
 
 // DieStamp returns a new die with the resource passed to the callback function. The resource is mutable.
@@ -240,6 +288,12 @@ func (d *ClusterPodConventionSpecDie) DeepCopy() *ClusterPodConventionSpecDie {
 func (d *ClusterPodConventionSpecDie) Selectors(v ...metav1.LabelSelector) *ClusterPodConventionSpecDie {
 	return d.DieStamp(func(r *conventionsv1alpha1.ClusterPodConventionSpec) {
 		r.Selectors = v
+	})
+}
+
+func (d *ClusterPodConventionSpecDie) SelectorTarget(v conventionsv1alpha1.SelectorTargetSource) *ClusterPodConventionSpecDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.ClusterPodConventionSpec) {
+		r.SelectorTarget = v
 	})
 }
 
@@ -292,6 +346,14 @@ func (d *ClusterPodConventionWebhookDie) DieFeedPtr(r *conventionsv1alpha1.Clust
 	return d.DieFeed(*r)
 }
 
+// DieFeedRawExtension returns the resource managed by the die as an raw extension.
+func (d *ClusterPodConventionWebhookDie) DieFeedRawExtension(raw runtime.RawExtension) *ClusterPodConventionWebhookDie {
+	b, _ := json.Marshal(raw)
+	r := conventionsv1alpha1.ClusterPodConventionWebhook{}
+	_ = json.Unmarshal(b, &r)
+	return d.DieFeed(r)
+}
+
 // DieRelease returns the resource managed by the die.
 func (d *ClusterPodConventionWebhookDie) DieRelease() conventionsv1alpha1.ClusterPodConventionWebhook {
 	if d.mutable {
@@ -304,6 +366,15 @@ func (d *ClusterPodConventionWebhookDie) DieRelease() conventionsv1alpha1.Cluste
 func (d *ClusterPodConventionWebhookDie) DieReleasePtr() *conventionsv1alpha1.ClusterPodConventionWebhook {
 	r := d.DieRelease()
 	return &r
+}
+
+// DieReleaseRawExtension returns the resource managed by the die as an raw extension.
+func (d *ClusterPodConventionWebhookDie) DieReleaseRawExtension() runtime.RawExtension {
+	r := d.DieReleasePtr()
+	b, _ := json.Marshal(r)
+	raw := runtime.RawExtension{}
+	_ = json.Unmarshal(b, &raw)
+	return raw
 }
 
 // DieStamp returns a new die with the resource passed to the callback function. The resource is mutable.
@@ -373,6 +444,14 @@ func (d *ClusterPodConventionWebhookCertificateDie) DieFeedPtr(r *conventionsv1a
 	return d.DieFeed(*r)
 }
 
+// DieFeedRawExtension returns the resource managed by the die as an raw extension.
+func (d *ClusterPodConventionWebhookCertificateDie) DieFeedRawExtension(raw runtime.RawExtension) *ClusterPodConventionWebhookCertificateDie {
+	b, _ := json.Marshal(raw)
+	r := conventionsv1alpha1.ClusterPodConventionWebhookCertificate{}
+	_ = json.Unmarshal(b, &r)
+	return d.DieFeed(r)
+}
+
 // DieRelease returns the resource managed by the die.
 func (d *ClusterPodConventionWebhookCertificateDie) DieRelease() conventionsv1alpha1.ClusterPodConventionWebhookCertificate {
 	if d.mutable {
@@ -385,6 +464,15 @@ func (d *ClusterPodConventionWebhookCertificateDie) DieRelease() conventionsv1al
 func (d *ClusterPodConventionWebhookCertificateDie) DieReleasePtr() *conventionsv1alpha1.ClusterPodConventionWebhookCertificate {
 	r := d.DieRelease()
 	return &r
+}
+
+// DieReleaseRawExtension returns the resource managed by the die as an raw extension.
+func (d *ClusterPodConventionWebhookCertificateDie) DieReleaseRawExtension() runtime.RawExtension {
+	r := d.DieReleasePtr()
+	b, _ := json.Marshal(r)
+	raw := runtime.RawExtension{}
+	_ = json.Unmarshal(b, &raw)
+	return raw
 }
 
 // DieStamp returns a new die with the resource passed to the callback function. The resource is mutable.
@@ -455,6 +543,14 @@ func (d *PodIntentDie) DieFeedPtr(r *conventionsv1alpha1.PodIntent) *PodIntentDi
 	return d.DieFeed(*r)
 }
 
+// DieFeedRawExtension returns the resource managed by the die as an raw extension.
+func (d *PodIntentDie) DieFeedRawExtension(raw runtime.RawExtension) *PodIntentDie {
+	b, _ := json.Marshal(raw)
+	r := conventionsv1alpha1.PodIntent{}
+	_ = json.Unmarshal(b, &r)
+	return d.DieFeed(r)
+}
+
 // DieRelease returns the resource managed by the die.
 func (d *PodIntentDie) DieRelease() conventionsv1alpha1.PodIntent {
 	if d.mutable {
@@ -476,6 +572,15 @@ func (d *PodIntentDie) DieReleaseUnstructured() runtime.Unstructured {
 	return &unstructured.Unstructured{
 		Object: u,
 	}
+}
+
+// DieReleaseRawExtension returns the resource managed by the die as an raw extension.
+func (d *PodIntentDie) DieReleaseRawExtension() runtime.RawExtension {
+	r := d.DieReleasePtr()
+	b, _ := json.Marshal(r)
+	raw := runtime.RawExtension{}
+	_ = json.Unmarshal(b, &raw)
+	return raw
 }
 
 // DieStamp returns a new die with the resource passed to the callback function. The resource is mutable.
@@ -521,6 +626,20 @@ func (d *PodIntentDie) UnmarshalJSON(b []byte) error {
 	err := json.Unmarshal(b, r)
 	*d = *d.DieFeed(*r)
 	return err
+}
+
+// APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+func (d *PodIntentDie) APIVersion(v string) *PodIntentDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.PodIntent) {
+		r.APIVersion = v
+	})
+}
+
+// Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+func (d *PodIntentDie) Kind(v string) *PodIntentDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.PodIntent) {
+		r.Kind = v
+	})
 }
 
 // MetadataDie stamps the resource's ObjectMeta field with a mutable die.
@@ -599,6 +718,14 @@ func (d *PodIntentSpecDie) DieFeedPtr(r *conventionsv1alpha1.PodIntentSpec) *Pod
 	return d.DieFeed(*r)
 }
 
+// DieFeedRawExtension returns the resource managed by the die as an raw extension.
+func (d *PodIntentSpecDie) DieFeedRawExtension(raw runtime.RawExtension) *PodIntentSpecDie {
+	b, _ := json.Marshal(raw)
+	r := conventionsv1alpha1.PodIntentSpec{}
+	_ = json.Unmarshal(b, &r)
+	return d.DieFeed(r)
+}
+
 // DieRelease returns the resource managed by the die.
 func (d *PodIntentSpecDie) DieRelease() conventionsv1alpha1.PodIntentSpec {
 	if d.mutable {
@@ -611,6 +738,15 @@ func (d *PodIntentSpecDie) DieRelease() conventionsv1alpha1.PodIntentSpec {
 func (d *PodIntentSpecDie) DieReleasePtr() *conventionsv1alpha1.PodIntentSpec {
 	r := d.DieRelease()
 	return &r
+}
+
+// DieReleaseRawExtension returns the resource managed by the die as an raw extension.
+func (d *PodIntentSpecDie) DieReleaseRawExtension() runtime.RawExtension {
+	r := d.DieReleasePtr()
+	b, _ := json.Marshal(r)
+	raw := runtime.RawExtension{}
+	_ = json.Unmarshal(b, &raw)
+	return raw
 }
 
 // DieStamp returns a new die with the resource passed to the callback function. The resource is mutable.
@@ -687,6 +823,14 @@ func (d *PodIntentStatusDie) DieFeedPtr(r *conventionsv1alpha1.PodIntentStatus) 
 	return d.DieFeed(*r)
 }
 
+// DieFeedRawExtension returns the resource managed by the die as an raw extension.
+func (d *PodIntentStatusDie) DieFeedRawExtension(raw runtime.RawExtension) *PodIntentStatusDie {
+	b, _ := json.Marshal(raw)
+	r := conventionsv1alpha1.PodIntentStatus{}
+	_ = json.Unmarshal(b, &r)
+	return d.DieFeed(r)
+}
+
 // DieRelease returns the resource managed by the die.
 func (d *PodIntentStatusDie) DieRelease() conventionsv1alpha1.PodIntentStatus {
 	if d.mutable {
@@ -699,6 +843,15 @@ func (d *PodIntentStatusDie) DieRelease() conventionsv1alpha1.PodIntentStatus {
 func (d *PodIntentStatusDie) DieReleasePtr() *conventionsv1alpha1.PodIntentStatus {
 	r := d.DieRelease()
 	return &r
+}
+
+// DieReleaseRawExtension returns the resource managed by the die as an raw extension.
+func (d *PodIntentStatusDie) DieReleaseRawExtension() runtime.RawExtension {
+	r := d.DieReleasePtr()
+	b, _ := json.Marshal(r)
+	raw := runtime.RawExtension{}
+	_ = json.Unmarshal(b, &raw)
+	return raw
 }
 
 // DieStamp returns a new die with the resource passed to the callback function. The resource is mutable.

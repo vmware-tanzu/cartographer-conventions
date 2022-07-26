@@ -22,6 +22,7 @@ import (
 )
 
 type PriorityLevel string
+type SelectorTargetSource string
 
 const (
 	// EarlyPriority defines Early priority level for ClusterPodConvention
@@ -32,12 +33,19 @@ const (
 	LatePriority PriorityLevel = "Late"
 )
 
+const (
+	PodTemplateSpecLabels SelectorTargetSource = "PodTemplateSpec"
+	PodIntentLabels       SelectorTargetSource = "PodIntent"
+)
+
 type ClusterPodConventionSpec struct {
 	// Label selector for workloads.
 	// It must match the workload's pod template's labels.
-	Selectors []metav1.LabelSelector       `json:"selectors,omitempty"`
-	Priority  PriorityLevel                `json:"priority,omitempty"`
-	Webhook   *ClusterPodConventionWebhook `json:"webhook,omitempty"`
+	Selectors []metav1.LabelSelector `json:"selectors,omitempty"`
+	// +optional
+	SelectorTarget SelectorTargetSource         `json:"selectorTarget"`
+	Priority       PriorityLevel                `json:"priority,omitempty"`
+	Webhook        *ClusterPodConventionWebhook `json:"webhook,omitempty"`
 }
 
 type ClusterPodConventionWebhook struct {

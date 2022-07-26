@@ -28,6 +28,7 @@ import (
 )
 
 const WrongPriority PriorityLevel = "wrong-level"
+const InvalidSelectorTarget SelectorTargetSource = "invalidSelectorTarget"
 
 func strPtr(s string) *string { return &s }
 
@@ -54,7 +55,8 @@ func TestClusterPodConventionDefault(t *testing.T) {
 		name: "with service ref",
 		in: &ClusterPodConvention{
 			Spec: ClusterPodConventionSpec{
-				Priority: EarlyPriority,
+				SelectorTarget: "PodTemplateSpec",
+				Priority:       EarlyPriority,
 				Webhook: &ClusterPodConventionWebhook{
 					ClientConfig: admissionregistrationv1.WebhookClientConfig{
 						Service: &admissionregistrationv1.ServiceReference{
@@ -67,7 +69,8 @@ func TestClusterPodConventionDefault(t *testing.T) {
 		},
 		want: &ClusterPodConvention{
 			Spec: ClusterPodConventionSpec{
-				Priority: EarlyPriority,
+				SelectorTarget: "PodTemplateSpec",
+				Priority:       EarlyPriority,
 				Webhook: &ClusterPodConventionWebhook{
 					ClientConfig: admissionregistrationv1.WebhookClientConfig{
 						Service: &admissionregistrationv1.ServiceReference{
@@ -101,197 +104,229 @@ func TestClusterPodConventionValidate(t *testing.T) {
 		name: "empty webhook",
 		target: &ClusterPodConvention{
 			Spec: ClusterPodConventionSpec{
-				Priority: "Normal",
+				SelectorTarget: "PodTemplateSpec",
+				Priority:       "Normal",
 			},
 		},
 		expected: validation.ErrMissingField("spec.webhook"),
-	}, {
-		name: "neither URL nor service",
-		target: &ClusterPodConvention{
-			Spec: ClusterPodConventionSpec{
-				Priority: "Early",
-				Webhook:  &ClusterPodConventionWebhook{},
+	},
+		{
+			name: "neither URL nor service",
+			target: &ClusterPodConvention{
+				Spec: ClusterPodConventionSpec{
+					SelectorTarget: "PodTemplateSpec",
+					Priority:       "Early",
+					Webhook:        &ClusterPodConventionWebhook{},
+				},
 			},
-		},
-		expected: validation.FieldErrors{}.Also(
-			validation.ErrMissingOneOf("url", "service"),
-		).ViaField("clientConfig").ViaField("webhook").ViaField("spec"),
-	}, {
-		name: "only URL",
-		target: &ClusterPodConvention{
-			Spec: ClusterPodConventionSpec{
-				Priority: "Normal",
-				Selectors: []metav1.LabelSelector{
-					{
-						MatchLabels: map[string]string{"foo": "bar"},
+			expected: validation.FieldErrors{}.Also(
+				validation.ErrMissingOneOf("url", "service"),
+			).ViaField("clientConfig").ViaField("webhook").ViaField("spec"),
+		}, {
+			name: "only URL",
+			target: &ClusterPodConvention{
+				Spec: ClusterPodConventionSpec{
+					SelectorTarget: "PodTemplateSpec",
+					Priority:       "Normal",
+					Selectors: []metav1.LabelSelector{
+						{
+							MatchLabels: map[string]string{"foo": "bar"},
+						},
 					},
-				},
-				Webhook: &ClusterPodConventionWebhook{
-					ClientConfig: validClientConfig,
-				},
-			},
-		},
-		expected: validation.FieldErrors{},
-	}, {
-		name: "only service",
-		target: &ClusterPodConvention{
-			Spec: ClusterPodConventionSpec{
-				Priority: "Normal",
-				Webhook: &ClusterPodConventionWebhook{
-					ClientConfig: admissionregistrationv1.WebhookClientConfig{
-						Service: &validaServiceRef,
+					Webhook: &ClusterPodConventionWebhook{
+						ClientConfig: validClientConfig,
 					},
 				},
 			},
-		},
-		expected: validation.FieldErrors{},
-	}, {
-		name: "both url and service",
-		target: &ClusterPodConvention{
-			Spec: ClusterPodConventionSpec{
-				Priority: "Late",
-				Webhook: &ClusterPodConventionWebhook{
-					ClientConfig: admissionregistrationv1.WebhookClientConfig{
-						URL:     strPtr("https://example.com"),
-						Service: &validaServiceRef,
-					},
-				},
-			},
-		},
-		expected: validation.FieldErrors{}.Also(
-			validation.ErrMultipleOneOf("url", "service"),
-		).ViaField("clientConfig").ViaField("webhook").ViaField("spec"),
-	}, {
-		name: "incomplete service",
-		target: &ClusterPodConvention{
-			Spec: ClusterPodConventionSpec{
-				Priority: "Late",
-				Webhook: &ClusterPodConventionWebhook{
-					ClientConfig: admissionregistrationv1.WebhookClientConfig{
-						Service: &admissionregistrationv1.ServiceReference{
-							Port: validaServiceRef.Port,
+			expected: validation.FieldErrors{},
+		}, {
+			name: "only service",
+			target: &ClusterPodConvention{
+				Spec: ClusterPodConventionSpec{
+					SelectorTarget: "PodTemplateSpec",
+					Priority:       "Normal",
+					Webhook: &ClusterPodConventionWebhook{
+						ClientConfig: admissionregistrationv1.WebhookClientConfig{
+							Service: &validaServiceRef,
 						},
 					},
 				},
 			},
-		},
-		expected: validation.FieldErrors{}.Also(
-			validation.FieldErrors{
-				field.Required(field.NewPath("service.name"), "service name is required"),
-				field.Required(field.NewPath("service.namespace"), "service namespace is required"),
-			},
-		).ViaField("clientConfig").ViaField("webhook").ViaField("spec"),
-	}, {
-		name: "invalid URL",
-		target: &ClusterPodConvention{
-			Spec: ClusterPodConventionSpec{
-				Priority: "Early",
-				Webhook: &ClusterPodConventionWebhook{
-					ClientConfig: admissionregistrationv1.WebhookClientConfig{
-						URL: strPtr("://example.com"),
+			expected: validation.FieldErrors{},
+		}, {
+			name: "both url and service",
+			target: &ClusterPodConvention{
+				Spec: ClusterPodConventionSpec{
+					SelectorTarget: "PodTemplateSpec",
+					Priority:       "Late",
+					Webhook: &ClusterPodConventionWebhook{
+						ClientConfig: admissionregistrationv1.WebhookClientConfig{
+							URL:     strPtr("https://example.com"),
+							Service: &validaServiceRef,
+						},
 					},
 				},
 			},
-		},
-		expected: validation.FieldErrors{}.Also(
-			validation.FieldErrors{
-				field.Required(field.NewPath("url"), "url must be a valid URL: parse \"://example.com\": missing protocol scheme; desired format: https://host[/path]"),
-			},
-		).ViaField("clientConfig").ViaField("webhook").ViaField("spec"),
-	}, {
-		name: "bad matching service",
-		target: &ClusterPodConvention{
-			Spec: ClusterPodConventionSpec{
-				Priority: "Normal",
-				Selectors: []metav1.LabelSelector{
-					{
-						MatchExpressions: []metav1.LabelSelectorRequirement{{
-							Values:   []string{"foo", "bar"},
-							Operator: metav1.LabelSelectorOpIn,
-						}},
-					},
-				},
-				Webhook: &ClusterPodConventionWebhook{
-					ClientConfig: validClientConfig,
-				},
-			},
-		},
-		expected: validation.ErrInvalidArrayValue(metav1.LabelSelector{
-			MatchExpressions: []metav1.LabelSelectorRequirement{{
-				Values:   []string{"foo", "bar"},
-				Operator: metav1.LabelSelectorOpIn,
-			}},
-		}, "selector", 0).ViaField("spec"),
-	}, {
-		name: "with certificate",
-		target: &ClusterPodConvention{
-			Spec: ClusterPodConventionSpec{
-				Priority: "Normal",
-				Webhook: &ClusterPodConventionWebhook{
-					ClientConfig: admissionregistrationv1.WebhookClientConfig{
-						Service: &validaServiceRef,
-					},
-					Certificate: &ClusterPodConventionWebhookCertificate{
-						Namespace: "default",
-						Name:      "my-cert",
+			expected: validation.FieldErrors{}.Also(
+				validation.ErrMultipleOneOf("url", "service"),
+			).ViaField("clientConfig").ViaField("webhook").ViaField("spec"),
+		}, {
+			name: "incomplete service",
+			target: &ClusterPodConvention{
+				Spec: ClusterPodConventionSpec{
+					SelectorTarget: "PodTemplateSpec",
+					Priority:       "Late",
+					Webhook: &ClusterPodConventionWebhook{
+						ClientConfig: admissionregistrationv1.WebhookClientConfig{
+							Service: &admissionregistrationv1.ServiceReference{
+								Port: validaServiceRef.Port,
+							},
+						},
 					},
 				},
 			},
-		},
-		expected: validation.FieldErrors{},
-	}, {
-		name: "invalid certificate",
-		target: &ClusterPodConvention{
-			Spec: ClusterPodConventionSpec{
-				Priority: "Normal",
-				Webhook: &ClusterPodConventionWebhook{
-					ClientConfig: admissionregistrationv1.WebhookClientConfig{
-						Service: &validaServiceRef,
-					},
-					Certificate: &ClusterPodConventionWebhookCertificate{
-						Namespace: "",
-						Name:      "",
+			expected: validation.FieldErrors{}.Also(
+				validation.FieldErrors{
+					field.Required(field.NewPath("service.name"), "service name is required"),
+					field.Required(field.NewPath("service.namespace"), "service namespace is required"),
+				},
+			).ViaField("clientConfig").ViaField("webhook").ViaField("spec"),
+		}, {
+			name: "invalid URL",
+			target: &ClusterPodConvention{
+				Spec: ClusterPodConventionSpec{
+					SelectorTarget: "PodTemplateSpec",
+					Priority:       "Early",
+					Webhook: &ClusterPodConventionWebhook{
+						ClientConfig: admissionregistrationv1.WebhookClientConfig{
+							URL: strPtr("://example.com"),
+						},
 					},
 				},
 			},
-		},
-		expected: validation.FieldErrors{}.Also(
-			validation.FieldErrors{
-				field.Required(field.NewPath("spec.webhook.certificate.namespace"), ""),
-				field.Required(field.NewPath("spec.webhook.certificate.name"), ""),
-			}),
-	}, {
-		name: "wrong priority level",
-		target: &ClusterPodConvention{
-			Spec: ClusterPodConventionSpec{
-				Priority: "wrong-level",
-				Selectors: []metav1.LabelSelector{{
-					MatchLabels: map[string]string{"foo": "bar"},
+			expected: validation.FieldErrors{}.Also(
+				validation.FieldErrors{
+					field.Required(field.NewPath("url"), "url must be a valid URL: parse \"://example.com\": missing protocol scheme; desired format: https://host[/path]"),
+				},
+			).ViaField("clientConfig").ViaField("webhook").ViaField("spec"),
+		}, {
+			name: "bad matching service",
+			target: &ClusterPodConvention{
+				Spec: ClusterPodConventionSpec{
+					SelectorTarget: "PodTemplateSpec",
+					Priority:       "Normal",
+					Selectors: []metav1.LabelSelector{
+						{
+							MatchExpressions: []metav1.LabelSelectorRequirement{{
+								Values:   []string{"foo", "bar"},
+								Operator: metav1.LabelSelectorOpIn,
+							}},
+						},
+					},
+					Webhook: &ClusterPodConventionWebhook{
+						ClientConfig: validClientConfig,
+					},
+				},
+			},
+			expected: validation.ErrInvalidArrayValue(metav1.LabelSelector{
+				MatchExpressions: []metav1.LabelSelectorRequirement{{
+					Values:   []string{"foo", "bar"},
+					Operator: metav1.LabelSelectorOpIn,
 				}},
-				Webhook: &ClusterPodConventionWebhook{
-					ClientConfig: validClientConfig,
+			}, "selector", 0).ViaField("spec"),
+		}, {
+			name: "with certificate",
+			target: &ClusterPodConvention{
+				Spec: ClusterPodConventionSpec{
+					SelectorTarget: "PodTemplateSpec",
+					Priority:       "Normal",
+					Webhook: &ClusterPodConventionWebhook{
+						ClientConfig: admissionregistrationv1.WebhookClientConfig{
+							Service: &validaServiceRef,
+						},
+						Certificate: &ClusterPodConventionWebhookCertificate{
+							Namespace: "default",
+							Name:      "my-cert",
+						},
+					},
 				},
 			},
-		},
-		expected: validation.FieldErrors{}.Also(
-			validation.FieldErrors{
-				field.Invalid(field.NewPath("spec.priority"), WrongPriority, "Accepted priority values \"Early\" or \"Normal\" or \"Late\""),
-			}),
-	}, {
-		name: "valid priority level",
-		target: &ClusterPodConvention{
-			Spec: ClusterPodConventionSpec{
-				Priority: "Early",
-				Selectors: []metav1.LabelSelector{{
-					MatchLabels: map[string]string{"foo": "bar"},
-				}},
-				Webhook: &ClusterPodConventionWebhook{
-					ClientConfig: validClientConfig,
+			expected: validation.FieldErrors{},
+		}, {
+			name: "invalid certificate",
+			target: &ClusterPodConvention{
+				Spec: ClusterPodConventionSpec{
+					SelectorTarget: "PodTemplateSpec",
+					Priority:       "Normal",
+					Webhook: &ClusterPodConventionWebhook{
+						ClientConfig: admissionregistrationv1.WebhookClientConfig{
+							Service: &validaServiceRef,
+						},
+						Certificate: &ClusterPodConventionWebhookCertificate{
+							Namespace: "",
+							Name:      "",
+						},
+					},
 				},
 			},
+			expected: validation.FieldErrors{}.Also(
+				validation.FieldErrors{
+					field.Required(field.NewPath("spec.webhook.certificate.namespace"), ""),
+					field.Required(field.NewPath("spec.webhook.certificate.name"), ""),
+				}),
+		}, {
+			name: "invalid selector target",
+			target: &ClusterPodConvention{
+				Spec: ClusterPodConventionSpec{
+					SelectorTarget: "invalidSelectorTarget",
+					Priority:       "Early",
+					Selectors: []metav1.LabelSelector{{
+						MatchLabels: map[string]string{"foo": "bar"},
+					}},
+					Webhook: &ClusterPodConventionWebhook{
+						ClientConfig: validClientConfig,
+					},
+				},
+			},
+			expected: validation.FieldErrors{}.Also(
+				validation.FieldErrors{
+					field.Invalid(field.NewPath("spec.selectorTarget"), InvalidSelectorTarget, "Accepted selector target values are \"PodIntent\" and \"PodTemplateSpec\". The default value is set to \"PodTemplateSpec\""),
+				}),
 		},
-		expected: validation.FieldErrors{},
-	}} {
+		{
+			name: "wrong priority level",
+			target: &ClusterPodConvention{
+				Spec: ClusterPodConventionSpec{
+					SelectorTarget: "PodTemplateSpec",
+					Priority:       "wrong-level",
+					Selectors: []metav1.LabelSelector{{
+						MatchLabels: map[string]string{"foo": "bar"},
+					}},
+					Webhook: &ClusterPodConventionWebhook{
+						ClientConfig: validClientConfig,
+					},
+				},
+			},
+			expected: validation.FieldErrors{}.Also(
+				validation.FieldErrors{
+					field.Invalid(field.NewPath("spec.priority"), WrongPriority, "Accepted priority values \"Early\" or \"Normal\" or \"Late\""),
+				}),
+		}, {
+			name: "valid priority level",
+			target: &ClusterPodConvention{
+				Spec: ClusterPodConventionSpec{
+					SelectorTarget: "PodTemplateSpec",
+					Priority:       "Early",
+					Selectors: []metav1.LabelSelector{{
+						MatchLabels: map[string]string{"foo": "bar"},
+					}},
+					Webhook: &ClusterPodConventionWebhook{
+						ClientConfig: validClientConfig,
+					},
+				},
+			},
+			expected: validation.FieldErrors{},
+		}} {
 		t.Run(c.name, func(t *testing.T) {
 			actual := c.target.Validate()
 			if diff := cmp.Diff(c.expected, actual); diff != "" {

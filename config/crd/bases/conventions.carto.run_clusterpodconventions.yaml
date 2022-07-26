@@ -35,6 +35,8 @@ spec:
             properties:
               priority:
                 type: string
+              selectorTarget:
+                type: string
               selectors:
                 items:
                   properties:
