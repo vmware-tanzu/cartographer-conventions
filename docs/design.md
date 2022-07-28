@@ -197,7 +197,7 @@ spec:
     clientConfig: 
       <admissionregistrationv1.WebhookClientConfig>
 ```
-The `selectorTarget` field complements the `selectors` field by allowing the conventions author to create a `ClusterPodConvention`and explicitly specify which labels on the `PodIntent` will be considered by declared matchers i.e. either labels on the `PodIntent`'s `.metadata.labels` field or labels on the `PodTemplateSpec``.metadata.labels` field. There are only two available options for this field, `PodTemplateSpec` or `PodIntent`, with the former configured as the default. The expected behavior when no selector is provided is that the convention will be applied.
+The `selectorTarget` field complements the `selectors` field by allowing the conventions author to create a `ClusterPodConvention` resource and explicitly specify which labels on the `PodIntent` resource will be considered by declared matchers, i.e., either labels on the `PodIntent`'s `.metadata.labels` field or labels on the `PodTemplateSpec``.metadata.labels` field. There are only two available options for this field, `PodTemplateSpec` or `PodIntent`, with the former configured as the default. The expected behavior when no selector is provided is that the convention will be applied.
 
 Priority can be defined for each `ClusterPodConvention` by specifying `.spec.priority` using any of the following available options `Early|Normal|Late`. If a priority is not specified, the default value of `Normal` is set.
 
