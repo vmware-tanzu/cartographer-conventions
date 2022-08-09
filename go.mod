@@ -10,7 +10,7 @@ require (
 	github.com/google/go-containerregistry/pkg/authn/k8schain v0.0.0-20220105220605-d9bfbcb99e52
 	github.com/vmware-labs/reconciler-runtime v0.7.1
 	github.com/vmware-tanzu/cartographer-conventions/webhook v0.1.0
-	go.uber.org/zap v1.21.0
+	go.uber.org/zap v1.22.0
 	k8s.io/api v0.24.2
 	k8s.io/apimachinery v0.24.2
 	k8s.io/apiserver v0.24.2
@@ -112,7 +112,7 @@ require (
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.24.2 // indirect
 	k8s.io/cloud-provider v0.21.1 // indirect
 	k8s.io/component-base v0.24.2 // indirect
