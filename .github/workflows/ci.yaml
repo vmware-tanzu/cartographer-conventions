@@ -345,7 +345,7 @@ jobs:
 
         kapp deploy -a kapp-controller -n kube-system \
           --wait-timeout 5m -y \
-          -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/latest/download/release.yml \
+          -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/download/v0.39.0/release.yml \
           -f <( \
             ytt -f .github/kapp/kapp-controller-config.yaml \
               --data-value-file ca_cert_data=${CERT_DIR}/ca.pem \
