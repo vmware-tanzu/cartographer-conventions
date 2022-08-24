@@ -367,7 +367,7 @@ jobs:
           --wait-timeout 5m \
           -f <( \
             ytt -f dist/package.yaml -f dist/package.values.yaml \
-              --data-value version=0.0.0-snapshot \
+              --data-value version=0.1.0-snapshot \
               --data-value image=${BUNDLE}/controller \
           )
 
@@ -381,7 +381,7 @@ jobs:
         kapp deploy -a cartographer-conventions-controller -y \
           -f <( \
             ytt -f dist/package-install.yaml -f dist/package-install.values.yaml \
-              --data-value package_constraints=0.0.0-snapshot \
+              --data-value package_constraints=0.1.0-snapshot \
               --data-value-yaml 'package_prerelease={}' \
           )
 
@@ -397,7 +397,7 @@ jobs:
         kapp deploy -a cartographer-conventions-controller -y \
           -f <( \
             ytt -f dist/package-install.yaml -f dist/package-install.values.yaml \
-              --data-value package_constraints=0.0.0-snapshot \
+              --data-value package_constraints=0.1.0-snapshot \
               --data-value-yaml 'package_prerelease={}' \
               --data-value sync_period=10s \
               --data-value-yaml 'has_values=true' \
