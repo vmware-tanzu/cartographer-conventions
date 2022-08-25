@@ -1,6 +1,6 @@
 module github.com/vmware-tanzu/cartographer-conventions
 
-go 1.18
+go 1.19
 
 require (
 	dies.dev v0.5.0
