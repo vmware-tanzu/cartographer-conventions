@@ -535,7 +535,7 @@ jobs:
         set -o nounset
         set -o pipefail
 
-        deploys=$(kapp app-change list -a cartographer-conventions-controller-ctrl --json | jq '.Tables[0].Rows | length')
+        deploys=$(kapp app-change list -a cartographer-conventions-controller.app --json | jq '.Tables[0].Rows | length')
         if [ "$deploys" != "1" ]; then
           echo "Too many app changes for the cartographer-conventions-controller package, expected 1 found ${deploys}"
           exit 1
