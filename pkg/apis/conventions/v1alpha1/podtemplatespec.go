@@ -145,12 +145,6 @@ func (m *ObjectMeta) GetOwnerReferences() []metav1.OwnerReference {
 func (m *ObjectMeta) SetOwnerReferences([]metav1.OwnerReference) {
 	panic(fmt.Errorf("SetOwnerReferences is not implemented"))
 }
-func (m *ObjectMeta) GetZZZ_DeprecatedClusterName() string {
-	panic(fmt.Errorf("GetZZZ_DeprecatedClusterName is not implemented"))
-}
-func (m *ObjectMeta) SetZZZ_DeprecatedClusterName(clusterName string) {
-	panic(fmt.Errorf("SetZZZ_DeprecatedClusterName is not implemented"))
-}
 func (m *ObjectMeta) GetManagedFields() []metav1.ManagedFieldsEntry {
 	panic(fmt.Errorf("GetManagedFields is not implemented"))
 }

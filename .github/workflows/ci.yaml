@@ -478,7 +478,7 @@ jobs:
           kapp list -A
         echo "##[endgroup]"
         echo "##[group]Package changesets"
-          kapp app-change list -a cartographer-conventions-controller-ctrl
+          kapp app-change list -a cartographer-conventions-controller.app
         echo "##[endgroup]"
         echo "##[group]kapp-controller logs"
           kubectl logs -n kapp-controller -l app=kapp-controller -c kapp-controller --tail 1000
@@ -536,7 +536,7 @@ jobs:
         set -o nounset
         set -o pipefail
 
-        deploys=$(kapp app-change list -a cartographer-conventions-controller-ctrl --json | jq '.Tables[0].Rows | length')
+        deploys=$(kapp app-change list -a cartographer-conventions-controller.app --json | jq '.Tables[0].Rows | length')
         if [ "$deploys" != "1" ]; then
           echo "Too many app changes for the cartographer-conventions-controller package, expected 1 found ${deploys}"
           exit 1
