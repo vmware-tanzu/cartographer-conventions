@@ -3,7 +3,7 @@ module github.com/vmware-tanzu/cartographer-conventions
 go 1.19
 
 require (
-	dies.dev v0.6.0
+	dies.dev v0.6.1
 	github.com/go-logr/logr v1.2.3
 	github.com/google/go-cmp v0.5.8
 	github.com/google/go-containerregistry v0.11.0
