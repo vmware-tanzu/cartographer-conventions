@@ -1,0 +1,9 @@
+config/rbac/kustomization.yaml
+config/manager/kustomization.yaml
+dist/cartographer-conventions.yaml
+dist/aks-webhooks.yaml
+**/go.mod
+**/go.sum
+dist/third-party/
+
+

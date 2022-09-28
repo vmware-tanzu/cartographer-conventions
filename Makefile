@@ -9,14 +9,19 @@ CONTROLLER_GEN ?= go run sigs.k8s.io/controller-tools/cmd/controller-gen
 DIEGEN ?= go run dies.dev/diegen
 GOIMPORTS ?= go run golang.org/x/tools/cmd/goimports
 KUSTOMIZE ?= go run sigs.k8s.io/kustomize/kustomize/v4
-YTT ?= go run github.com/k14s/ytt/cmd/ytt
+YTT ?= go run github.com/vmware-tanzu/carvel-ytt/cmd/ytt
+WOKE ?= go run github.com/get-woke/woke
 
 .PHONY: all
-all: test dist
+all: test dist scan-terms
 
 .PHONY: test
 test: generate fmt vet ## Run tests
 	go test ./... -coverprofile cover.out
+
+.PHONY:
+scan-terms: ## Scan for inclusive terminology
+	@$(WOKE) . -c https://via.vmw.com/its-woke-rules --exit-1-on-failure
 
 # Generate manifests e.g. CRD, RBAC etc.
 .PHONY: manifests
@@ -58,6 +63,11 @@ generate: generate-internal fmt ## Generate code
 generate-internal:
 	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths="./..."
 	$(DIEGEN) die:headerFile=./hack/boilerplate.go.txt paths="./..."
+
+.PHONY: tidy
+tidy: ## Run go mod tidy
+	go mod tidy -v
+	cd hack; go mod tidy -v
 
 # Absolutely awesome: http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 help: ## Print help for each make target

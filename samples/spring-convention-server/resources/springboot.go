@@ -131,7 +131,7 @@ var SpringBootConventions = []Convention{
 			applicationProperties := GetSpringApplicationProperties(ctx)
 
 			if v := applicationProperties.Default("management.health.probes.enabled", "true"); v != "true" {
-				// management health probes were disabled by the user, skip
+				// management health probes were deactivated by the user, skip
 				return nil
 			}
 

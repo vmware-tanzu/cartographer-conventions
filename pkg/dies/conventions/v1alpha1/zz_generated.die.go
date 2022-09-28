@@ -100,7 +100,7 @@ func (d *ClusterPodConventionDie) DieReleasePtr() *conventionsv1alpha1.ClusterPo
 }
 
 // DieReleaseUnstructured returns the resource managed by the die as an unstructured object.
-func (d *ClusterPodConventionDie) DieReleaseUnstructured() runtime.Unstructured {
+func (d *ClusterPodConventionDie) DieReleaseUnstructured() *unstructured.Unstructured {
 	r := d.DieReleasePtr()
 	u, _ := runtime.DefaultUnstructuredConverter.ToUnstructured(r)
 	return &unstructured.Unstructured{
@@ -566,7 +566,7 @@ func (d *PodIntentDie) DieReleasePtr() *conventionsv1alpha1.PodIntent {
 }
 
 // DieReleaseUnstructured returns the resource managed by the die as an unstructured object.
-func (d *PodIntentDie) DieReleaseUnstructured() runtime.Unstructured {
+func (d *PodIntentDie) DieReleaseUnstructured() *unstructured.Unstructured {
 	r := d.DieReleasePtr()
 	u, _ := runtime.DefaultUnstructuredConverter.ToUnstructured(r)
 	return &unstructured.Unstructured{
