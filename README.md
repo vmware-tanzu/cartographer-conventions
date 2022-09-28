@@ -54,7 +54,7 @@ We use [Golang 1.18+](https://golang.org) and [`ko`](https://github.com/google/k
       )
     ```
 
-    Note: you'll need to `export KO_DOCKER_REPO=<ACCESSIBLE_DOCKER_REPO>` such that `ko` can push to the repository and your cluster can pull from it. Visit [the ko README](https://github.com/google/ko/blob/master/README.md#usage) for more information.
+    Note: you'll need to `export KO_DOCKER_REPO=<ACCESSIBLE_DOCKER_REPO>` such that `ko` can push to the repository and your cluster can pull from it. Visit [the ko README](https://github.com/ko-build/ko) for more information.
 
 ## Running cartographer convention on an AWS cluster
 

@@ -21,6 +21,11 @@ jobs:
         go-version: 1.18.x
     - name: Test
       run: make test
+    - name: Scan Inclusive Terminology
+      uses: get-woke/woke-action@v0
+      with: 
+        fail-on-error: true
+        woke-args: -c https://via.vmw.com/its-woke-rules
     - uses: codecov/codecov-action@v3
     - name: Build
       run: |
@@ -305,6 +310,7 @@ jobs:
         docker network connect kind local-registry
 
         # Document the local registry
+        # wokeignore:rule=master
         # https://github.com/kubernetes/enhancements/tree/master/keps/sig-cluster-lifecycle/generic/1755-communicating-a-local-registry
         cat <<EOF | kubectl apply -f -
         apiVersion: v1
@@ -498,7 +504,7 @@ jobs:
           kubectl describe podintents.conventions.carto.run spring-sample
         echo "##[endgroup]"
         echo "##[group]Convention Dumper logs"
-          # NOTE: uncomment if you need dumper logs, disabled because it can be very slow
+          # NOTE: uncomment if you need dumper logs, deactivated because it can be very slow
           # kubectl logs -n dumper-conventions -l app=webhook --tail 500
         echo "##[endgroup]"
         echo "##[group]Convention Server logs"

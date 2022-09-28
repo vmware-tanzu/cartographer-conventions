@@ -21,6 +21,7 @@ import (
 	"regexp"
 
 	"github.com/CycloneDX/cyclonedx-go"
+	// wokeignore:rule=master
 	"github.com/Masterminds/semver"
 	"k8s.io/apimachinery/pkg/util/sets"
 
