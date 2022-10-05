@@ -4,6 +4,7 @@ dist/cartographer-conventions.yaml
 dist/aks-webhooks.yaml
 **/go.mod
 **/go.sum
+**/go.work.sum
 dist/third-party/
 
 
