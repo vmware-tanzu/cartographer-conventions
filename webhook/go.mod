@@ -1,6 +1,6 @@
 module github.com/vmware-tanzu/cartographer-conventions/webhook
 
-go 1.18
+go 1.19
 
 require (
 	github.com/CycloneDX/cyclonedx-go v0.6.0

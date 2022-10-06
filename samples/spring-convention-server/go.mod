@@ -1,9 +1,10 @@
 module github.com/vmware-tanzu/cartographer-conventions/samples/spring-convention-server
 
-go 1.18
+go 1.19
 
 require (
 	github.com/CycloneDX/cyclonedx-go v0.6.0
+	// wokeignore:rule=Masterminds
 	github.com/Masterminds/semver v1.5.0
 	github.com/go-logr/logr v1.2.3
 	github.com/go-logr/zapr v1.2.3
