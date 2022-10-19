@@ -26,7 +26,7 @@ scan-terms: ## Scan for inclusive terminology
 # Generate manifests e.g. CRD, RBAC etc.
 .PHONY: manifests
 manifests:
-	$(CONTROLLER_GEN) crd:crdVersions=v1 rbac:roleName=manager-role webhook crd:maxDescLen=0 \
+	GOWORK=off $(CONTROLLER_GEN) crd:crdVersions=v1 rbac:roleName=manager-role webhook crd:maxDescLen=0 \
 		paths="./pkg/apis/conventions/...;./pkg/controllers/..." \
 		output:crd:dir=./config/crd/bases \
 		output:rbac:dir=./config/rbac \
@@ -61,8 +61,8 @@ generate: generate-internal fmt ## Generate code
 
 .PHONY: generate-internal
 generate-internal:
-	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths="./..."
-	$(DIEGEN) die:headerFile=./hack/boilerplate.go.txt paths="./..."
+	GOWORK=off $(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths="./..."
+	GOWORK=off $(DIEGEN) die:headerFile=./hack/boilerplate.go.txt paths="./..."
 
 .PHONY: tidy
 tidy: ## Run go mod tidy
