@@ -46,7 +46,8 @@ spec:
           type: string'
           description: "Optional: Memory usage limit with default set to 256Mi"
           default: 256Mi
-template:
+        
+  template:
     spec:
       fetch:
       - imgpkgBundle:
