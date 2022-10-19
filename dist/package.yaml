@@ -36,9 +36,17 @@ spec:
           default: false
         aws_iam_role_arn:
           type: string
-          description: 'Optional: Arn role that has access to pull images from ECR container registry'
+          description: "Optional: Arn role that has access to pull images from ECR container registry"
           default: ""
-  template:
+        limits_cpu:
+          type: string
+          description: "Optional: Cpu usage limit with default value set to 100m"
+          default: 100m
+        limits_memory:
+          type: string'
+          description: "Optional: Memory usage limit with default set to 256Mi"
+          default: 256Mi
+template:
     spec:
       fetch:
       - imgpkgBundle:
