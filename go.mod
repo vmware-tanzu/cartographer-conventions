@@ -21,6 +21,26 @@ require (
 )
 
 require (
+	github.com/BurntSushi/toml v1.1.0 // indirect
+	github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a // indirect
+	github.com/cppforlife/cobrautil v0.0.0-20200514214827-bb86e6965d72 // indirect
+	github.com/cppforlife/go-cli-ui v0.0.0-20200505234325-512793797f05 // indirect
+	github.com/go-errors/errors v1.0.1 // indirect
+	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
+	github.com/hashicorp/go-version v1.4.0 // indirect
+	github.com/k14s/starlark-go v0.0.0-20200720175618-3a5c849cc368 // indirect
+	github.com/mattn/go-runewidth v0.0.9 // indirect
+	github.com/mitchellh/mapstructure v1.4.2 // indirect
+	github.com/monochromegane/go-gitignore v0.0.0-20200626010858-205db1a8cc00 // indirect
+	github.com/olekukonko/tablewriter v0.0.5 // indirect
+	github.com/xlab/treeprint v1.1.0 // indirect
+	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
+	sigs.k8s.io/kustomize/api v0.12.1 // indirect
+	sigs.k8s.io/kustomize/cmd/config v0.10.9 // indirect
+	sigs.k8s.io/kustomize/kyaml v0.13.9 // indirect
+)
+
+require (
 	cloud.google.com/go v0.99.0 // indirect
 	dies.dev/diegen v0.6.2 // indirect
 	github.com/Azure/azure-sdk-for-go v43.0.0+incompatible // indirect
@@ -90,6 +110,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/vbatts/tar-split v0.11.2 // indirect
 	github.com/vdemeester/k8s-pkg-credentialprovider v1.21.0-1 // indirect
+	github.com/vmware-tanzu/carvel-ytt v0.43.0
 	go.opentelemetry.io/contrib v0.20.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.20.0 // indirect
 	go.opentelemetry.io/otel v0.20.0 // indirect
@@ -131,5 +152,6 @@ require (
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.32 // indirect
 	sigs.k8s.io/controller-tools v0.10.0 // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
+	sigs.k8s.io/kustomize/kustomize/v4 v4.5.7
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 )
