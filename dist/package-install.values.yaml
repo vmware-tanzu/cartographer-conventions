@@ -29,8 +29,3 @@ has_values: false
 ca_cert_data: ""
 stand_alone: false
 aws_iam_role_arn: ""
-
-limits_memory: 256Mi
-limits_cpu: 1000m
-requests_cpu: 250m
-requests_memory: 256Mi

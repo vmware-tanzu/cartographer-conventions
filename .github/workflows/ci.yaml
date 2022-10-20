@@ -130,6 +130,7 @@ jobs:
         cp dist/bundle.yaml "${scratch}/bundle.yaml"
         cp dist/bundle.values.yaml "${scratch}/bundle.values.yaml"
         cp dist/ca-overlay.yaml "${scratch}/ca-overlay.yaml"
+        cp dist/resources-overlay.yaml "${scratch}/resources-overlay.yaml"
 
         echo "##[group]Build"
           cat hack/boilerplate.ytt.txt > "${scratch}/config/cartographer-conventions.yaml"
@@ -394,6 +395,48 @@ jobs:
 
         kapp delete -a cartographer-conventions-controller --wait-timeout 5m -y
         kubectl delete ns cartographer-system
+
+    - name: Deploy Cartographer Conventions with user defined resource limits 
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+        expected_resources={"limits":{"cpu":"512m","memory":"512Mi"},"requests":{"cpu":"512m","memory":"512Mi"}}
+
+        kapp deploy -a cartographer-conventions-controller -y \
+          -f <( \
+            ytt -f dist/package-install.yaml -f dist/package-install.values.yaml  -f dist/resources-overlay.yaml \
+              --data-value package_constraints=0.0.0-snapshot \
+              --data-value-yaml 'package_prerelease={}' \
+              --data-value sync_period=10s \
+              --data-value-yaml 'has_values=true' \
+              --data-value-file ca_cert_data=${CERT_DIR}/ca.pem \
+              --data-value-yaml 'stand_alone=true'\
+              --data-value requests_memory=512Mi \
+              --data-value requests_cpu=512m \
+              --data-value limits_cpu=512m \
+              --data-value limits_memory=512Mi
+          )
+
+        echo "##[group]Checking for configured resource limits for the deployment"
+          resources=$(kubectl get deployment/cartographer-conventions-controller-manager -n cartographer-system -o json | jq ."spec.template.spec.containers[].resources")
+          echo "Configured resources $resources"
+          
+          limits_cpu=$(echo $resources | jq ."limits.cpu")
+          limits_memory=$(echo $resources | jq ."limits.memory")
+          requests_cpu=$(echo $resources | jq ."requests.cpu")
+          requests_memory=$(echo $resources | jq ."requests.memory")
+   
+          trimmed_resources_values=$(echo $resources | tr -d '[:space:]' | tr -d '"')
+
+          if [[ "$trimmed_resources_values" != "$expected_resources" ]]; then
+             echo "Resources not configured correctly check overlay file... Exiting..."; exit 1;
+          else
+            kapp delete -a cartographer-conventions-controller --wait-timeout 5m -y
+            kubectl delete ns cartographer-system
+          fi
+
+        echo "##[endgroup]"
 
     - name: Deploy Cartographer Conventions
       run: |

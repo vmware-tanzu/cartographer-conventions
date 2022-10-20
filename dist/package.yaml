@@ -45,7 +45,7 @@ spec:
           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
           x-kubernetes-int-or-string: true
           description: "Optional: Cpu usage limits for the controller to use with the default value set to 100m"
-          default: 100m
+          default: 1000m
         limits_memory:
           description: "Optional: Memory usage limits for the controller with default set to 256Mi"
           anyOf:
@@ -53,6 +53,7 @@ spec:
           - type: string
           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
           x-kubernetes-int-or-string: true
+          default: 128Mi
         requests_cpu:
           description: "Optional: Requests minimum cpu reserved"
           anyOf: 
@@ -60,6 +61,7 @@ spec:
           - type: string
           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
           x-kubernetes-int-or-string: true
+          default: 250m
         requests_memory:
           description: "Optional: Requests minimum memory reserved"
           anyOf:
@@ -67,6 +69,7 @@ spec:
            - type: string
           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
           x-kubernetes-int-or-string: true
+          default: 128Mi
 
   template:
     spec:
