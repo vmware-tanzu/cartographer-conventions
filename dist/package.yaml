@@ -39,14 +39,35 @@ spec:
           description: "Optional: Arn role that has access to pull images from ECR container registry"
           default: ""
         limits_cpu:
-          type: string
-          description: "Optional: Cpu usage limit with default value set to 100m"
+          anyOf:
+          - type: integer
+          - type: string
+          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+          x-kubernetes-int-or-string: true
+          description: "Optional: Cpu usage limits for the controller to use with the default value set to 100m"
           default: 100m
         limits_memory:
-          type: string'
-          description: "Optional: Memory usage limit with default set to 256Mi"
-          default: 256Mi
-        
+          description: "Optional: Memory usage limits for the controller with default set to 256Mi"
+          anyOf:
+          - type: integer
+          - type: string
+          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+          x-kubernetes-int-or-string: true
+        requests_cpu:
+          description: "Optional: Requests minimum cpu reserved"
+          anyOf: 
+          - type: integer
+          - type: string
+          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+          x-kubernetes-int-or-string: true
+        requests_memory:
+          description: "Optional: Requests minimum memory reserved"
+          anyOf:
+           - type: integer
+           - type: string
+          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+          x-kubernetes-int-or-string: true
+
   template:
     spec:
       fetch:
