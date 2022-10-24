@@ -30,7 +30,7 @@ ca_cert_data: ""
 stand_alone: false
 aws_iam_role_arn: ""
 
-limits_cpu: 51m
-limits_memory: 512Mi
-requests_cpu: 512m
-requests_memory: 512Mi
+limits_cpu: ""
+limits_memory: ""
+requests_cpu: ""
+requests_memory: ""

@@ -405,7 +405,7 @@ jobs:
         kubectl create ns cartographer-system
         kapp deploy -a cartographer-conventions-controller -y \
           -f <( \
-            ytt -f dist/package_install.yaml -f dist/package_install.values.yaml  -f dist/resources-overlay.yaml \
+            ytt -f dist/package-install.yaml -f dist/package-install.values.yaml  -f dist/resources-overlay.yaml \
               --data-value-file ca_cert_data=${CERT_DIR}/ca.pem \
               --data-value-yaml 'stand_alone=true'\
               --data-value requests_memory=512Mi \
