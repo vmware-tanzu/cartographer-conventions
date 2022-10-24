@@ -402,14 +402,10 @@ jobs:
         set -o nounset
         set -o pipefail
         expected_resources={"limits":{"cpu":"512m","memory":"512Mi"},"requests":{"cpu":"512m","memory":"512Mi"}}
-
+        kubectl create ns cartographer-system
         kapp deploy -a cartographer-conventions-controller -y \
           -f <( \
-            ytt -f dist/package-install.yaml -f dist/package-install.values.yaml  -f dist/resources-overlay.yaml \
-              --data-value package_constraints=0.0.0-snapshot \
-              --data-value-yaml 'package_prerelease={}' \
-              --data-value sync_period=10s \
-              --data-value-yaml 'has_values=true' \
+            ytt -f dist/package.yaml -f dist/package.values.yaml  -f dist/resources-overlay.yaml \
               --data-value-file ca_cert_data=${CERT_DIR}/ca.pem \
               --data-value-yaml 'stand_alone=true'\
               --data-value requests_memory=512Mi \
