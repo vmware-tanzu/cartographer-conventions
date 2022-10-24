@@ -407,6 +407,7 @@ jobs:
           -f <( \
             ytt -f dist/package-install.yaml -f dist/package-install.values.yaml  -f dist/resources-overlay.yaml \
               --data-value-file ca_cert_data=${CERT_DIR}/ca.pem \
+              --data-value package_constraints=0.0.0-snapshot \
               --data-value-yaml 'stand_alone=true'\
               --data-value requests_memory=512Mi \
               --data-value requests_cpu=512m \
