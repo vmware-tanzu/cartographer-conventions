@@ -172,7 +172,8 @@ func (rc *RegistryConfig) transport() (http.RoundTripper, error) {
 	if rc.CACertPath == "" {
 		return remote.DefaultTransport, nil
 	}
-	transport := remote.DefaultTransport.Clone()
+
+	transport := remote.DefaultTransport.(*http.Transport).Clone()
 	// seed with system cert pool
 	if root, err := x509.SystemCertPool(); err != nil {
 		return transport, err
