@@ -205,8 +205,8 @@ func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler {
 		Setup: func(ctx context.Context, mgr reconcilers.Manager, bldr *reconcilers.Builder) error {
 			// register an informer to watch Secret
 			bldr.Watches(&source.Kind{Type: &corev1.Secret{}}, reconcilers.EnqueueTracked(ctx, &corev1.Secret{}))
-			// register an informer to watch ServiceAccount
-			bldr.Watches(&source.Kind{Type: &corev1.ServiceAccount{}}, reconcilers.EnqueueTracked(ctx, &corev1.ServiceAccount{}))
+			// register an informer to watch Secret's metadata only. This reduces the cache size in memory.
+			bldr.Watches(&source.Kind{Type: &corev1.Secret{}}, reconcilers.EnqueueTracked(ctx, &corev1.Secret{}), builder.OnlyMetadata)
 			return nil
 		},
 	}
