@@ -25,11 +25,13 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/cache"
 	"github.com/vmware-labs/reconciler-runtime/reconcilers"
 	"go.uber.org/zap/zapcore"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	webhookutil "k8s.io/apiserver/pkg/util/webhook"
 	"k8s.io/client-go/kubernetes"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	// credential providers
@@ -87,6 +89,9 @@ func main() {
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "conventions-controller-leader-election-helper",
 		SyncPeriod:             &syncPeriod,
+		ClientDisableCacheFor: []client.Object{
+			&corev1.Secret{},
+		},
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
