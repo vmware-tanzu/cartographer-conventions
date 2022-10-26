@@ -1,5 +1,10 @@
 # Cartographer Conventions Changelog
 
+## v0.2.1
+
+- [FIX] Updates base image paketobuildpacks/run-jammy-tiny:latest
+- [FIX] Modified controller to a metadata-only watch/cache for secrets
+
 ## v0.2.0
 
 - [FEATURE] Add an optional selectorTarget field on the ClusterPodConvention resource to specify label source for ClusterPodConvention matchers (#158).
