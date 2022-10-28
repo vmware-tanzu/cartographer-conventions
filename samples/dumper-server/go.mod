@@ -11,7 +11,7 @@ require (
 )
 
 require (
-	github.com/CycloneDX/cyclonedx-go v0.6.0 // indirect
+	github.com/CycloneDX/cyclonedx-go v0.7.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/go-containerregistry v0.10.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
@@ -33,5 +33,3 @@ require (
 	sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 )
-
-replace github.com/CycloneDX/cyclonedx-go => github.com/CycloneDX/cyclonedx-go v0.6.0

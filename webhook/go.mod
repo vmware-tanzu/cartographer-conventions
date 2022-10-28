@@ -3,7 +3,7 @@ module github.com/vmware-tanzu/cartographer-conventions/webhook
 go 1.19
 
 require (
-	github.com/CycloneDX/cyclonedx-go v0.6.0
+	github.com/CycloneDX/cyclonedx-go v0.7.0
 	github.com/go-logr/logr v1.2.3
 	github.com/google/go-containerregistry v0.12.0
 	k8s.io/api v0.25.3
@@ -27,5 +27,3 @@ require (
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 )
-
-replace github.com/CycloneDX/cyclonedx-go => github.com/CycloneDX/cyclonedx-go v0.6.0
