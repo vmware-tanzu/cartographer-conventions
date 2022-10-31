@@ -57,8 +57,8 @@ github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.8.0 h1:pSgiaMZlXftHpm5L7V1+rVB+AZJydKsMxsQBIJw4PKk=
-github.com/vmware-tanzu/cartographer-conventions/webhook v0.2.0 h1:w3RCnMj59T07NvFJbQ9efaRpFNQQHXj/DnSrzmJVXgI=
-github.com/vmware-tanzu/cartographer-conventions/webhook v0.2.0/go.mod h1:7d6BWiyl7ILx7lGffzij4IAgEVacMf4usprcszzM7bc=
+github.com/vmware-tanzu/cartographer-conventions/webhook v0.2.1 h1:FVi16aoiRifH15rGmEZkqWgDzuTM7m5yAL9YE7AJA5o=
+github.com/vmware-tanzu/cartographer-conventions/webhook v0.2.1/go.mod h1:7d6BWiyl7ILx7lGffzij4IAgEVacMf4usprcszzM7bc=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 go.uber.org/atomic v1.7.0 h1:ADUqmZGgLDDfbSL9ZmPxKTybcoEYHgpYfELNoN+7hsw=

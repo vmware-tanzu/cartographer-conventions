@@ -8,7 +8,7 @@ require (
 	github.com/Masterminds/semver v1.5.0
 	github.com/go-logr/logr v1.2.3
 	github.com/go-logr/zapr v1.2.3
-	github.com/vmware-tanzu/cartographer-conventions/webhook v0.2.0
+	github.com/vmware-tanzu/cartographer-conventions/webhook v0.2.1
 	go.uber.org/zap v1.23.0
 	k8s.io/api v0.25.3
 	k8s.io/apimachinery v0.25.3
