@@ -826,8 +826,8 @@ github.com/vishvananda/netns v0.0.0-20191106174202-0a2b9b5464df/go.mod h1:JP3t17
 github.com/vishvananda/netns v0.0.0-20200728191858-db3c7e526aae/go.mod h1:DD4vA1DwXk04H54A1oHXtwZmA0grkVMdPxx/VGLCah0=
 github.com/vmware-labs/reconciler-runtime v0.9.1 h1:iWVfU0l23DAqDaIM6Ky67Hfhl/0OY5IUthRYC8AHIys=
 github.com/vmware-labs/reconciler-runtime v0.9.1/go.mod h1:1hYho+btt+dKbdh6XJX4mHNWYNIilD85reYSEwetXoU=
-github.com/vmware-tanzu/cartographer-conventions/webhook v0.2.0 h1:w3RCnMj59T07NvFJbQ9efaRpFNQQHXj/DnSrzmJVXgI=
-github.com/vmware-tanzu/cartographer-conventions/webhook v0.2.0/go.mod h1:7d6BWiyl7ILx7lGffzij4IAgEVacMf4usprcszzM7bc=
+github.com/vmware-tanzu/cartographer-conventions/webhook v0.2.1 h1:FVi16aoiRifH15rGmEZkqWgDzuTM7m5yAL9YE7AJA5o=
+github.com/vmware-tanzu/cartographer-conventions/webhook v0.2.1/go.mod h1:7d6BWiyl7ILx7lGffzij4IAgEVacMf4usprcszzM7bc=
 github.com/vmware/govmomi v0.20.3/go.mod h1:URlwyTFZX72RmxtxuaFL2Uj3fD1JTvZdx59bHWk6aFU=
 github.com/willf/bitset v1.1.11-0.20200630133818-d5bec3311243/go.mod h1:RjeCKbqT1RxIR/KWY6phxZiaY1IyutSBfGjNPySAYV4=
 github.com/willf/bitset v1.1.11/go.mod h1:83CECat5yLh5zVOf4P1ErAgKA5UDvKtgyUABdr3+MjI=
