@@ -2,6 +2,8 @@ module github.com/vmware-tanzu/cartographer-conventions
 
 go 1.19
 
+replace github.com/vmware-tanzu/cartographer-conventions/webhook => ./webhook
+
 require (
 	dies.dev v0.6.2
 	github.com/go-logr/logr v1.2.3
@@ -19,8 +21,6 @@ require (
 	sigs.k8s.io/controller-runtime v0.13.0
 	sigs.k8s.io/yaml v1.3.0
 )
-
-replace github.com/vmware-tanzu/cartographer-conventions/webhook => ./webhook
 
 require (
 	cloud.google.com/go v0.99.0 // indirect
