@@ -3,7 +3,7 @@
 
 ## v0.2.2
 
-- [FIX] Rebuild binary with latest paketobuildpacks/run-jammy-tiny image in response to CVE-2022-3602 and CVE-2022-3786: vulnerabilities in OpenSSL 3.0.x
+- [FIX] Updates OpenSSL to 3.0.7
 
 ## v0.2.1
 
