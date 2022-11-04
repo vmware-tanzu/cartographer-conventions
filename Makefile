@@ -67,11 +67,11 @@ generate-internal:
 .PHONY: tidy
 tidy: ## Run go mod tidy
 	go mod tidy -v
-	cd hack; go mod tidy -v
-	cd samples/convention-server; go mod tidy -v
-	cd samples/dumper-server; go mod tidy -v
-	cd samples/spring-convention-server; go mod tidy -v
-	cd webhook; go mod tidy -v
+	cd hack && go mod tidy -v
+	cd samples/convention-server && go mod tidy -v
+	cd samples/dumper-server && go mod tidy -v
+	cd samples/spring-convention-server && go mod tidy -v
+	cd webhook && go mod tidy -v
 
 # Absolutely awesome: http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 help: ## Print help for each make target
