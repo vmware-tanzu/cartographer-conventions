@@ -1,0 +1,39 @@
+name: Update
+
+on:
+  workflow_dispatch:
+  pull_request:
+  schedule:
+    - cron: "5 * * * *"
+
+permissions:
+  contents: "write"
+  pull-requests: "write"
+
+jobs:
+
+  update:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install UpdateCLI
+      uses: updatecli/updatecli-action@v2
+
+    - name: Run UpdateCLI
+      id: updatecli
+      run: |
+        output=$(updatecli apply --push=false)
+        echo $output
+        output="${output//$'\n'/\\n}"
+        
+        echo "stdout=$output" >> $GITHUB_OUTPUT
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v3
+      if: github.event_name != 'pull_request'
+      with:
+        commit-message: 'chore: bumped base image digest'
+        signoff: false
+        title: 'chore: bumped base image digest'
+        body: ${{ steps.updatecli.outputs.stdout }} 
