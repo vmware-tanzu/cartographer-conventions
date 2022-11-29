@@ -93,7 +93,7 @@ func ConventionHandler(ctx context.Context, convention Convention) func(http.Res
 			}
 			decoder := json.NewDecoder(bytes.NewBuffer(reqBody))
 			if derr := decoder.Decode(wc); derr != nil {
-				logger.Error(derr, "error decoding request body into PodConventionContext type")
+				logger.Error(derr, "error decoding the request body into a PodConventionContext type")
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}

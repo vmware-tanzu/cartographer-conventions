@@ -105,7 +105,7 @@ func main() {
 	}
 	authInfoResolver, err := webhookutil.NewDefaultAuthenticationInfoResolver("")
 	if err != nil {
-		setupLog.Error(err, "unable to create auth info resolver")
+		setupLog.Error(err, "unable to create authentication info resolver")
 		os.Exit(1)
 	}
 	wc := binding.WebhookConfig{
