@@ -56,6 +56,7 @@ var SpringBootConventions = []Convention{
 		},
 		Apply: func(ctx context.Context, target *corev1.PodTemplateSpec, containerIdx int, metadata ImageMetadata) error {
 			applicationProperties := GetSpringApplicationProperties(ctx)
+			applicationProperties["server.shutdown"] = "graceful"
 
 			var k8sGracePeriodSeconds int64 = 30 // default k8s grace period is 30 seconds
 			if target.Spec.TerminationGracePeriodSeconds != nil {
@@ -64,7 +65,7 @@ var SpringBootConventions = []Convention{
 			target.Spec.TerminationGracePeriodSeconds = &k8sGracePeriodSeconds
 			// allocate 80% of the k8s grace period to boot
 			bootGracePeriodSeconds := int(math.Floor(0.8 * float64(k8sGracePeriodSeconds)))
-			applicationProperties["server.shutdown.grace-period"] = fmt.Sprintf("%ds", bootGracePeriodSeconds)
+			applicationProperties["server.lifecycle.timeout-per-shutdown-phase"] = fmt.Sprintf("%ds", bootGracePeriodSeconds)
 			return nil
 		},
 	},
