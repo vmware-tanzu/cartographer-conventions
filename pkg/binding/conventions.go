@@ -91,7 +91,7 @@ func (c *Conventions) Apply(ctx context.Context,
 ) (*corev1.PodTemplateSpec, error) {
 	log := logr.FromContextOrDiscard(ctx)
 	if parent == nil {
-		return nil, fmt.Errorf("pod intent is not set")
+		return nil, fmt.Errorf("pod intent value cannot be nil")
 	}
 	workload := parent.Spec.Template.AsPodTemplateSpec()
 	appliedConventions := []string{}
@@ -117,7 +117,7 @@ func (c *Conventions) Apply(ctx context.Context,
 		conventionResp, err := convention.Apply(ctx, conventionRequestObj, wc)
 		if err != nil {
 			log.Error(err, "failed to apply convention", "Convention", convention)
-			return nil, fmt.Errorf("failed to apply convention from source %s: %s", convention.Name, err.Error())
+			return nil, fmt.Errorf("failed to apply convention with name %s: %s", convention.Name, err.Error())
 		}
 		workloadDiff := cmp.Diff(workload, conventionResp.Status.Template, cmpopts.EquateEmpty())
 		log.Info("applied convention", "diff", workloadDiff, "convention", convention.Name)
