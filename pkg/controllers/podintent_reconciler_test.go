@@ -815,11 +815,11 @@ func TestResolveConventions(t *testing.T) {
 						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
 							Status(metav1.ConditionFalse).
 							Reason("CABundleResolutionFailed").
-							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "ns/wrong-ca"`),
+							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "ns/wrong-ca" configured in convention "test-convention"`),
 						dieconventionsv1alpha1.PodIntentConditionReadyBlank.
 							Status(metav1.ConditionFalse).
 							Reason("CABundleResolutionFailed").
-							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "ns/wrong-ca"`),
+							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "ns/wrong-ca" configured in convention "test-convention"`),
 					)
 				}),
 			ExpectStashedValues: map[reconcilers.StashKey]interface{}{
@@ -855,11 +855,11 @@ func TestResolveConventions(t *testing.T) {
 						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
 							Status(metav1.ConditionFalse).
 							Reason("CABundleResolutionFailed").
-							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "test-namespace/my-cert"`),
+							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "test-namespace/my-cert" configured in convention "test-convention"`),
 						dieconventionsv1alpha1.PodIntentConditionReadyBlank.
 							Status(metav1.ConditionFalse).
 							Reason("CABundleResolutionFailed").
-							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "test-namespace/my-cert"`),
+							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "test-namespace/my-cert" configured in convention "test-convention"`),
 					)
 				}),
 			ExpectStashedValues: map[reconcilers.StashKey]interface{}{
@@ -897,11 +897,11 @@ func TestResolveConventions(t *testing.T) {
 						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
 							Status(metav1.ConditionFalse).
 							Reason("CABundleResolutionFailed").
-							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "test-namespace/my-cert"`),
+							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "test-namespace/my-cert" configured in convention "test-convention"`),
 						dieconventionsv1alpha1.PodIntentConditionReadyBlank.
 							Status(metav1.ConditionFalse).
 							Reason("CABundleResolutionFailed").
-							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "test-namespace/my-cert"`),
+							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "test-namespace/my-cert" configured in convention "test-convention"`),
 					)
 				}),
 			ExpectStashedValues: map[reconcilers.StashKey]interface{}{
@@ -939,11 +939,11 @@ func TestResolveConventions(t *testing.T) {
 						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
 							Status(metav1.ConditionFalse).
 							Reason("CABundleResolutionFailed").
-							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "test-namespace/my-cert"`),
+							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "test-namespace/my-cert" configured in convention "test-convention"`),
 						dieconventionsv1alpha1.PodIntentConditionReadyBlank.
 							Status(metav1.ConditionFalse).
 							Reason("CABundleResolutionFailed").
-							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "test-namespace/my-cert"`),
+							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "test-namespace/my-cert" configured in convention "test-convention"`),
 					)
 				}),
 			ExpectStashedValues: map[reconcilers.StashKey]interface{}{

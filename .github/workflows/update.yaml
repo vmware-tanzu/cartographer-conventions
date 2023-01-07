@@ -30,9 +30,10 @@ jobs:
         echo "stdout=$output" >> $GITHUB_OUTPUT
 
     - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v3
+      uses: peter-evans/create-pull-request@v4
       if: github.event_name != 'pull_request'
       with:
+        token: ${{ secrets.UPDATECLI_GITHUB_TOKEN }}
         commit-message: 'chore: bumped base image digest'
         signoff: false
         title: 'chore: bumped base image digest'

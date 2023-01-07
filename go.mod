@@ -12,7 +12,7 @@ require (
 	github.com/google/go-containerregistry/pkg/authn/k8schain v0.0.0-20220105220605-d9bfbcb99e52
 	github.com/vmware-labs/reconciler-runtime v0.10.0
 	github.com/vmware-tanzu/cartographer-conventions/webhook v0.2.0
-	go.uber.org/zap v1.23.0
+	go.uber.org/zap v1.24.0
 	k8s.io/api v0.25.4
 	k8s.io/apimachinery v0.25.4
 	k8s.io/apiserver v0.25.4
