@@ -6,7 +6,7 @@ require (
 	dies.dev/diegen v0.3.0
 	github.com/k14s/ytt v0.39.0
 	golang.org/x/tools v0.1.9
-	sigs.k8s.io/controller-tools v0.9.0
+	sigs.k8s.io/controller-tools v0.11.1
 	sigs.k8s.io/kustomize/kustomize/v4 v4.5.2
 )
 
