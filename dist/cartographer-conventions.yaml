@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.11.1
+    controller-gen.kubebuilder.io/version: v0.11.0
   labels:
     app.kubernetes.io/component: conventions
   name: clusterpodconventions.conventions.carto.run
@@ -113,7 +113,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.11.1
+    controller-gen.kubebuilder.io/version: v0.11.0
   labels:
     app.kubernetes.io/component: conventions
     duck.knative.dev/podspecable: "true"
@@ -949,6 +949,7 @@ spec:
                                     required:
                                     - name
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   type: array
                                   x-kubernetes-list-type: set
                                 limits:
@@ -1576,6 +1577,7 @@ spec:
                                     required:
                                     - name
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   type: array
                                   x-kubernetes-list-type: set
                                 limits:
@@ -2210,6 +2212,7 @@ spec:
                                     required:
                                     - name
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   type: array
                                   x-kubernetes-list-type: set
                                 limits:
@@ -2878,6 +2881,7 @@ spec:
                                                 required:
                                                 - name
                                                 type: object
+                                                x-kubernetes-map-type: atomic
                                               type: array
                                               x-kubernetes-list-type: set
                                             limits:
@@ -4185,6 +4189,7 @@ spec:
                                     required:
                                     - name
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   type: array
                                   x-kubernetes-list-type: set
                                 limits:
@@ -4812,6 +4817,7 @@ spec:
                                     required:
                                     - name
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   type: array
                                   x-kubernetes-list-type: set
                                 limits:
@@ -5446,6 +5452,7 @@ spec:
                                     required:
                                     - name
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   type: array
                                   x-kubernetes-list-type: set
                                 limits:
@@ -6114,6 +6121,7 @@ spec:
                                                 required:
                                                 - name
                                                 type: object
+                                                x-kubernetes-map-type: atomic
                                               type: array
                                               x-kubernetes-list-type: set
                                             limits:
