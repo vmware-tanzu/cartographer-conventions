@@ -3,10 +3,10 @@ module github.com/vmware-tanzu/cartographer-conventions/tools
 go 1.19
 
 require (
-	dies.dev/diegen v0.3.0
+	dies.dev/diegen v0.7.0
 	github.com/k14s/ytt v0.39.0
-	golang.org/x/tools v0.1.9
-	sigs.k8s.io/controller-tools v0.9.0
+	golang.org/x/tools v0.5.0
+	sigs.k8s.io/controller-tools v0.11.0
 	sigs.k8s.io/kustomize/kustomize/v4 v4.5.2
 )
 
@@ -60,9 +60,9 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0 // indirect
-	k8s.io/api v0.23.0 // indirect
-	k8s.io/apiextensions-apiserver v0.23.0 // indirect
-	k8s.io/apimachinery v0.23.0 // indirect
+	k8s.io/api v0.26.0 // indirect
+	k8s.io/apiextensions-apiserver v0.26.0 // indirect
+	k8s.io/apimachinery v0.26.0 // indirect
 	k8s.io/klog/v2 v2.30.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
 	k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b // indirect
