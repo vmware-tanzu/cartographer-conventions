@@ -13,7 +13,7 @@ require (
 	github.com/vmware-labs/reconciler-runtime v0.11.0
 	github.com/vmware-tanzu/cartographer-conventions/webhook v0.2.0
 	go.uber.org/zap v1.24.0
-	k8s.io/api v0.26.0
+	k8s.io/api v0.26.1
 	k8s.io/apimachinery v0.26.1
 	k8s.io/apiserver v0.26.0
 	k8s.io/client-go v0.26.0
