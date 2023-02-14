@@ -47,7 +47,7 @@ jobs:
     - uses: actions/setup-go@v3
       with:
         go-version: 1.19.x
-    - uses: vmware-tanzu/carvel-setup-action@v1
+    - uses: carvel-dev/setup-action@v1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Install ko
@@ -213,7 +213,7 @@ jobs:
     - uses: actions/setup-go@v3
       with:
         go-version: 1.19.x
-    - uses: vmware-tanzu/carvel-setup-action@v1
+    - uses: carvel-dev/setup-action@v1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Install kind
@@ -588,7 +588,7 @@ jobs:
       BUNDLE: registry.local/conventions/bundle
     steps:
     - uses: actions/checkout@v3
-    - uses: vmware-tanzu/carvel-setup-action@v1
+    - uses: carvel-dev/setup-action@v1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Generate certs
@@ -751,7 +751,7 @@ jobs:
         asset_path: cartographer-conventions-samples-bundle.tar
         asset_name: cartographer-conventions-samples-bundle-${{ steps.get_version.outputs.VERSION }}.tar
         asset_content_type: application/x-tar
-    - uses: vmware-tanzu/carvel-setup-action@v1
+    - uses: carvel-dev/setup-action@v1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Install crane
