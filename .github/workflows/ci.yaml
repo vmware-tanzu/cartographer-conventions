@@ -218,7 +218,7 @@ jobs:
     - name: Install kind
       run: |
         cd $(mktemp -d -t kind.XXXX)
-        curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.15.0/kind-$(go env GOHOSTOS)-$(go env GOHOSTARCH)
+        curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.17.0/kind-$(go env GOHOSTOS)-$(go env GOHOSTARCH)
         chmod +x ./kind
         sudo mv ./kind /usr/local/bin
         cd -
