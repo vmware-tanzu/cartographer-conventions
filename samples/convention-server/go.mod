@@ -9,7 +9,7 @@ require (
 	github.com/go-logr/zapr v1.2.3
 	github.com/vmware-tanzu/cartographer-conventions/webhook v0.2.0
 	go.uber.org/zap v1.24.0
-	k8s.io/api v0.26.1
+	k8s.io/api v0.26.2
 )
 
 require (
@@ -27,7 +27,7 @@ require (
 	golang.org/x/text v0.7.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/apimachinery v0.26.1 // indirect
+	k8s.io/apimachinery v0.26.2 // indirect
 	k8s.io/klog/v2 v2.80.1 // indirect
 	k8s.io/utils v0.0.0-20221128185143-99ec85e7a448 // indirect
 	sigs.k8s.io/controller-runtime v0.14.5 // indirect
