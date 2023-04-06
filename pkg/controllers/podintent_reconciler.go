@@ -75,11 +75,10 @@ var (
 // +kubebuilder:rbac:groups=conventions.carto.run,resources=podintents/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=core,resources=events,verbs=get;list;watch;create;update;patch;delete
 
-func PodIntentReconciler(c reconcilers.Config, wc binding.WebhookConfig, rc binding.RegistryConfig) *reconcilers.ParentReconciler {
-	return &reconcilers.ParentReconciler{
+func PodIntentReconciler(c reconcilers.Config, wc binding.WebhookConfig, rc binding.RegistryConfig) *reconcilers.ResourceReconciler[*conventionsv1alpha1.PodIntent] {
+	return &reconcilers.ResourceReconciler[*conventionsv1alpha1.PodIntent]{
 		Name: "PodIntent",
-		Type: &conventionsv1alpha1.PodIntent{},
-		Reconciler: reconcilers.Sequence{
+		Reconciler: reconcilers.Sequence[*conventionsv1alpha1.PodIntent]{
 			ResolveConventions(),
 			BuildRegistryConfig(rc),
 			ApplyConventionsReconciler(wc),
@@ -93,8 +92,8 @@ func PodIntentReconciler(c reconcilers.Config, wc binding.WebhookConfig, rc bind
 // +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch
 // +kubebuilder:rbac:groups=cert-manager.io,resources=certificaterequests,verbs=get;list;watch
 
-func ResolveConventions() reconcilers.SubReconciler {
-	return &reconcilers.SyncReconciler{
+func ResolveConventions() reconcilers.SubReconciler[*conventionsv1alpha1.PodIntent] {
+	return &reconcilers.SyncReconciler[*conventionsv1alpha1.PodIntent]{
 		Name: "ResolveConventions",
 		Sync: func(ctx context.Context, parent *conventionsv1alpha1.PodIntent) error {
 			log := logr.FromContextOrDiscard(ctx)
@@ -146,10 +145,10 @@ func ResolveConventions() reconcilers.SubReconciler {
 // +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch
 // +kubebuilder:rbac:groups=core,resources=serviceaccounts,verbs=get;list;watch
 
-func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler {
-	return &reconcilers.SyncReconciler{
+func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler[*conventionsv1alpha1.PodIntent] {
+	return &reconcilers.SyncReconciler[*conventionsv1alpha1.PodIntent]{
 		Name: "BuildRegistryConfig",
-		Sync: func(ctx context.Context, parent *conventionsv1alpha1.PodIntent) (ctrl.Result, error) {
+		SyncWithResult: func(ctx context.Context, parent *conventionsv1alpha1.PodIntent) (ctrl.Result, error) {
 			log := logr.FromContextOrDiscard(ctx)
 			c := reconcilers.RetrieveConfigOrDie(ctx)
 			if rc.Client == nil {
@@ -260,10 +259,10 @@ func getCABundle(ctx context.Context, c reconcilers.Config, certRef *conventions
 	return caData.Bytes(), nil
 }
 
-func ApplyConventionsReconciler(wc binding.WebhookConfig) reconcilers.SubReconciler {
-	return &reconcilers.SyncReconciler{
+func ApplyConventionsReconciler(wc binding.WebhookConfig) reconcilers.SubReconciler[*conventionsv1alpha1.PodIntent] {
+	return &reconcilers.SyncReconciler[*conventionsv1alpha1.PodIntent]{
 		Name: "ApplyConventions",
-		Sync: func(ctx context.Context, parent *conventionsv1alpha1.PodIntent) (ctrl.Result, error) {
+		SyncWithResult: func(ctx context.Context, parent *conventionsv1alpha1.PodIntent) (ctrl.Result, error) {
 			log := logr.FromContextOrDiscard(ctx)
 
 			sources := RetrieveConventions(ctx)

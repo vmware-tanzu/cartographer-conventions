@@ -22,9 +22,9 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/vmware-labs/reconciler-runtime/apis"
 	rtesting "github.com/vmware-labs/reconciler-runtime/testing"
-	"github.com/vmware-labs/reconciler-runtime/validation"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
 func TestPodIntentDefault(t *testing.T) {
@@ -57,11 +57,11 @@ func TestPodIntentValidate(t *testing.T) {
 	for _, c := range []struct {
 		name     string
 		target   *PodIntent
-		expected validation.FieldErrors
+		expected field.ErrorList
 	}{{
 		name:     "empty",
 		target:   &PodIntent{},
-		expected: validation.FieldErrors{},
+		expected: field.ErrorList{},
 	}, {
 		name: "empty image pull secret",
 		target: &PodIntent{
@@ -69,10 +69,12 @@ func TestPodIntentValidate(t *testing.T) {
 				ImagePullSecrets: []corev1.LocalObjectReference{{}},
 			},
 		},
-		expected: validation.ErrMissingField("spec.imagePullSecrets[0].name"),
+		expected: field.ErrorList{
+			field.Required(field.NewPath("spec", "imagePullSecrets").Index(0).Child("name"), ""),
+		},
 	}} {
 		t.Run(c.name, func(t *testing.T) {
-			actual := c.target.Validate()
+			actual := c.target.validate()
 			if diff := cmp.Diff(c.expected, actual); diff != "" {
 				t.Errorf("Validate() (-expected, +actual) = %v", diff)
 			}

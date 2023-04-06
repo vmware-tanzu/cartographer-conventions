@@ -17,32 +17,29 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/vmware-labs/reconciler-runtime/validation"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	apiserverwebhook "k8s.io/apiserver/pkg/util/webhook"
-
-	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
 // +kubebuilder:webhook:path=/validate-conventions-carto-run-v1alpha1-clusterpodconvention,mutating=false,failurePolicy=fail,sideEffects=none,admissionReviewVersions=v1beta1,groups=conventions.carto.run,resources=clusterpodconventions,verbs=create;update,versions=v1alpha1,name=clusterpodconventions.conventions.carto.run
 
 var (
-	_ webhook.Validator         = &ClusterPodConvention{}
-	_ validation.FieldValidator = &ClusterPodConvention{}
+	_ webhook.Validator = &ClusterPodConvention{}
 )
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *ClusterPodConvention) ValidateCreate() error {
-	return r.Validate().ToAggregate()
+	return r.validate().ToAggregate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (c *ClusterPodConvention) ValidateUpdate(old runtime.Object) error {
 	// TODO check for immutable fields
-	return c.Validate().ToAggregate()
+	return c.validate().ToAggregate()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
@@ -50,82 +47,83 @@ func (c *ClusterPodConvention) ValidateDelete() error {
 	return nil
 }
 
-func (r *ClusterPodConvention) Validate() validation.FieldErrors {
-	errs := validation.FieldErrors{}
-	return errs.Also(r.Spec.Validate().ViaField("spec"))
+func (r *ClusterPodConvention) validate() field.ErrorList {
+	errs := field.ErrorList{}
+
+	errs = append(errs, r.Spec.validate(field.NewPath("spec"))...)
+
+	return errs
 }
 
-func (s *ClusterPodConventionSpec) Validate() validation.FieldErrors {
-	errs := validation.FieldErrors{}
+func (s *ClusterPodConventionSpec) validate(fldPath *field.Path) field.ErrorList {
+	errs := field.ErrorList{}
 
 	for i := range s.Selectors {
 		if _, err := metav1.LabelSelectorAsSelector(&s.Selectors[i]); err != nil {
-			errs = errs.Also(
-				validation.ErrInvalidArrayValue(s.Selectors[i], "selector", i),
-			)
+			errs = append(errs, field.Invalid(fldPath.Child("selectors").Index(i), s.Selectors[i], ""))
 		}
 	}
 
 	if s.Priority != EarlyPriority && s.Priority != LatePriority && s.Priority != NormalPriority {
-		errs = errs.Also(validation.FieldErrors{
-			field.Invalid(field.NewPath("priority"), s.Priority, "Accepted priority values \"Early\" or \"Normal\" or \"Late\""),
-		})
+		errs = append(errs, field.Invalid(fldPath.Child("priority"), s.Priority, "Accepted priority values \"Early\" or \"Normal\" or \"Late\""))
 	}
 
 	// Webhook will be required mutually exclusive of other options that don't exist yet
 	if s.Webhook == nil {
-		errs = errs.Also(validation.ErrMissingField("webhook"))
+		errs = append(errs, field.Required(fldPath.Child("webhook"), ""))
 	} else {
-		errs = errs.Also(s.Webhook.Validate().ViaField("webhook"))
+		errs = append(errs, s.Webhook.validate(fldPath.Child("webhook"))...)
 	}
 
 	if s.SelectorTarget != PodTemplateSpecLabels && s.SelectorTarget != PodIntentLabels {
-		errs = errs.Also(validation.FieldErrors{
-			field.Invalid(field.NewPath("selectorTarget"), s.SelectorTarget,
+		errs = append(errs,
+			field.Invalid(fldPath.Child("selectorTarget"), s.SelectorTarget,
 				`Accepted selector target values are "PodIntent" and "PodTemplateSpec". The default value is set to "PodTemplateSpec"`),
-		})
+		)
 	}
 
 	return errs
 }
 
-func (s *ClusterPodConventionWebhook) Validate() validation.FieldErrors {
-	errs := validation.FieldErrors{}
+func (s *ClusterPodConventionWebhook) validate(fldPath *field.Path) field.ErrorList {
+	errs := field.ErrorList{}
 
-	errs = errs.Also(ValidateClientConfig(s.ClientConfig).ViaField("clientConfig"))
-	errs = errs.Also(s.Certificate.Validate().ViaField("certificate"))
+	errs = append(errs, validateClientConfig(fldPath.Child("clientConfig"), s.ClientConfig)...)
+	errs = append(errs, s.Certificate.validate(fldPath.Child("certificate"))...)
 
 	return errs
 }
 
-func (s *ClusterPodConventionWebhookCertificate) Validate() validation.FieldErrors {
-	errs := validation.FieldErrors{}
+func (s *ClusterPodConventionWebhookCertificate) validate(fldPath *field.Path) field.ErrorList {
+	errs := field.ErrorList{}
 
 	if s == nil {
 		return errs
 	}
 	if s.Namespace == "" {
-		errs = errs.Also(validation.ErrMissingField("namespace"))
+		errs = append(errs, field.Required(fldPath.Child("namespace"), ""))
 	}
 	if s.Name == "" {
-		errs = errs.Also(validation.ErrMissingField("name"))
+		errs = append(errs, field.Required(fldPath.Child("name"), ""))
 	}
 
 	return errs
 }
 
-func ValidateClientConfig(clientConfig admissionregistrationv1.WebhookClientConfig) validation.FieldErrors {
-	errs := validation.FieldErrors{}
+func validateClientConfig(fldPath *field.Path, clientConfig admissionregistrationv1.WebhookClientConfig) field.ErrorList {
+	errs := field.ErrorList{}
+
 	switch {
 	case (clientConfig.URL != nil) && (clientConfig.Service != nil):
-		errs = errs.Also(validation.ErrMultipleOneOf("url", "service"))
+		errs = append(errs, field.Required(fldPath.Child("[url, service]"), "expected exactly one, got both"))
 	case (clientConfig.URL == nil) == (clientConfig.Service == nil):
-		errs = errs.Also(validation.ErrMissingOneOf("url", "service"))
+		errs = append(errs, field.Required(fldPath.Child("[url, service]"), "expected exactly one, got neither"))
 	case clientConfig.URL != nil:
-		errs = append(errs, apiserverwebhook.ValidateWebhookURL(field.NewPath("url"), *clientConfig.URL, true)...)
+		errs = append(errs, apiserverwebhook.ValidateWebhookURL(fldPath.Child("url"), *clientConfig.URL, true)...)
 	case clientConfig.Service != nil:
-		errs = append(errs, apiserverwebhook.ValidateWebhookService(field.NewPath("service"), clientConfig.Service.Name, clientConfig.Service.Namespace,
+		errs = append(errs, apiserverwebhook.ValidateWebhookService(fldPath.Child("service"), clientConfig.Service.Name, clientConfig.Service.Namespace,
 			clientConfig.Service.Path, *clientConfig.Service.Port)...)
 	}
+
 	return errs
 }

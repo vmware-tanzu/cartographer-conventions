@@ -35,12 +35,12 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/cache"
 	"github.com/google/go-containerregistry/pkg/v1/random"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
-	rtesting "github.com/vmware-labs/reconciler-runtime/testing"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	webhooktesting "k8s.io/apiserver/pkg/admission/plugin/webhook/testing"
+	"k8s.io/utils/pointer"
 
 	conventionsv1alpha1 "github.com/vmware-tanzu/cartographer-conventions/pkg/apis/conventions/v1alpha1"
 	"github.com/vmware-tanzu/cartographer-conventions/pkg/binding"
@@ -404,7 +404,7 @@ func TestConventionApply(t *testing.T) {
 				Service: &admissionregistrationv1.ServiceReference{
 					Namespace: "default",
 					Name:      "webhook-test",
-					Path:      rtesting.StringPtr("labelonly"),
+					Path:      pointer.String("labelonly"),
 				},
 				CABundle: caCert,
 			},
@@ -478,7 +478,7 @@ func TestConventionApply(t *testing.T) {
 				Service: &admissionregistrationv1.ServiceReference{
 					Namespace: "default",
 					Name:      "webhook-test",
-					Path:      rtesting.StringPtr(fmt.Sprintf("badimage;host=%s", registryUrl.Host)),
+					Path:      pointer.String(fmt.Sprintf("badimage;host=%s", registryUrl.Host)),
 				},
 				CABundle: caCert,
 			},
@@ -489,7 +489,7 @@ func TestConventionApply(t *testing.T) {
 					Service: &admissionregistrationv1.ServiceReference{
 						Namespace: "default",
 						Name:      "webhook-test",
-						Path:      rtesting.StringPtr("labelonly"),
+						Path:      pointer.String("labelonly"),
 					},
 					CABundle: caCert,
 				},
@@ -513,7 +513,7 @@ func TestConventionApply(t *testing.T) {
 					Service: &admissionregistrationv1.ServiceReference{
 						Namespace: "default",
 						Name:      "webhook-test",
-						Path:      rtesting.StringPtr(fmt.Sprintf("hellosidecar;host=%s", registryUrl.Host)),
+						Path:      pointer.String(fmt.Sprintf("hellosidecar;host=%s", registryUrl.Host)),
 					},
 					CABundle: caCert,
 				},
