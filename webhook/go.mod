@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/CycloneDX/cyclonedx-go v0.6.0
 	github.com/go-logr/logr v1.2.4
-	github.com/google/go-containerregistry v0.14.0
+	github.com/google/go-containerregistry v0.15.1
 	k8s.io/api v0.26.3
 	k8s.io/apimachinery v0.26.3
 	sigs.k8s.io/controller-runtime v0.14.6
@@ -18,8 +18,8 @@ require (
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	golang.org/x/net v0.8.0 // indirect
-	golang.org/x/text v0.8.0 // indirect
+	golang.org/x/net v0.9.0 // indirect
+	golang.org/x/text v0.9.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/klog/v2 v2.80.1 // indirect
