@@ -6,7 +6,7 @@ replace github.com/vmware-tanzu/cartographer-conventions/webhook => ../../webhoo
 
 require (
 	github.com/go-logr/logr v1.2.4
-	github.com/go-logr/zapr v1.2.3
+	github.com/go-logr/zapr v1.2.4
 	github.com/vmware-tanzu/cartographer-conventions/webhook v0.2.0
 	go.uber.org/zap v1.24.0
 	k8s.io/api v0.27.1
