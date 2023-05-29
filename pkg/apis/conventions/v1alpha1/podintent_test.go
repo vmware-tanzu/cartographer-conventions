@@ -78,15 +78,15 @@ func TestPodIntentValidate(t *testing.T) {
 			if diff := cmp.Diff(c.expected, actual); diff != "" {
 				t.Errorf("Validate() (-expected, +actual) = %v", diff)
 			}
-			create := c.target.ValidateCreate()
+			_, create := c.target.ValidateCreate()
 			if diff := cmp.Diff(c.expected.ToAggregate(), create); diff != "" {
 				t.Errorf("ValidateCreate() (-expected, +actual) = %v", diff)
 			}
-			update := c.target.ValidateUpdate(nil)
+			_, update := c.target.ValidateUpdate(nil)
 			if diff := cmp.Diff(c.expected.ToAggregate(), update); diff != "" {
 				t.Errorf("ValidateUpdate() (-expected, +actual) = %v", diff)
 			}
-			delete := c.target.ValidateDelete()
+			_, delete := c.target.ValidateDelete()
 			if diff := cmp.Diff(nil, delete); diff != "" {
 				t.Errorf("ValidateUpdate() (-expected, +actual) = %v", diff)
 			}

@@ -37,7 +37,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	conventionsv1alpha1 "github.com/vmware-tanzu/cartographer-conventions/pkg/apis/conventions/v1alpha1"
 	certmanagerv1 "github.com/vmware-tanzu/cartographer-conventions/pkg/apis/thirdparty/cert-manager/v1"
@@ -134,8 +133,8 @@ func ResolveConventions() reconcilers.SubReconciler[*conventionsv1alpha1.PodInte
 
 		Setup: func(ctx context.Context, mgr ctrl.Manager, bldr *builder.Builder) error {
 			// register an informer to watch ClusterPodConventions
-			bldr.Watches(&source.Kind{Type: &conventionsv1alpha1.ClusterPodConvention{}}, &handler.Funcs{})
-			bldr.Watches(&source.Kind{Type: &certmanagerv1.CertificateRequest{}}, reconcilers.EnqueueTracked(ctx, &certmanagerv1.CertificateRequest{}))
+			bldr.Watches(&conventionsv1alpha1.ClusterPodConvention{}, &handler.Funcs{})
+			bldr.Watches(&certmanagerv1.CertificateRequest{}, reconcilers.EnqueueTracked(ctx))
 
 			return nil
 		},
@@ -156,13 +155,15 @@ func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler[*c
 			}
 			conditionManager := parent.GetConditionSet().Manage(&parent.Status)
 			parentNamespacedName := types.NamespacedName{Namespace: parent.Namespace, Name: parent.Name}
+			log.Info("parentNamespacedName", parentNamespacedName)
 
 			var imagePullSecrets []string
 			for _, ips := range parent.Spec.ImagePullSecrets {
 				imagePullSecrets = append(imagePullSecrets, ips.Name)
 				// track ref for updates
 				key := tracker.NewKey(secretGVK, types.NamespacedName{Namespace: parent.Namespace, Name: ips.Name})
-				c.Tracker.Track(ctx, key, parentNamespacedName)
+				// c.Tracker.Track(ctx, key, parentNamespacedName)
+				log.Info("key", key)
 			}
 
 			serviceAccountName := parent.Spec.ServiceAccountName
@@ -190,7 +191,8 @@ func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler[*c
 			for _, secretReference := range sa.ImagePullSecrets {
 				// track ref for updates
 				key := tracker.NewKey(secretGVK, types.NamespacedName{Namespace: parent.Namespace, Name: secretReference.Name})
-				c.Tracker.Track(ctx, key, parentNamespacedName)
+				log.Info("key", key)
+				// c.Tracker.Track(ctx, key, parentNamespacedName)
 			}
 
 			StashRegistryConfig(ctx, binding.RegistryConfig{
@@ -203,9 +205,11 @@ func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler[*c
 		},
 		Setup: func(ctx context.Context, mgr reconcilers.Manager, bldr *reconcilers.Builder) error {
 			// register an informer to watch Secret's metadata only. This reduces the cache size in memory.
-			bldr.Watches(&source.Kind{Type: &corev1.Secret{}}, reconcilers.EnqueueTracked(ctx, &corev1.Secret{}), builder.OnlyMetadata)
+			bldr.Watches(&corev1.Secret{}, reconcilers.EnqueueTracked(ctx), builder.OnlyMetadata)
+			// bldr.Watches(&source.Kind{Type: &corev1.Secret{}}, reconcilers.EnqueueTracked(ctx, &corev1.Secret{}), builder.OnlyMetadata)
 			// register an informer to watch ServiceAccount
-			bldr.Watches(&source.Kind{Type: &corev1.ServiceAccount{}}, reconcilers.EnqueueTracked(ctx, &corev1.ServiceAccount{}))
+			// bldr.Watches(&source.Kind{Type: &corev1.ServiceAccount{}}, reconcilers.EnqueueTracked(ctx, &corev1.ServiceAccount{}))
+			bldr.Watches(&corev1.ServiceAccount{}, reconcilers.EnqueueTracked(ctx))
 			return nil
 		},
 	}

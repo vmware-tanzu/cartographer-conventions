@@ -23,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	apiserverwebhook "k8s.io/apiserver/pkg/util/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 // +kubebuilder:webhook:path=/validate-conventions-carto-run-v1alpha1-clusterpodconvention,mutating=false,failurePolicy=fail,sideEffects=none,admissionReviewVersions=v1beta1,groups=conventions.carto.run,resources=clusterpodconventions,verbs=create;update,versions=v1alpha1,name=clusterpodconventions.conventions.carto.run
@@ -32,19 +33,19 @@ var (
 )
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *ClusterPodConvention) ValidateCreate() error {
-	return r.validate().ToAggregate()
+func (r *ClusterPodConvention) ValidateCreate() (admission.Warnings, error) {
+	return nil, r.validate().ToAggregate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (c *ClusterPodConvention) ValidateUpdate(old runtime.Object) error {
+func (c *ClusterPodConvention) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
 	// TODO check for immutable fields
-	return c.validate().ToAggregate()
+	return nil, c.validate().ToAggregate()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (c *ClusterPodConvention) ValidateDelete() error {
-	return nil
+func (c *ClusterPodConvention) ValidateDelete() (admission.Warnings, error) {
+	return nil, nil
 }
 
 func (r *ClusterPodConvention) validate() field.ErrorList {

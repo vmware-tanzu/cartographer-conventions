@@ -24,6 +24,8 @@ package v1alpha1
 import (
 	json "encoding/json"
 	fmtx "fmt"
+	osx "os"
+	reflectx "reflect"
 
 	v1 "dies.dev/apis/meta/v1"
 	apis "github.com/vmware-labs/reconciler-runtime/apis"
@@ -33,6 +35,8 @@ import (
 	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
+	jsonpath "k8s.io/client-go/util/jsonpath"
+	yaml "sigs.k8s.io/yaml"
 
 	conventionsv1alpha1 "github.com/vmware-tanzu/cartographer-conventions/pkg/apis/conventions/v1alpha1"
 )
@@ -77,12 +81,40 @@ func (d *ClusterPodConventionDie) DieFeedPtr(r *conventionsv1alpha1.ClusterPodCo
 	return d.DieFeed(*r)
 }
 
-// DieFeedRawExtension returns the resource managed by the die as an raw extension.
-func (d *ClusterPodConventionDie) DieFeedRawExtension(raw runtime.RawExtension) *ClusterPodConventionDie {
-	b, _ := json.Marshal(raw)
+// DieFeedJSON returns a new die with the provided JSON. Panics on error.
+func (d *ClusterPodConventionDie) DieFeedJSON(j []byte) *ClusterPodConventionDie {
 	r := conventionsv1alpha1.ClusterPodConvention{}
-	_ = json.Unmarshal(b, &r)
+	if err := json.Unmarshal(j, &r); err != nil {
+		panic(err)
+	}
 	return d.DieFeed(r)
+}
+
+// DieFeedYAML returns a new die with the provided YAML. Panics on error.
+func (d *ClusterPodConventionDie) DieFeedYAML(y []byte) *ClusterPodConventionDie {
+	r := conventionsv1alpha1.ClusterPodConvention{}
+	if err := yaml.Unmarshal(y, &r); err != nil {
+		panic(err)
+	}
+	return d.DieFeed(r)
+}
+
+// DieFeedYAMLFile returns a new die loading YAML from a file path. Panics on error.
+func (d *ClusterPodConventionDie) DieFeedYAMLFile(name string) *ClusterPodConventionDie {
+	y, err := osx.ReadFile(name)
+	if err != nil {
+		panic(err)
+	}
+	return d.DieFeedYAML(y)
+}
+
+// DieFeedRawExtension returns the resource managed by the die as an raw extension. Panics on error.
+func (d *ClusterPodConventionDie) DieFeedRawExtension(raw runtime.RawExtension) *ClusterPodConventionDie {
+	j, err := json.Marshal(raw)
+	if err != nil {
+		panic(err)
+	}
+	return d.DieFeedJSON(j)
 }
 
 // DieRelease returns the resource managed by the die.
@@ -99,21 +131,45 @@ func (d *ClusterPodConventionDie) DieReleasePtr() *conventionsv1alpha1.ClusterPo
 	return &r
 }
 
-// DieReleaseUnstructured returns the resource managed by the die as an unstructured object.
+// DieReleaseUnstructured returns the resource managed by the die as an unstructured object. Panics on error.
 func (d *ClusterPodConventionDie) DieReleaseUnstructured() *unstructured.Unstructured {
 	r := d.DieReleasePtr()
-	u, _ := runtime.DefaultUnstructuredConverter.ToUnstructured(r)
+	u, err := runtime.DefaultUnstructuredConverter.ToUnstructured(r)
+	if err != nil {
+		panic(err)
+	}
 	return &unstructured.Unstructured{
 		Object: u,
 	}
 }
 
-// DieReleaseRawExtension returns the resource managed by the die as an raw extension.
-func (d *ClusterPodConventionDie) DieReleaseRawExtension() runtime.RawExtension {
+// DieReleaseJSON returns the resource managed by the die as JSON. Panics on error.
+func (d *ClusterPodConventionDie) DieReleaseJSON() []byte {
 	r := d.DieReleasePtr()
-	b, _ := json.Marshal(r)
+	j, err := json.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
+	return j
+}
+
+// DieReleaseYAML returns the resource managed by the die as YAML. Panics on error.
+func (d *ClusterPodConventionDie) DieReleaseYAML() []byte {
+	r := d.DieReleasePtr()
+	y, err := yaml.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
+	return y
+}
+
+// DieReleaseRawExtension returns the resource managed by the die as an raw extension. Panics on error.
+func (d *ClusterPodConventionDie) DieReleaseRawExtension() runtime.RawExtension {
+	j := d.DieReleaseJSON()
 	raw := runtime.RawExtension{}
-	_ = json.Unmarshal(b, &raw)
+	if err := json.Unmarshal(j, &raw); err != nil {
+		panic(err)
+	}
 	return raw
 }
 
@@ -122,6 +178,27 @@ func (d *ClusterPodConventionDie) DieStamp(fn func(r *conventionsv1alpha1.Cluste
 	r := d.DieRelease()
 	fn(&r)
 	return d.DieFeed(r)
+}
+
+// Experimental: DieStampAt uses a JSON path (http://goessner.net/articles/JsonPath/) expression to stamp portions of the resource. The callback is invoked with each JSON path match. Panics if the callback function does not accept a single argument of the same type as found on the resource at the target location.
+//
+// Future iterations will improve type coercion from the resource to the callback argument.
+func (d *ClusterPodConventionDie) DieStampAt(jp string, fn interface{}) *ClusterPodConventionDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.ClusterPodConvention) {
+		cp := jsonpath.New("")
+		if err := cp.Parse(fmtx.Sprintf("{%s}", jp)); err != nil {
+			panic(err)
+		}
+		cr, err := cp.FindResults(r)
+		if err != nil {
+			// errors are expected if a path is not found
+			return
+		}
+		for _, cv := range cr[0] {
+			args := []reflectx.Value{cv}
+			reflectx.ValueOf(fn).Call(args)
+		}
+	})
 }
 
 // DeepCopy returns a new die with equivalent state. Useful for snapshotting a mutable die.
@@ -237,12 +314,40 @@ func (d *ClusterPodConventionSpecDie) DieFeedPtr(r *conventionsv1alpha1.ClusterP
 	return d.DieFeed(*r)
 }
 
-// DieFeedRawExtension returns the resource managed by the die as an raw extension.
-func (d *ClusterPodConventionSpecDie) DieFeedRawExtension(raw runtime.RawExtension) *ClusterPodConventionSpecDie {
-	b, _ := json.Marshal(raw)
+// DieFeedJSON returns a new die with the provided JSON. Panics on error.
+func (d *ClusterPodConventionSpecDie) DieFeedJSON(j []byte) *ClusterPodConventionSpecDie {
 	r := conventionsv1alpha1.ClusterPodConventionSpec{}
-	_ = json.Unmarshal(b, &r)
+	if err := json.Unmarshal(j, &r); err != nil {
+		panic(err)
+	}
 	return d.DieFeed(r)
+}
+
+// DieFeedYAML returns a new die with the provided YAML. Panics on error.
+func (d *ClusterPodConventionSpecDie) DieFeedYAML(y []byte) *ClusterPodConventionSpecDie {
+	r := conventionsv1alpha1.ClusterPodConventionSpec{}
+	if err := yaml.Unmarshal(y, &r); err != nil {
+		panic(err)
+	}
+	return d.DieFeed(r)
+}
+
+// DieFeedYAMLFile returns a new die loading YAML from a file path. Panics on error.
+func (d *ClusterPodConventionSpecDie) DieFeedYAMLFile(name string) *ClusterPodConventionSpecDie {
+	y, err := osx.ReadFile(name)
+	if err != nil {
+		panic(err)
+	}
+	return d.DieFeedYAML(y)
+}
+
+// DieFeedRawExtension returns the resource managed by the die as an raw extension. Panics on error.
+func (d *ClusterPodConventionSpecDie) DieFeedRawExtension(raw runtime.RawExtension) *ClusterPodConventionSpecDie {
+	j, err := json.Marshal(raw)
+	if err != nil {
+		panic(err)
+	}
+	return d.DieFeedJSON(j)
 }
 
 // DieRelease returns the resource managed by the die.
@@ -259,12 +364,33 @@ func (d *ClusterPodConventionSpecDie) DieReleasePtr() *conventionsv1alpha1.Clust
 	return &r
 }
 
-// DieReleaseRawExtension returns the resource managed by the die as an raw extension.
-func (d *ClusterPodConventionSpecDie) DieReleaseRawExtension() runtime.RawExtension {
+// DieReleaseJSON returns the resource managed by the die as JSON. Panics on error.
+func (d *ClusterPodConventionSpecDie) DieReleaseJSON() []byte {
 	r := d.DieReleasePtr()
-	b, _ := json.Marshal(r)
+	j, err := json.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
+	return j
+}
+
+// DieReleaseYAML returns the resource managed by the die as YAML. Panics on error.
+func (d *ClusterPodConventionSpecDie) DieReleaseYAML() []byte {
+	r := d.DieReleasePtr()
+	y, err := yaml.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
+	return y
+}
+
+// DieReleaseRawExtension returns the resource managed by the die as an raw extension. Panics on error.
+func (d *ClusterPodConventionSpecDie) DieReleaseRawExtension() runtime.RawExtension {
+	j := d.DieReleaseJSON()
 	raw := runtime.RawExtension{}
-	_ = json.Unmarshal(b, &raw)
+	if err := json.Unmarshal(j, &raw); err != nil {
+		panic(err)
+	}
 	return raw
 }
 
@@ -273,6 +399,27 @@ func (d *ClusterPodConventionSpecDie) DieStamp(fn func(r *conventionsv1alpha1.Cl
 	r := d.DieRelease()
 	fn(&r)
 	return d.DieFeed(r)
+}
+
+// Experimental: DieStampAt uses a JSON path (http://goessner.net/articles/JsonPath/) expression to stamp portions of the resource. The callback is invoked with each JSON path match. Panics if the callback function does not accept a single argument of the same type as found on the resource at the target location.
+//
+// Future iterations will improve type coercion from the resource to the callback argument.
+func (d *ClusterPodConventionSpecDie) DieStampAt(jp string, fn interface{}) *ClusterPodConventionSpecDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.ClusterPodConventionSpec) {
+		cp := jsonpath.New("")
+		if err := cp.Parse(fmtx.Sprintf("{%s}", jp)); err != nil {
+			panic(err)
+		}
+		cr, err := cp.FindResults(r)
+		if err != nil {
+			// errors are expected if a path is not found
+			return
+		}
+		for _, cv := range cr[0] {
+			args := []reflectx.Value{cv}
+			reflectx.ValueOf(fn).Call(args)
+		}
+	})
 }
 
 // DeepCopy returns a new die with equivalent state. Useful for snapshotting a mutable die.
@@ -346,12 +493,40 @@ func (d *ClusterPodConventionWebhookDie) DieFeedPtr(r *conventionsv1alpha1.Clust
 	return d.DieFeed(*r)
 }
 
-// DieFeedRawExtension returns the resource managed by the die as an raw extension.
-func (d *ClusterPodConventionWebhookDie) DieFeedRawExtension(raw runtime.RawExtension) *ClusterPodConventionWebhookDie {
-	b, _ := json.Marshal(raw)
+// DieFeedJSON returns a new die with the provided JSON. Panics on error.
+func (d *ClusterPodConventionWebhookDie) DieFeedJSON(j []byte) *ClusterPodConventionWebhookDie {
 	r := conventionsv1alpha1.ClusterPodConventionWebhook{}
-	_ = json.Unmarshal(b, &r)
+	if err := json.Unmarshal(j, &r); err != nil {
+		panic(err)
+	}
 	return d.DieFeed(r)
+}
+
+// DieFeedYAML returns a new die with the provided YAML. Panics on error.
+func (d *ClusterPodConventionWebhookDie) DieFeedYAML(y []byte) *ClusterPodConventionWebhookDie {
+	r := conventionsv1alpha1.ClusterPodConventionWebhook{}
+	if err := yaml.Unmarshal(y, &r); err != nil {
+		panic(err)
+	}
+	return d.DieFeed(r)
+}
+
+// DieFeedYAMLFile returns a new die loading YAML from a file path. Panics on error.
+func (d *ClusterPodConventionWebhookDie) DieFeedYAMLFile(name string) *ClusterPodConventionWebhookDie {
+	y, err := osx.ReadFile(name)
+	if err != nil {
+		panic(err)
+	}
+	return d.DieFeedYAML(y)
+}
+
+// DieFeedRawExtension returns the resource managed by the die as an raw extension. Panics on error.
+func (d *ClusterPodConventionWebhookDie) DieFeedRawExtension(raw runtime.RawExtension) *ClusterPodConventionWebhookDie {
+	j, err := json.Marshal(raw)
+	if err != nil {
+		panic(err)
+	}
+	return d.DieFeedJSON(j)
 }
 
 // DieRelease returns the resource managed by the die.
@@ -368,12 +543,33 @@ func (d *ClusterPodConventionWebhookDie) DieReleasePtr() *conventionsv1alpha1.Cl
 	return &r
 }
 
-// DieReleaseRawExtension returns the resource managed by the die as an raw extension.
-func (d *ClusterPodConventionWebhookDie) DieReleaseRawExtension() runtime.RawExtension {
+// DieReleaseJSON returns the resource managed by the die as JSON. Panics on error.
+func (d *ClusterPodConventionWebhookDie) DieReleaseJSON() []byte {
 	r := d.DieReleasePtr()
-	b, _ := json.Marshal(r)
+	j, err := json.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
+	return j
+}
+
+// DieReleaseYAML returns the resource managed by the die as YAML. Panics on error.
+func (d *ClusterPodConventionWebhookDie) DieReleaseYAML() []byte {
+	r := d.DieReleasePtr()
+	y, err := yaml.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
+	return y
+}
+
+// DieReleaseRawExtension returns the resource managed by the die as an raw extension. Panics on error.
+func (d *ClusterPodConventionWebhookDie) DieReleaseRawExtension() runtime.RawExtension {
+	j := d.DieReleaseJSON()
 	raw := runtime.RawExtension{}
-	_ = json.Unmarshal(b, &raw)
+	if err := json.Unmarshal(j, &raw); err != nil {
+		panic(err)
+	}
 	return raw
 }
 
@@ -382,6 +578,27 @@ func (d *ClusterPodConventionWebhookDie) DieStamp(fn func(r *conventionsv1alpha1
 	r := d.DieRelease()
 	fn(&r)
 	return d.DieFeed(r)
+}
+
+// Experimental: DieStampAt uses a JSON path (http://goessner.net/articles/JsonPath/) expression to stamp portions of the resource. The callback is invoked with each JSON path match. Panics if the callback function does not accept a single argument of the same type as found on the resource at the target location.
+//
+// Future iterations will improve type coercion from the resource to the callback argument.
+func (d *ClusterPodConventionWebhookDie) DieStampAt(jp string, fn interface{}) *ClusterPodConventionWebhookDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.ClusterPodConventionWebhook) {
+		cp := jsonpath.New("")
+		if err := cp.Parse(fmtx.Sprintf("{%s}", jp)); err != nil {
+			panic(err)
+		}
+		cr, err := cp.FindResults(r)
+		if err != nil {
+			// errors are expected if a path is not found
+			return
+		}
+		for _, cv := range cr[0] {
+			args := []reflectx.Value{cv}
+			reflectx.ValueOf(fn).Call(args)
+		}
+	})
 }
 
 // DeepCopy returns a new die with equivalent state. Useful for snapshotting a mutable die.
@@ -444,12 +661,40 @@ func (d *ClusterPodConventionWebhookCertificateDie) DieFeedPtr(r *conventionsv1a
 	return d.DieFeed(*r)
 }
 
-// DieFeedRawExtension returns the resource managed by the die as an raw extension.
-func (d *ClusterPodConventionWebhookCertificateDie) DieFeedRawExtension(raw runtime.RawExtension) *ClusterPodConventionWebhookCertificateDie {
-	b, _ := json.Marshal(raw)
+// DieFeedJSON returns a new die with the provided JSON. Panics on error.
+func (d *ClusterPodConventionWebhookCertificateDie) DieFeedJSON(j []byte) *ClusterPodConventionWebhookCertificateDie {
 	r := conventionsv1alpha1.ClusterPodConventionWebhookCertificate{}
-	_ = json.Unmarshal(b, &r)
+	if err := json.Unmarshal(j, &r); err != nil {
+		panic(err)
+	}
 	return d.DieFeed(r)
+}
+
+// DieFeedYAML returns a new die with the provided YAML. Panics on error.
+func (d *ClusterPodConventionWebhookCertificateDie) DieFeedYAML(y []byte) *ClusterPodConventionWebhookCertificateDie {
+	r := conventionsv1alpha1.ClusterPodConventionWebhookCertificate{}
+	if err := yaml.Unmarshal(y, &r); err != nil {
+		panic(err)
+	}
+	return d.DieFeed(r)
+}
+
+// DieFeedYAMLFile returns a new die loading YAML from a file path. Panics on error.
+func (d *ClusterPodConventionWebhookCertificateDie) DieFeedYAMLFile(name string) *ClusterPodConventionWebhookCertificateDie {
+	y, err := osx.ReadFile(name)
+	if err != nil {
+		panic(err)
+	}
+	return d.DieFeedYAML(y)
+}
+
+// DieFeedRawExtension returns the resource managed by the die as an raw extension. Panics on error.
+func (d *ClusterPodConventionWebhookCertificateDie) DieFeedRawExtension(raw runtime.RawExtension) *ClusterPodConventionWebhookCertificateDie {
+	j, err := json.Marshal(raw)
+	if err != nil {
+		panic(err)
+	}
+	return d.DieFeedJSON(j)
 }
 
 // DieRelease returns the resource managed by the die.
@@ -466,12 +711,33 @@ func (d *ClusterPodConventionWebhookCertificateDie) DieReleasePtr() *conventions
 	return &r
 }
 
-// DieReleaseRawExtension returns the resource managed by the die as an raw extension.
-func (d *ClusterPodConventionWebhookCertificateDie) DieReleaseRawExtension() runtime.RawExtension {
+// DieReleaseJSON returns the resource managed by the die as JSON. Panics on error.
+func (d *ClusterPodConventionWebhookCertificateDie) DieReleaseJSON() []byte {
 	r := d.DieReleasePtr()
-	b, _ := json.Marshal(r)
+	j, err := json.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
+	return j
+}
+
+// DieReleaseYAML returns the resource managed by the die as YAML. Panics on error.
+func (d *ClusterPodConventionWebhookCertificateDie) DieReleaseYAML() []byte {
+	r := d.DieReleasePtr()
+	y, err := yaml.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
+	return y
+}
+
+// DieReleaseRawExtension returns the resource managed by the die as an raw extension. Panics on error.
+func (d *ClusterPodConventionWebhookCertificateDie) DieReleaseRawExtension() runtime.RawExtension {
+	j := d.DieReleaseJSON()
 	raw := runtime.RawExtension{}
-	_ = json.Unmarshal(b, &raw)
+	if err := json.Unmarshal(j, &raw); err != nil {
+		panic(err)
+	}
 	return raw
 }
 
@@ -480,6 +746,27 @@ func (d *ClusterPodConventionWebhookCertificateDie) DieStamp(fn func(r *conventi
 	r := d.DieRelease()
 	fn(&r)
 	return d.DieFeed(r)
+}
+
+// Experimental: DieStampAt uses a JSON path (http://goessner.net/articles/JsonPath/) expression to stamp portions of the resource. The callback is invoked with each JSON path match. Panics if the callback function does not accept a single argument of the same type as found on the resource at the target location.
+//
+// Future iterations will improve type coercion from the resource to the callback argument.
+func (d *ClusterPodConventionWebhookCertificateDie) DieStampAt(jp string, fn interface{}) *ClusterPodConventionWebhookCertificateDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.ClusterPodConventionWebhookCertificate) {
+		cp := jsonpath.New("")
+		if err := cp.Parse(fmtx.Sprintf("{%s}", jp)); err != nil {
+			panic(err)
+		}
+		cr, err := cp.FindResults(r)
+		if err != nil {
+			// errors are expected if a path is not found
+			return
+		}
+		for _, cv := range cr[0] {
+			args := []reflectx.Value{cv}
+			reflectx.ValueOf(fn).Call(args)
+		}
+	})
 }
 
 // DeepCopy returns a new die with equivalent state. Useful for snapshotting a mutable die.
@@ -543,12 +830,40 @@ func (d *PodIntentDie) DieFeedPtr(r *conventionsv1alpha1.PodIntent) *PodIntentDi
 	return d.DieFeed(*r)
 }
 
-// DieFeedRawExtension returns the resource managed by the die as an raw extension.
-func (d *PodIntentDie) DieFeedRawExtension(raw runtime.RawExtension) *PodIntentDie {
-	b, _ := json.Marshal(raw)
+// DieFeedJSON returns a new die with the provided JSON. Panics on error.
+func (d *PodIntentDie) DieFeedJSON(j []byte) *PodIntentDie {
 	r := conventionsv1alpha1.PodIntent{}
-	_ = json.Unmarshal(b, &r)
+	if err := json.Unmarshal(j, &r); err != nil {
+		panic(err)
+	}
 	return d.DieFeed(r)
+}
+
+// DieFeedYAML returns a new die with the provided YAML. Panics on error.
+func (d *PodIntentDie) DieFeedYAML(y []byte) *PodIntentDie {
+	r := conventionsv1alpha1.PodIntent{}
+	if err := yaml.Unmarshal(y, &r); err != nil {
+		panic(err)
+	}
+	return d.DieFeed(r)
+}
+
+// DieFeedYAMLFile returns a new die loading YAML from a file path. Panics on error.
+func (d *PodIntentDie) DieFeedYAMLFile(name string) *PodIntentDie {
+	y, err := osx.ReadFile(name)
+	if err != nil {
+		panic(err)
+	}
+	return d.DieFeedYAML(y)
+}
+
+// DieFeedRawExtension returns the resource managed by the die as an raw extension. Panics on error.
+func (d *PodIntentDie) DieFeedRawExtension(raw runtime.RawExtension) *PodIntentDie {
+	j, err := json.Marshal(raw)
+	if err != nil {
+		panic(err)
+	}
+	return d.DieFeedJSON(j)
 }
 
 // DieRelease returns the resource managed by the die.
@@ -565,21 +880,45 @@ func (d *PodIntentDie) DieReleasePtr() *conventionsv1alpha1.PodIntent {
 	return &r
 }
 
-// DieReleaseUnstructured returns the resource managed by the die as an unstructured object.
+// DieReleaseUnstructured returns the resource managed by the die as an unstructured object. Panics on error.
 func (d *PodIntentDie) DieReleaseUnstructured() *unstructured.Unstructured {
 	r := d.DieReleasePtr()
-	u, _ := runtime.DefaultUnstructuredConverter.ToUnstructured(r)
+	u, err := runtime.DefaultUnstructuredConverter.ToUnstructured(r)
+	if err != nil {
+		panic(err)
+	}
 	return &unstructured.Unstructured{
 		Object: u,
 	}
 }
 
-// DieReleaseRawExtension returns the resource managed by the die as an raw extension.
-func (d *PodIntentDie) DieReleaseRawExtension() runtime.RawExtension {
+// DieReleaseJSON returns the resource managed by the die as JSON. Panics on error.
+func (d *PodIntentDie) DieReleaseJSON() []byte {
 	r := d.DieReleasePtr()
-	b, _ := json.Marshal(r)
+	j, err := json.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
+	return j
+}
+
+// DieReleaseYAML returns the resource managed by the die as YAML. Panics on error.
+func (d *PodIntentDie) DieReleaseYAML() []byte {
+	r := d.DieReleasePtr()
+	y, err := yaml.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
+	return y
+}
+
+// DieReleaseRawExtension returns the resource managed by the die as an raw extension. Panics on error.
+func (d *PodIntentDie) DieReleaseRawExtension() runtime.RawExtension {
+	j := d.DieReleaseJSON()
 	raw := runtime.RawExtension{}
-	_ = json.Unmarshal(b, &raw)
+	if err := json.Unmarshal(j, &raw); err != nil {
+		panic(err)
+	}
 	return raw
 }
 
@@ -588,6 +927,27 @@ func (d *PodIntentDie) DieStamp(fn func(r *conventionsv1alpha1.PodIntent)) *PodI
 	r := d.DieRelease()
 	fn(&r)
 	return d.DieFeed(r)
+}
+
+// Experimental: DieStampAt uses a JSON path (http://goessner.net/articles/JsonPath/) expression to stamp portions of the resource. The callback is invoked with each JSON path match. Panics if the callback function does not accept a single argument of the same type as found on the resource at the target location.
+//
+// Future iterations will improve type coercion from the resource to the callback argument.
+func (d *PodIntentDie) DieStampAt(jp string, fn interface{}) *PodIntentDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.PodIntent) {
+		cp := jsonpath.New("")
+		if err := cp.Parse(fmtx.Sprintf("{%s}", jp)); err != nil {
+			panic(err)
+		}
+		cr, err := cp.FindResults(r)
+		if err != nil {
+			// errors are expected if a path is not found
+			return
+		}
+		for _, cv := range cr[0] {
+			args := []reflectx.Value{cv}
+			reflectx.ValueOf(fn).Call(args)
+		}
+	})
 }
 
 // DeepCopy returns a new die with equivalent state. Useful for snapshotting a mutable die.
@@ -718,12 +1078,40 @@ func (d *PodIntentSpecDie) DieFeedPtr(r *conventionsv1alpha1.PodIntentSpec) *Pod
 	return d.DieFeed(*r)
 }
 
-// DieFeedRawExtension returns the resource managed by the die as an raw extension.
-func (d *PodIntentSpecDie) DieFeedRawExtension(raw runtime.RawExtension) *PodIntentSpecDie {
-	b, _ := json.Marshal(raw)
+// DieFeedJSON returns a new die with the provided JSON. Panics on error.
+func (d *PodIntentSpecDie) DieFeedJSON(j []byte) *PodIntentSpecDie {
 	r := conventionsv1alpha1.PodIntentSpec{}
-	_ = json.Unmarshal(b, &r)
+	if err := json.Unmarshal(j, &r); err != nil {
+		panic(err)
+	}
 	return d.DieFeed(r)
+}
+
+// DieFeedYAML returns a new die with the provided YAML. Panics on error.
+func (d *PodIntentSpecDie) DieFeedYAML(y []byte) *PodIntentSpecDie {
+	r := conventionsv1alpha1.PodIntentSpec{}
+	if err := yaml.Unmarshal(y, &r); err != nil {
+		panic(err)
+	}
+	return d.DieFeed(r)
+}
+
+// DieFeedYAMLFile returns a new die loading YAML from a file path. Panics on error.
+func (d *PodIntentSpecDie) DieFeedYAMLFile(name string) *PodIntentSpecDie {
+	y, err := osx.ReadFile(name)
+	if err != nil {
+		panic(err)
+	}
+	return d.DieFeedYAML(y)
+}
+
+// DieFeedRawExtension returns the resource managed by the die as an raw extension. Panics on error.
+func (d *PodIntentSpecDie) DieFeedRawExtension(raw runtime.RawExtension) *PodIntentSpecDie {
+	j, err := json.Marshal(raw)
+	if err != nil {
+		panic(err)
+	}
+	return d.DieFeedJSON(j)
 }
 
 // DieRelease returns the resource managed by the die.
@@ -740,12 +1128,33 @@ func (d *PodIntentSpecDie) DieReleasePtr() *conventionsv1alpha1.PodIntentSpec {
 	return &r
 }
 
-// DieReleaseRawExtension returns the resource managed by the die as an raw extension.
-func (d *PodIntentSpecDie) DieReleaseRawExtension() runtime.RawExtension {
+// DieReleaseJSON returns the resource managed by the die as JSON. Panics on error.
+func (d *PodIntentSpecDie) DieReleaseJSON() []byte {
 	r := d.DieReleasePtr()
-	b, _ := json.Marshal(r)
+	j, err := json.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
+	return j
+}
+
+// DieReleaseYAML returns the resource managed by the die as YAML. Panics on error.
+func (d *PodIntentSpecDie) DieReleaseYAML() []byte {
+	r := d.DieReleasePtr()
+	y, err := yaml.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
+	return y
+}
+
+// DieReleaseRawExtension returns the resource managed by the die as an raw extension. Panics on error.
+func (d *PodIntentSpecDie) DieReleaseRawExtension() runtime.RawExtension {
+	j := d.DieReleaseJSON()
 	raw := runtime.RawExtension{}
-	_ = json.Unmarshal(b, &raw)
+	if err := json.Unmarshal(j, &raw); err != nil {
+		panic(err)
+	}
 	return raw
 }
 
@@ -754,6 +1163,27 @@ func (d *PodIntentSpecDie) DieStamp(fn func(r *conventionsv1alpha1.PodIntentSpec
 	r := d.DieRelease()
 	fn(&r)
 	return d.DieFeed(r)
+}
+
+// Experimental: DieStampAt uses a JSON path (http://goessner.net/articles/JsonPath/) expression to stamp portions of the resource. The callback is invoked with each JSON path match. Panics if the callback function does not accept a single argument of the same type as found on the resource at the target location.
+//
+// Future iterations will improve type coercion from the resource to the callback argument.
+func (d *PodIntentSpecDie) DieStampAt(jp string, fn interface{}) *PodIntentSpecDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.PodIntentSpec) {
+		cp := jsonpath.New("")
+		if err := cp.Parse(fmtx.Sprintf("{%s}", jp)); err != nil {
+			panic(err)
+		}
+		cr, err := cp.FindResults(r)
+		if err != nil {
+			// errors are expected if a path is not found
+			return
+		}
+		for _, cv := range cr[0] {
+			args := []reflectx.Value{cv}
+			reflectx.ValueOf(fn).Call(args)
+		}
+	})
 }
 
 // DeepCopy returns a new die with equivalent state. Useful for snapshotting a mutable die.
@@ -823,12 +1253,40 @@ func (d *PodIntentStatusDie) DieFeedPtr(r *conventionsv1alpha1.PodIntentStatus) 
 	return d.DieFeed(*r)
 }
 
-// DieFeedRawExtension returns the resource managed by the die as an raw extension.
-func (d *PodIntentStatusDie) DieFeedRawExtension(raw runtime.RawExtension) *PodIntentStatusDie {
-	b, _ := json.Marshal(raw)
+// DieFeedJSON returns a new die with the provided JSON. Panics on error.
+func (d *PodIntentStatusDie) DieFeedJSON(j []byte) *PodIntentStatusDie {
 	r := conventionsv1alpha1.PodIntentStatus{}
-	_ = json.Unmarshal(b, &r)
+	if err := json.Unmarshal(j, &r); err != nil {
+		panic(err)
+	}
 	return d.DieFeed(r)
+}
+
+// DieFeedYAML returns a new die with the provided YAML. Panics on error.
+func (d *PodIntentStatusDie) DieFeedYAML(y []byte) *PodIntentStatusDie {
+	r := conventionsv1alpha1.PodIntentStatus{}
+	if err := yaml.Unmarshal(y, &r); err != nil {
+		panic(err)
+	}
+	return d.DieFeed(r)
+}
+
+// DieFeedYAMLFile returns a new die loading YAML from a file path. Panics on error.
+func (d *PodIntentStatusDie) DieFeedYAMLFile(name string) *PodIntentStatusDie {
+	y, err := osx.ReadFile(name)
+	if err != nil {
+		panic(err)
+	}
+	return d.DieFeedYAML(y)
+}
+
+// DieFeedRawExtension returns the resource managed by the die as an raw extension. Panics on error.
+func (d *PodIntentStatusDie) DieFeedRawExtension(raw runtime.RawExtension) *PodIntentStatusDie {
+	j, err := json.Marshal(raw)
+	if err != nil {
+		panic(err)
+	}
+	return d.DieFeedJSON(j)
 }
 
 // DieRelease returns the resource managed by the die.
@@ -845,12 +1303,33 @@ func (d *PodIntentStatusDie) DieReleasePtr() *conventionsv1alpha1.PodIntentStatu
 	return &r
 }
 
-// DieReleaseRawExtension returns the resource managed by the die as an raw extension.
-func (d *PodIntentStatusDie) DieReleaseRawExtension() runtime.RawExtension {
+// DieReleaseJSON returns the resource managed by the die as JSON. Panics on error.
+func (d *PodIntentStatusDie) DieReleaseJSON() []byte {
 	r := d.DieReleasePtr()
-	b, _ := json.Marshal(r)
+	j, err := json.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
+	return j
+}
+
+// DieReleaseYAML returns the resource managed by the die as YAML. Panics on error.
+func (d *PodIntentStatusDie) DieReleaseYAML() []byte {
+	r := d.DieReleasePtr()
+	y, err := yaml.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
+	return y
+}
+
+// DieReleaseRawExtension returns the resource managed by the die as an raw extension. Panics on error.
+func (d *PodIntentStatusDie) DieReleaseRawExtension() runtime.RawExtension {
+	j := d.DieReleaseJSON()
 	raw := runtime.RawExtension{}
-	_ = json.Unmarshal(b, &raw)
+	if err := json.Unmarshal(j, &raw); err != nil {
+		panic(err)
+	}
 	return raw
 }
 
@@ -859,6 +1338,27 @@ func (d *PodIntentStatusDie) DieStamp(fn func(r *conventionsv1alpha1.PodIntentSt
 	r := d.DieRelease()
 	fn(&r)
 	return d.DieFeed(r)
+}
+
+// Experimental: DieStampAt uses a JSON path (http://goessner.net/articles/JsonPath/) expression to stamp portions of the resource. The callback is invoked with each JSON path match. Panics if the callback function does not accept a single argument of the same type as found on the resource at the target location.
+//
+// Future iterations will improve type coercion from the resource to the callback argument.
+func (d *PodIntentStatusDie) DieStampAt(jp string, fn interface{}) *PodIntentStatusDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.PodIntentStatus) {
+		cp := jsonpath.New("")
+		if err := cp.Parse(fmtx.Sprintf("{%s}", jp)); err != nil {
+			panic(err)
+		}
+		cr, err := cp.FindResults(r)
+		if err != nil {
+			// errors are expected if a path is not found
+			return
+		}
+		for _, cv := range cr[0] {
+			args := []reflectx.Value{cv}
+			reflectx.ValueOf(fn).Call(args)
+		}
+	})
 }
 
 // DeepCopy returns a new die with equivalent state. Useful for snapshotting a mutable die.
