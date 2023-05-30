@@ -21,14 +21,13 @@ import (
 	"context"
 	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/go-logr/logr"
 	"github.com/google/go-containerregistry/pkg/authn/k8schain"
 	"github.com/vmware-labs/reconciler-runtime/apis"
 	"github.com/vmware-labs/reconciler-runtime/reconcilers"
-	"github.com/vmware-labs/reconciler-runtime/tracker"
 	corev1 "k8s.io/api/core/v1"
+	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -146,7 +145,7 @@ func ResolveConventions() reconcilers.SubReconciler[*conventionsv1alpha1.PodInte
 
 func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler[*conventionsv1alpha1.PodIntent] {
 	return &reconcilers.SyncReconciler[*conventionsv1alpha1.PodIntent]{
-		Name: "BuildRegistryConfig",
+		Name: "BuildRegistryConfigReconciler",
 		SyncWithResult: func(ctx context.Context, parent *conventionsv1alpha1.PodIntent) (ctrl.Result, error) {
 			log := logr.FromContextOrDiscard(ctx)
 			c := reconcilers.RetrieveConfigOrDie(ctx)
@@ -154,25 +153,22 @@ func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler[*c
 				return ctrl.Result{}, fmt.Errorf("kubernetes client is not set")
 			}
 			conditionManager := parent.GetConditionSet().Manage(&parent.Status)
-			parentNamespacedName := types.NamespacedName{Namespace: parent.Namespace, Name: parent.Name}
-			log.Info("parentNamespacedName", parentNamespacedName)
 
-			var imagePullSecrets []string
+			// create list of image pull secrets from parent spec
+			var pullSecretNamesList []string
 			for _, ips := range parent.Spec.ImagePullSecrets {
-				imagePullSecrets = append(imagePullSecrets, ips.Name)
-				// track ref for updates
-				key := tracker.NewKey(secretGVK, types.NamespacedName{Namespace: parent.Namespace, Name: ips.Name})
-				// c.Tracker.Track(ctx, key, parentNamespacedName)
-				log.Info("key", key)
+				pullSecretNamesList = append(pullSecretNamesList, ips.Name)
 			}
 
 			serviceAccountName := parent.Spec.ServiceAccountName
 
+			// initalise a new k8schain using the parent service account and pull secrets
 			kc, err := k8schain.New(ctx, rc.Client, k8schain.Options{
 				Namespace:          parent.Namespace,
 				ServiceAccountName: serviceAccountName,
-				ImagePullSecrets:   imagePullSecrets,
+				ImagePullSecrets:   pullSecretNamesList,
 			})
+
 			if err != nil {
 				conditionManager.MarkFalse(conventionsv1alpha1.PodIntentConditionConventionsApplied, "ImageResolutionFailed", "failed to authenticate: %v", err.Error())
 				log.Error(err, "fetching authentication for Images failed")
@@ -180,21 +176,26 @@ func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler[*c
 			}
 
 			serviceAccountNamespacedName := types.NamespacedName{Namespace: parent.Namespace, Name: serviceAccountName}
-			sa := &corev1.ServiceAccount{}
-			if err = c.TrackAndGet(ctx, serviceAccountNamespacedName, sa); err != nil {
+			serviceAccount := &corev1.ServiceAccount{}
+			if err = c.TrackAndGet(ctx, serviceAccountNamespacedName, serviceAccount); err != nil {
 				log.Error(err, "fetching serviceAccount failed")
 				// should not happen mostly.
+
 				conditionManager.MarkFalse(conventionsv1alpha1.PodIntentConditionConventionsApplied, "ImageResolutionFailed", fmt.Sprintf("failed to authenticate: %v", err.Error()))
 				return ctrl.Result{}, nil
 			}
 
-			for _, secretReference := range sa.ImagePullSecrets {
-				// track ref for updates
-				key := tracker.NewKey(secretGVK, types.NamespacedName{Namespace: parent.Namespace, Name: secretReference.Name})
-				log.Info("key", key)
-				// c.Tracker.Track(ctx, key, parentNamespacedName)
+			// lookup each individual image pull secret from the service account
+			for _, secretReference := range serviceAccount.ImagePullSecrets {
+				pullSecretObj := corev1.Secret{}
+				err := c.TrackAndGet(ctx, types.NamespacedName{Namespace: parent.Namespace, Name: secretReference.Name}, &pullSecretObj)
+				if err != nil {
+					if apierrs.IsNotFound(err) {
+						return ctrl.Result{}, nil
+					}
+					return ctrl.Result{}, err
+				}
 			}
-
 			StashRegistryConfig(ctx, binding.RegistryConfig{
 				Keys:       kc,
 				Cache:      rc.Cache,
@@ -203,12 +204,11 @@ func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler[*c
 			})
 			return ctrl.Result{}, nil
 		},
+
 		Setup: func(ctx context.Context, mgr reconcilers.Manager, bldr *reconcilers.Builder) error {
 			// register an informer to watch Secret's metadata only. This reduces the cache size in memory.
 			bldr.Watches(&corev1.Secret{}, reconcilers.EnqueueTracked(ctx), builder.OnlyMetadata)
-			// bldr.Watches(&source.Kind{Type: &corev1.Secret{}}, reconcilers.EnqueueTracked(ctx, &corev1.Secret{}), builder.OnlyMetadata)
 			// register an informer to watch ServiceAccount
-			// bldr.Watches(&source.Kind{Type: &corev1.ServiceAccount{}}, reconcilers.EnqueueTracked(ctx, &corev1.ServiceAccount{}))
 			bldr.Watches(&corev1.ServiceAccount{}, reconcilers.EnqueueTracked(ctx))
 			return nil
 		},
@@ -305,8 +305,9 @@ func ApplyConventionsReconciler(wc binding.WebhookConfig) reconcilers.SubReconci
 }
 
 const (
-	ConventionsStashKey reconcilers.StashKey = "conventions.carto.run/Conventions"
-	RegistryConfigKey   reconcilers.StashKey = "conventions.carto.run/RegistryConfig"
+	ConventionsStashKey      reconcilers.StashKey = "conventions.carto.run/Conventions"
+	RegistryConfigKey        reconcilers.StashKey = "conventions.carto.run/RegistryConfig"
+	ImagePullSecretsStashKey reconcilers.StashKey = "conventions.carto.run/Conventions/image-pull-secrets"
 )
 
 func StashConventions(ctx context.Context, conventions []binding.Convention) {
@@ -331,12 +332,4 @@ func RetrieveRegistryConfig(ctx context.Context) binding.RegistryConfig {
 		return workload
 	}
 	return binding.RegistryConfig{}
-}
-
-func splitNamespacedName(nameStr string) types.NamespacedName {
-	splitPoint := strings.IndexRune(nameStr, types.Separator)
-	if splitPoint == -1 {
-		return types.NamespacedName{Name: nameStr}
-	}
-	return types.NamespacedName{Namespace: nameStr[:splitPoint], Name: nameStr[splitPoint+1:]}
 }
