@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/go-logr/logr"
 	"github.com/google/go-containerregistry/pkg/authn/k8schain"
@@ -145,7 +146,7 @@ func ResolveConventions() reconcilers.SubReconciler[*conventionsv1alpha1.PodInte
 
 func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler[*conventionsv1alpha1.PodIntent] {
 	return &reconcilers.SyncReconciler[*conventionsv1alpha1.PodIntent]{
-		Name: "BuildRegistryConfigReconciler",
+		Name: "BuildRegistryConfig",
 		SyncWithResult: func(ctx context.Context, parent *conventionsv1alpha1.PodIntent) (ctrl.Result, error) {
 			log := logr.FromContextOrDiscard(ctx)
 			c := reconcilers.RetrieveConfigOrDie(ctx)
@@ -154,48 +155,60 @@ func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler[*c
 			}
 			conditionManager := parent.GetConditionSet().Manage(&parent.Status)
 
-			// create list of image pull secrets from parent spec
-			var pullSecretNamesList []string
-			for _, ips := range parent.Spec.ImagePullSecrets {
-				pullSecretNamesList = append(pullSecretNamesList, ips.Name)
+			var imagePullSecrets []string
+			for _, imgPullSecret := range parent.Spec.ImagePullSecrets {
+				imagePullSecrets = append(imagePullSecrets, imgPullSecret.Name)
+
+				pullSecret := corev1.Secret{}
+				err := c.TrackAndGet(ctx, types.NamespacedName{Namespace: parent.Namespace, Name: imgPullSecret.Name}, &pullSecret)
+				if err != nil {
+					if apierrs.IsNotFound(err) {
+						conditionManager.MarkFalse(conventionsv1alpha1.PodIntentConditionConventionsApplied, "ImageResolutionFailed", "failed to authenticate: %v", err.Error())
+						return ctrl.Result{}, nil
+					}
+					return ctrl.Result{}, nil
+				}
 			}
 
 			serviceAccountName := parent.Spec.ServiceAccountName
+			if serviceAccountName == "" {
+				serviceAccountName = "default"
+			}
+			sa := corev1.ServiceAccount{}
+			// should not happen mostly.
+			err := c.TrackAndGet(ctx, types.NamespacedName{Namespace: parent.Namespace, Name: serviceAccountName}, &sa)
+			if err != nil {
+				if apierrs.IsNotFound(err) {
+					conditionManager.MarkFalse(conventionsv1alpha1.PodIntentConditionConventionsApplied, "ImageResolutionFailed", fmt.Sprintf("failed to authenticate: %v", err.Error()))
+					return ctrl.Result{}, nil
+				}
+				return ctrl.Result{}, nil
+			}
 
-			// initalise a new k8schain using the parent service account and pull secrets
+			for _, secretReference := range sa.ImagePullSecrets {
+				// track ref for updates
+				imagepullSecret := corev1.Secret{}
+				err := c.TrackAndGet(ctx, types.NamespacedName{Namespace: parent.Namespace, Name: secretReference.Name}, &imagepullSecret)
+				if err != nil {
+					if apierrs.IsNotFound(err) {
+						conditionManager.MarkFalse(conventionsv1alpha1.PodIntentConditionConventionsApplied, "ImageResolutionFailed", fmt.Sprintf("failed to authenticate: %v", err.Error()))
+						return ctrl.Result{}, nil
+					}
+					return ctrl.Result{}, nil
+				}
+			}
+
 			kc, err := k8schain.New(ctx, rc.Client, k8schain.Options{
 				Namespace:          parent.Namespace,
 				ServiceAccountName: serviceAccountName,
-				ImagePullSecrets:   pullSecretNamesList,
+				ImagePullSecrets:   imagePullSecrets,
 			})
-
 			if err != nil {
 				conditionManager.MarkFalse(conventionsv1alpha1.PodIntentConditionConventionsApplied, "ImageResolutionFailed", "failed to authenticate: %v", err.Error())
 				log.Error(err, "fetching authentication for Images failed")
 				return ctrl.Result{}, nil
 			}
 
-			serviceAccountNamespacedName := types.NamespacedName{Namespace: parent.Namespace, Name: serviceAccountName}
-			serviceAccount := &corev1.ServiceAccount{}
-			if err = c.TrackAndGet(ctx, serviceAccountNamespacedName, serviceAccount); err != nil {
-				log.Error(err, "fetching serviceAccount failed")
-				// should not happen mostly.
-
-				conditionManager.MarkFalse(conventionsv1alpha1.PodIntentConditionConventionsApplied, "ImageResolutionFailed", fmt.Sprintf("failed to authenticate: %v", err.Error()))
-				return ctrl.Result{}, nil
-			}
-
-			// lookup each individual image pull secret from the service account
-			for _, secretReference := range serviceAccount.ImagePullSecrets {
-				pullSecretObj := corev1.Secret{}
-				err := c.TrackAndGet(ctx, types.NamespacedName{Namespace: parent.Namespace, Name: secretReference.Name}, &pullSecretObj)
-				if err != nil {
-					if apierrs.IsNotFound(err) {
-						return ctrl.Result{}, nil
-					}
-					return ctrl.Result{}, err
-				}
-			}
 			StashRegistryConfig(ctx, binding.RegistryConfig{
 				Keys:       kc,
 				Cache:      rc.Cache,
@@ -204,7 +217,6 @@ func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler[*c
 			})
 			return ctrl.Result{}, nil
 		},
-
 		Setup: func(ctx context.Context, mgr reconcilers.Manager, bldr *reconcilers.Builder) error {
 			// register an informer to watch Secret's metadata only. This reduces the cache size in memory.
 			bldr.Watches(&corev1.Secret{}, reconcilers.EnqueueTracked(ctx), builder.OnlyMetadata)
@@ -305,9 +317,8 @@ func ApplyConventionsReconciler(wc binding.WebhookConfig) reconcilers.SubReconci
 }
 
 const (
-	ConventionsStashKey      reconcilers.StashKey = "conventions.carto.run/Conventions"
-	RegistryConfigKey        reconcilers.StashKey = "conventions.carto.run/RegistryConfig"
-	ImagePullSecretsStashKey reconcilers.StashKey = "conventions.carto.run/Conventions/image-pull-secrets"
+	ConventionsStashKey reconcilers.StashKey = "conventions.carto.run/Conventions"
+	RegistryConfigKey   reconcilers.StashKey = "conventions.carto.run/RegistryConfig"
 )
 
 func StashConventions(ctx context.Context, conventions []binding.Convention) {
@@ -332,4 +343,12 @@ func RetrieveRegistryConfig(ctx context.Context) binding.RegistryConfig {
 		return workload
 	}
 	return binding.RegistryConfig{}
+}
+
+func splitNamespacedName(nameStr string) types.NamespacedName {
+	splitPoint := strings.IndexRune(nameStr, types.Separator)
+	if splitPoint == -1 {
+		return types.NamespacedName{Name: nameStr}
+	}
+	return types.NamespacedName{Namespace: nameStr[:splitPoint], Name: nameStr[splitPoint+1:]}
 }
