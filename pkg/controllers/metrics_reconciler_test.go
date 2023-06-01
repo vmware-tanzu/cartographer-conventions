@@ -168,15 +168,16 @@ func TestMetricsReconciler(t *testing.T) {
 			},
 			ExpectedResult: ctrl.Result{},
 		},
-		// "configmap with delete timestamp": {
-		// 	Request: request,
-		// 	GivenObjects: []client.Object{
-		// 		testMetrics.
-		// 			MetadataDie(func(d *diemetav1.ObjectMetaDie) {
-		// 				d.DeletionTimestamp(&now)
-		// 			}),
-		// 	},
-		// },
+		"configmap with delete timestamp": {
+			Request: request,
+			GivenObjects: []client.Object{
+				testMetrics.
+					MetadataDie(func(d *diemetav1.ObjectMetaDie) {
+						d.DeletionTimestamp(&now)
+						d.Finalizers("conventions.carto.run/finalizer")
+					}),
+			},
+		},
 		"builders configmap with intent with different status": {
 			Request: request,
 			GivenObjects: []client.Object{
