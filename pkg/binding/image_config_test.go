@@ -20,7 +20,6 @@ import (
 	"context"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"net/http/httptest"
 	"net/url"
 	"os"
@@ -121,7 +120,7 @@ func TestCreateImageConfigs(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to create k8s auth chain %v", err)
 	}
-	dir, err := ioutil.TempDir("", "ggcr-cache")
+	dir, err := os.MkdirTemp(os.TempDir(), "ggcr-cache")
 	if err != nil {
 		t.Fatalf("Unable to create temp dir %v", err)
 	}
@@ -328,7 +327,7 @@ func TestImageConfigWithCustomCA(t *testing.T) {
 		t.Fatalf("Unable to parse certificate %v", err)
 	}
 
-	dir, err := ioutil.TempDir("", "ggcr-cache")
+	dir, err := os.MkdirTemp(os.TempDir(), "ggcr-cache")
 	if err != nil {
 		t.Fatalf("Unable to create temp dir %v", err)
 	}

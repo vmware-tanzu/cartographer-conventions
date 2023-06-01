@@ -22,9 +22,10 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
+	"os"
 	"path/filepath"
 	"sync"
 	"time"
@@ -85,7 +86,7 @@ func ConventionHandler(ctx context.Context, convention Convention) func(http.Res
 		logger.Info("received request")
 		wc := &webhookv1alpha1.PodConventionContext{}
 		if r.Body != nil {
-			reqBody, err := ioutil.ReadAll(r.Body)
+			reqBody, err := io.ReadAll(r.Body)
 			if err != nil {
 				logger.Error(err, "error reading request body")
 				w.WriteHeader(http.StatusBadRequest)
@@ -149,11 +150,11 @@ func (w *certWatcher) Load(ctx context.Context) error {
 	w.m.Lock()
 	defer w.m.Unlock()
 
-	crt, err := ioutil.ReadFile(w.CrtFile)
+	crt, err := os.ReadFile(w.CrtFile)
 	if err != nil {
 		return err
 	}
-	key, err := ioutil.ReadFile(w.KeyFile)
+	key, err := os.ReadFile(w.KeyFile)
 	if err != nil {
 		return err
 	}

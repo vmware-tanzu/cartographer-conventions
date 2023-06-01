@@ -19,7 +19,6 @@ package controllers_test
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"net/http/httptest"
 	"net/url"
 	"os"
@@ -96,7 +95,7 @@ func TestPodIntentReconciler(t *testing.T) {
 	_ = clientgoscheme.AddToScheme(scheme)
 	_ = conventionsv1alpha1.AddToScheme(scheme)
 
-	dir, err := ioutil.TempDir("", "ggcr-cache")
+	dir, err := os.MkdirTemp(os.TempDir(), "ggcr-cache")
 	if err != nil {
 		t.Fatalf("Unable to create temp dir %v", err)
 	}
@@ -227,7 +226,7 @@ func TestBuildRegistryConfig(t *testing.T) {
 	_ = clientgoscheme.AddToScheme(scheme)
 	_ = conventionsv1alpha1.AddToScheme(scheme)
 
-	dir, err := ioutil.TempDir("", "ggcr-cache")
+	dir, err := os.MkdirTemp(os.TempDir(), "ggcr-cache")
 	if err != nil {
 		t.Fatalf("Unable to create temp dir %v", err)
 	}
@@ -1042,7 +1041,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to create k8s auth chain %v", err)
 	}
-	dir, err := ioutil.TempDir("", "ggcr-cache")
+	dir, err := os.MkdirTemp(os.TempDir(), "ggcr-cache")
 	if err != nil {
 		t.Fatalf("Unable to create temp dir %v", err)
 	}

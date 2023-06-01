@@ -21,7 +21,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -38,7 +38,7 @@ import (
 func conventionHandler(w http.ResponseWriter, r *http.Request) {
 	wc := &webhookv1alpha1.PodConventionContext{}
 	if r.Body != nil {
-		reqBody, err := ioutil.ReadAll(r.Body)
+		reqBody, err := io.ReadAll(r.Body)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return

@@ -20,7 +20,6 @@ import (
 	"context"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"net/http/httptest"
 	"net/url"
 	"os"
@@ -285,7 +284,7 @@ func TestConventionApply(t *testing.T) {
 		ServiceResolver:  fake.NewStubServiceResolver(*serverURL),
 	}
 
-	dir, err := ioutil.TempDir("", "ggcr-cache")
+	dir, err := os.MkdirTemp(os.TempDir(), "ggcr-cache")
 	if err != nil {
 		t.Fatalf("Unable to create temp dir %v", err)
 	}
@@ -650,7 +649,7 @@ func TestRepositoryConfigWithAdditionalCert(t *testing.T) {
 		ServiceResolver:  fake.NewStubServiceResolver(*serverURL),
 	}
 
-	dir, err := ioutil.TempDir("", "ggcr-cache")
+	dir, err := os.MkdirTemp(os.TempDir(), "ggcr-cache")
 	if err != nil {
 		t.Fatalf("Unable to create temp dir %v", err)
 	}
@@ -682,7 +681,6 @@ func TestRepositoryConfigWithAdditionalCert(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to get image digest: %v", err)
 	}
-
 	digestedImage, err := name.NewDigest(rgUrl.Host + "/test@" + imageDigest.String())
 
 	if err != nil {

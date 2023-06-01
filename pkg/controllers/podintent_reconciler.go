@@ -166,7 +166,6 @@ func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler[*c
 					Name:      ips.Name,
 				}
 				c.Tracker.TrackReference(ref, parent)
-				// c.Tracker.Track(ctx, key, parentNamespacedName)
 			}
 
 			serviceAccountName := parent.Spec.ServiceAccountName
