@@ -37,7 +37,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	conventionsv1alpha1 "github.com/vmware-tanzu/cartographer-conventions/pkg/apis/conventions/v1alpha1"
 	certmanagerv1 "github.com/vmware-tanzu/cartographer-conventions/pkg/apis/thirdparty/cert-manager/v1"
@@ -75,11 +74,10 @@ var (
 // +kubebuilder:rbac:groups=conventions.carto.run,resources=podintents/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=core,resources=events,verbs=get;list;watch;create;update;patch;delete
 
-func PodIntentReconciler(c reconcilers.Config, wc binding.WebhookConfig, rc binding.RegistryConfig) *reconcilers.ParentReconciler {
-	return &reconcilers.ParentReconciler{
+func PodIntentReconciler(c reconcilers.Config, wc binding.WebhookConfig, rc binding.RegistryConfig) *reconcilers.ResourceReconciler[*conventionsv1alpha1.PodIntent] {
+	return &reconcilers.ResourceReconciler[*conventionsv1alpha1.PodIntent]{
 		Name: "PodIntent",
-		Type: &conventionsv1alpha1.PodIntent{},
-		Reconciler: reconcilers.Sequence{
+		Reconciler: reconcilers.Sequence[*conventionsv1alpha1.PodIntent]{
 			ResolveConventions(),
 			BuildRegistryConfig(rc),
 			ApplyConventionsReconciler(wc),
@@ -93,8 +91,8 @@ func PodIntentReconciler(c reconcilers.Config, wc binding.WebhookConfig, rc bind
 // +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch
 // +kubebuilder:rbac:groups=cert-manager.io,resources=certificaterequests,verbs=get;list;watch
 
-func ResolveConventions() reconcilers.SubReconciler {
-	return &reconcilers.SyncReconciler{
+func ResolveConventions() reconcilers.SubReconciler[*conventionsv1alpha1.PodIntent] {
+	return &reconcilers.SyncReconciler[*conventionsv1alpha1.PodIntent]{
 		Name: "ResolveConventions",
 		Sync: func(ctx context.Context, parent *conventionsv1alpha1.PodIntent) error {
 			log := logr.FromContextOrDiscard(ctx)
@@ -135,8 +133,8 @@ func ResolveConventions() reconcilers.SubReconciler {
 
 		Setup: func(ctx context.Context, mgr ctrl.Manager, bldr *builder.Builder) error {
 			// register an informer to watch ClusterPodConventions
-			bldr.Watches(&source.Kind{Type: &conventionsv1alpha1.ClusterPodConvention{}}, &handler.Funcs{})
-			bldr.Watches(&source.Kind{Type: &certmanagerv1.CertificateRequest{}}, reconcilers.EnqueueTracked(ctx, &certmanagerv1.CertificateRequest{}))
+			bldr.Watches(&conventionsv1alpha1.ClusterPodConvention{}, &handler.Funcs{})
+			bldr.Watches(&certmanagerv1.CertificateRequest{}, reconcilers.EnqueueTracked(ctx))
 
 			return nil
 		},
@@ -146,24 +144,30 @@ func ResolveConventions() reconcilers.SubReconciler {
 // +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch
 // +kubebuilder:rbac:groups=core,resources=serviceaccounts,verbs=get;list;watch
 
-func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler {
-	return &reconcilers.SyncReconciler{
+func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler[*conventionsv1alpha1.PodIntent] {
+	return &reconcilers.SyncReconciler[*conventionsv1alpha1.PodIntent]{
 		Name: "BuildRegistryConfig",
-		Sync: func(ctx context.Context, parent *conventionsv1alpha1.PodIntent) (ctrl.Result, error) {
+		SyncWithResult: func(ctx context.Context, parent *conventionsv1alpha1.PodIntent) (ctrl.Result, error) {
 			log := logr.FromContextOrDiscard(ctx)
 			c := reconcilers.RetrieveConfigOrDie(ctx)
 			if rc.Client == nil {
 				return ctrl.Result{}, fmt.Errorf("kubernetes client is not set")
 			}
 			conditionManager := parent.GetConditionSet().Manage(&parent.Status)
-			parentNamespacedName := types.NamespacedName{Namespace: parent.Namespace, Name: parent.Name}
 
 			var imagePullSecrets []string
 			for _, ips := range parent.Spec.ImagePullSecrets {
 				imagePullSecrets = append(imagePullSecrets, ips.Name)
 				// track ref for updates
-				key := tracker.NewKey(secretGVK, types.NamespacedName{Namespace: parent.Namespace, Name: ips.Name})
-				c.Tracker.Track(ctx, key, parentNamespacedName)
+				ref := tracker.Reference{
+					Kind:      secretGVK.Kind,
+					APIGroup:  secretGVK.Group,
+					Namespace: parent.Namespace,
+					Name:      ips.Name,
+				}
+				// } (secretGVK, types.NamespacedName{Namespace: parent.Namespace, Name: ips.Name})
+				c.Tracker.TrackReference(ref, parent)
+				// c.Tracker.Track(ctx, key, parentNamespacedName)
 			}
 
 			serviceAccountName := parent.Spec.ServiceAccountName
@@ -190,8 +194,15 @@ func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler {
 
 			for _, secretReference := range sa.ImagePullSecrets {
 				// track ref for updates
-				key := tracker.NewKey(secretGVK, types.NamespacedName{Namespace: parent.Namespace, Name: secretReference.Name})
-				c.Tracker.Track(ctx, key, parentNamespacedName)
+				ref := tracker.Reference{
+					Kind:      secretGVK.Kind,
+					APIGroup:  secretGVK.Group,
+					Namespace: parent.Namespace,
+					Name:      secretReference.Name,
+				}
+				// (secretGVK, types.NamespacedName{Namespace: parent.Namespace, Name: secretReference.Name})
+				// c.Tracker.Track(ctx, key, parentNamespacedName)
+				c.Tracker.TrackReference(ref, parent)
 			}
 
 			StashRegistryConfig(ctx, binding.RegistryConfig{
@@ -204,9 +215,9 @@ func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler {
 		},
 		Setup: func(ctx context.Context, mgr reconcilers.Manager, bldr *reconcilers.Builder) error {
 			// register an informer to watch Secret's metadata only. This reduces the cache size in memory.
-			bldr.Watches(&source.Kind{Type: &corev1.Secret{}}, reconcilers.EnqueueTracked(ctx, &corev1.Secret{}), builder.OnlyMetadata)
+			bldr.Watches(&corev1.Secret{}, reconcilers.EnqueueTracked(ctx), builder.OnlyMetadata)
 			// register an informer to watch ServiceAccount
-			bldr.Watches(&source.Kind{Type: &corev1.ServiceAccount{}}, reconcilers.EnqueueTracked(ctx, &corev1.ServiceAccount{}))
+			bldr.Watches(&corev1.ServiceAccount{}, reconcilers.EnqueueTracked(ctx))
 			return nil
 		},
 	}
@@ -260,10 +271,10 @@ func getCABundle(ctx context.Context, c reconcilers.Config, certRef *conventions
 	return caData.Bytes(), nil
 }
 
-func ApplyConventionsReconciler(wc binding.WebhookConfig) reconcilers.SubReconciler {
-	return &reconcilers.SyncReconciler{
+func ApplyConventionsReconciler(wc binding.WebhookConfig) reconcilers.SubReconciler[*conventionsv1alpha1.PodIntent] {
+	return &reconcilers.SyncReconciler[*conventionsv1alpha1.PodIntent]{
 		Name: "ApplyConventions",
-		Sync: func(ctx context.Context, parent *conventionsv1alpha1.PodIntent) (ctrl.Result, error) {
+		SyncWithResult: func(ctx context.Context, parent *conventionsv1alpha1.PodIntent) (ctrl.Result, error) {
 			log := logr.FromContextOrDiscard(ctx)
 
 			sources := RetrieveConventions(ctx)
