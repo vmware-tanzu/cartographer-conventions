@@ -1,5 +1,5 @@
 /*
-Copyright 2020 VMware Inc.
+Copyright 2020-2023 VMware Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -50,9 +50,7 @@ func (c *ClusterPodConvention) ValidateDelete() (admission.Warnings, error) {
 
 func (r *ClusterPodConvention) validate() field.ErrorList {
 	errs := field.ErrorList{}
-
 	errs = append(errs, r.Spec.validate(field.NewPath("spec"))...)
-
 	return errs
 }
 
