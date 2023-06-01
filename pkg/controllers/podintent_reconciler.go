@@ -165,7 +165,6 @@ func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler[*c
 					Namespace: parent.Namespace,
 					Name:      ips.Name,
 				}
-				// } (secretGVK, types.NamespacedName{Namespace: parent.Namespace, Name: ips.Name})
 				c.Tracker.TrackReference(ref, parent)
 				// c.Tracker.Track(ctx, key, parentNamespacedName)
 			}
@@ -200,8 +199,6 @@ func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler[*c
 					Namespace: parent.Namespace,
 					Name:      secretReference.Name,
 				}
-				// (secretGVK, types.NamespacedName{Namespace: parent.Namespace, Name: secretReference.Name})
-				// c.Tracker.Track(ctx, key, parentNamespacedName)
 				c.Tracker.TrackReference(ref, parent)
 			}
 
