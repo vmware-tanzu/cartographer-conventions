@@ -1,5 +1,5 @@
 /*
-Copyright 2020 VMware Inc.
+Copyright 2020-2023 VMware Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package controllers_test
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"net/http/httptest"
 	"net/url"
 	"os"
@@ -45,6 +44,7 @@ import (
 	webhooktesting "k8s.io/apiserver/pkg/admission/plugin/webhook/testing"
 	fakeclient "k8s.io/client-go/kubernetes/fake"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -88,14 +88,14 @@ func TestPodIntentReconciler(t *testing.T) {
 	name := "my-template"
 	secretName := "test-secret"
 
-	key := types.NamespacedName{Namespace: namespace, Name: name}
+	request := reconcilers.Request{NamespacedName: types.NamespacedName{Namespace: namespace, Name: name}}
 	image := fmt.Sprintf("%s/%s", registryUrl.Host, "img")
 
 	scheme := runtime.NewScheme()
 	_ = clientgoscheme.AddToScheme(scheme)
 	_ = conventionsv1alpha1.AddToScheme(scheme)
 
-	dir, err := ioutil.TempDir("", "ggcr-cache")
+	dir, err := os.MkdirTemp(os.TempDir(), "ggcr-cache")
 	if err != nil {
 		t.Fatalf("Unable to create temp dir %v", err)
 	}
@@ -138,48 +138,49 @@ func TestPodIntentReconciler(t *testing.T) {
 			d.CreationTimestamp(now)
 		})
 
-	rts := rtesting.ReconcilerTestSuite{{
-		Name: "in sync",
-		Key:  key,
-		GivenObjects: []client.Object{
-			defaultSA,
-			secret,
-			parent.
-				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
-					d.ImagePullSecretsDie(
-						diecorev1.LocalObjectReferenceBlank.Name(secretName),
-					)
-					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
-						d.SpecDie(func(d *diecorev1.PodSpecDie) {
-							d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
-								d.Image(image)
+	rts := rtesting.ReconcilerTests{
+		"in sync": {
+			Request: request,
+			GivenObjects: []client.Object{
+				defaultSA,
+				secret,
+				parent.
+					SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
+						d.ImagePullSecretsDie(
+							diecorev1.LocalObjectReferenceBlank.Name(secretName),
+						)
+						d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
+							d.SpecDie(func(d *diecorev1.PodSpecDie) {
+								d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
+									d.Image(image)
+								})
 							})
 						})
-					})
-				}).
-				StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
-					d.ConditionsDie(
-						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
-							Status(metav1.ConditionTrue).
-							Reason("Applied"),
-						dieconventionsv1alpha1.PodIntentConditionReadyBlank.
-							Status(metav1.ConditionTrue).
-							Reason("ConventionsApplied"),
-					)
-					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
-						d.SpecDie(func(d *diecorev1.PodSpecDie) {
-							d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
-								d.Image(image)
+					}).
+					StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
+						d.ConditionsDie(
+							dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
+								Status(metav1.ConditionTrue).
+								Reason("Applied"),
+							dieconventionsv1alpha1.PodIntentConditionReadyBlank.
+								Status(metav1.ConditionTrue).
+								Reason("ConventionsApplied"),
+						)
+						d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
+							d.SpecDie(func(d *diecorev1.PodSpecDie) {
+								d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
+									d.Image(image)
+								})
 							})
 						})
-					})
-				}),
+					}),
+			},
+			ExpectTracks: []rtesting.TrackRequest{
+				rtesting.NewTrackRequest(secret, parent, scheme),
+				rtesting.NewTrackRequest(defaultSA, parent, scheme),
+			},
 		},
-		ExpectTracks: []rtesting.TrackRequest{
-			rtesting.NewTrackRequest(secret, parent, scheme),
-			rtesting.NewTrackRequest(defaultSA, parent, scheme),
-		},
-	}}
+	}
 
 	rts.Run(t, scheme, func(t *testing.T, rtc *rtesting.ReconcilerTestCase, c reconcilers.Config) reconcile.Reconciler {
 		return controllers.PodIntentReconciler(c, wc, rc)
@@ -219,13 +220,13 @@ func TestBuildRegistryConfig(t *testing.T) {
 	secretName := "test-secret"
 	saWithSecret := "test-sa-with-secret"
 
-	key := types.NamespacedName{Namespace: namespace, Name: name}
+	request := reconcilers.Request{NamespacedName: types.NamespacedName{Namespace: namespace, Name: name}}
 
 	scheme := runtime.NewScheme()
 	_ = clientgoscheme.AddToScheme(scheme)
 	_ = conventionsv1alpha1.AddToScheme(scheme)
 
-	dir, err := ioutil.TempDir("", "ggcr-cache")
+	dir, err := os.MkdirTemp(os.TempDir(), "ggcr-cache")
 	if err != nil {
 		t.Fatalf("Unable to create temp dir %v", err)
 	}
@@ -296,270 +297,286 @@ func TestBuildRegistryConfig(t *testing.T) {
 			d.CreationTimestamp(now)
 		})
 
-	rts := rtesting.ReconcilerTestSuite{{
-		Name: "image pull secret",
-		Key:  key,
-		GivenObjects: []client.Object{
-			defaultSA,
-			parent.
-				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
-					d.ImagePullSecretsDie(
-						diecorev1.LocalObjectReferenceBlank.Name("test-secret"),
-					)
-					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
-						d.SpecDie(func(d *diecorev1.PodSpecDie) {
-							d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
-								d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+	rts := rtesting.ReconcilerTests{
+		"image pull secret": {
+			Request: request,
+			StatusSubResourceTypes: []client.Object{
+				&conventionsv1alpha1.PodIntent{},
+			},
+			GivenObjects: []client.Object{
+				defaultSA,
+				parent.
+					SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
+						d.ImagePullSecretsDie(
+							diecorev1.LocalObjectReferenceBlank.Name("test-secret"),
+						)
+						d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
+							d.SpecDie(func(d *diecorev1.PodSpecDie) {
+								d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
+									d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+								})
 							})
 						})
-					})
-				}),
-		},
-		ExpectTracks: []rtesting.TrackRequest{
-			rtesting.NewTrackRequest(secret, parent, scheme),
-			rtesting.NewTrackRequest(defaultSA, parent, scheme),
-		},
-		ExpectEvents: []rtesting.Event{
-			rtesting.NewEvent(parent, scheme, corev1.EventTypeNormal, "StatusUpdated", `Updated status`),
-		},
-		ExpectStatusUpdates: []client.Object{
-			parent.
-				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
-					d.ServiceAccountName(saWithSecret)
-					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
-						d.SpecDie(func(d *diecorev1.PodSpecDie) {
-							d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
-								d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+					}),
+			},
+			ExpectTracks: []rtesting.TrackRequest{
+				rtesting.NewTrackRequest(secret, parent, scheme),
+				rtesting.NewTrackRequest(defaultSA, parent, scheme),
+			},
+			ExpectEvents: []rtesting.Event{
+				rtesting.NewEvent(parent, scheme, corev1.EventTypeNormal, "StatusUpdated", `Updated status`),
+			},
+			ExpectStatusUpdates: []client.Object{
+				parent.
+					SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
+						d.ServiceAccountName(saWithSecret)
+						d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
+							d.SpecDie(func(d *diecorev1.PodSpecDie) {
+								d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
+									d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+								})
 							})
 						})
-					})
-				}).
-				StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
-					d.ConditionsDie(
-						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
-							Status(metav1.ConditionTrue).
-							Reason("Applied"),
-						dieconventionsv1alpha1.PodIntentConditionReadyBlank.
-							Status(metav1.ConditionTrue).
-							Reason("ConventionsApplied"),
-					)
-					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
-						d.SpecDie(func(d *diecorev1.PodSpecDie) {
-							d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
-								d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+					}).
+					StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
+						d.ConditionsDie(
+							dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
+								Status(metav1.ConditionTrue).
+								Reason("Applied"),
+							dieconventionsv1alpha1.PodIntentConditionReadyBlank.
+								Status(metav1.ConditionTrue).
+								Reason("ConventionsApplied"),
+						)
+						d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
+							d.SpecDie(func(d *diecorev1.PodSpecDie) {
+								d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
+									d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+								})
 							})
 						})
-					})
-				}),
+					}),
+			},
 		},
-	}, {
-		Name: "service account with image pull secret",
-		Key:  key,
-		GivenObjects: []client.Object{
-			sa,
-			parent.
-				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
-					d.ServiceAccountName(saWithSecret)
-					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
-						d.SpecDie(func(d *diecorev1.PodSpecDie) {
-							d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
-								d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+		"service account with image pull secret": {
+			Request: request,
+			StatusSubResourceTypes: []client.Object{
+				&conventionsv1alpha1.PodIntent{},
+			},
+			GivenObjects: []client.Object{
+				sa,
+				parent.
+					SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
+						d.ServiceAccountName(saWithSecret)
+						d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
+							d.SpecDie(func(d *diecorev1.PodSpecDie) {
+								d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
+									d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+								})
 							})
 						})
-					})
-				}).
-				StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
-					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
-						d.SpecDie(func(d *diecorev1.PodSpecDie) {
-							d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
-								d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+					}).
+					StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
+						d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
+							d.SpecDie(func(d *diecorev1.PodSpecDie) {
+								d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
+									d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+								})
 							})
 						})
-					})
-				}),
-		},
-		ExpectEvents: []rtesting.Event{
-			rtesting.NewEvent(parent, scheme, corev1.EventTypeNormal, "StatusUpdated", `Updated status`),
-		},
-		ExpectStatusUpdates: []client.Object{
-			parent.
-				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
-					d.ServiceAccountName(saWithSecret)
-					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
-						d.SpecDie(func(d *diecorev1.PodSpecDie) {
-							d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
-								d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+					}),
+			},
+			ExpectEvents: []rtesting.Event{
+				rtesting.NewEvent(parent, scheme, corev1.EventTypeNormal, "StatusUpdated", `Updated status`),
+			},
+			ExpectStatusUpdates: []client.Object{
+				parent.
+					SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
+						d.ServiceAccountName(saWithSecret)
+						d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
+							d.SpecDie(func(d *diecorev1.PodSpecDie) {
+								d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
+									d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+								})
 							})
 						})
-					})
-				}).
-				StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
-					d.ConditionsDie(
-						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
-							Status(metav1.ConditionTrue).
-							Reason("Applied"),
-						dieconventionsv1alpha1.PodIntentConditionReadyBlank.
-							Status(metav1.ConditionTrue).
-							Reason("ConventionsApplied"),
-					)
-					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
-						d.SpecDie(func(d *diecorev1.PodSpecDie) {
-							d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
-								d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+					}).
+					StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
+						d.ConditionsDie(
+							dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
+								Status(metav1.ConditionTrue).
+								Reason("Applied"),
+							dieconventionsv1alpha1.PodIntentConditionReadyBlank.
+								Status(metav1.ConditionTrue).
+								Reason("ConventionsApplied"),
+						)
+						d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
+							d.SpecDie(func(d *diecorev1.PodSpecDie) {
+								d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
+									d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+								})
 							})
 						})
-					})
-				}),
+					}),
+			},
+			ExpectTracks: []rtesting.TrackRequest{
+				rtesting.NewTrackRequest(sa, parent, scheme),
+				rtesting.NewTrackRequest(secret, parent, scheme),
+			},
 		},
-		ExpectTracks: []rtesting.TrackRequest{
-			rtesting.NewTrackRequest(sa, parent, scheme),
-			rtesting.NewTrackRequest(secret, parent, scheme),
-		},
-	}, {
-		Name: "ServiceAccount not present in namespace",
-		Key:  key,
-		ExpectEvents: []rtesting.Event{
-			rtesting.NewEvent(parent, scheme, corev1.EventTypeNormal, "StatusUpdated", `Updated status`),
-		},
-		GivenObjects: []client.Object{
-			parent.
-				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
-					d.ServiceAccountName("wrong-sa")
-					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
-						d.SpecDie(func(d *diecorev1.PodSpecDie) {
-							d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
-								d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+		"ServiceAccount not present in namespace": {
+			Request: request,
+			StatusSubResourceTypes: []client.Object{
+				&conventionsv1alpha1.PodIntent{},
+			},
+			ExpectEvents: []rtesting.Event{
+				rtesting.NewEvent(parent, scheme, corev1.EventTypeNormal, "StatusUpdated", `Updated status`),
+			},
+			GivenObjects: []client.Object{
+				parent.
+					SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
+						d.ServiceAccountName("wrong-sa")
+						d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
+							d.SpecDie(func(d *diecorev1.PodSpecDie) {
+								d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
+									d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+								})
 							})
 						})
-					})
-				}),
-		},
-		ExpectStatusUpdates: []client.Object{
-			parent.
-				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
-					d.ImagePullSecretsDie(
-						diecorev1.LocalObjectReferenceBlank.Name("wrong-secret"),
-					)
-					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
-						d.SpecDie(func(d *diecorev1.PodSpecDie) {
-							d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
-								d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+					}),
+			},
+			ExpectStatusUpdates: []client.Object{
+				parent.
+					SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
+						d.ImagePullSecretsDie(
+							diecorev1.LocalObjectReferenceBlank.Name("wrong-secret"),
+						)
+						d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
+							d.SpecDie(func(d *diecorev1.PodSpecDie) {
+								d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
+									d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+								})
 							})
 						})
-					})
-				}).
-				StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
-					d.ConditionsDie(
-						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
-							Status(metav1.ConditionFalse).
-							Reason("ImageResolutionFailed").
-							Message("failed to authenticate: serviceaccounts \"wrong-sa\" not found"),
-						dieconventionsv1alpha1.PodIntentConditionReadyBlank.
-							Status(metav1.ConditionFalse).
-							Reason("ImageResolutionFailed").
-							Message("failed to authenticate: serviceaccounts \"wrong-sa\" not found"),
-					)
-				}),
+					}).
+					StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
+						d.ConditionsDie(
+							dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
+								Status(metav1.ConditionFalse).
+								Reason("ImageResolutionFailed").
+								Message("failed to authenticate: serviceaccounts \"wrong-sa\" not found"),
+							dieconventionsv1alpha1.PodIntentConditionReadyBlank.
+								Status(metav1.ConditionFalse).
+								Reason("ImageResolutionFailed").
+								Message("failed to authenticate: serviceaccounts \"wrong-sa\" not found"),
+						)
+					}),
+			},
 		},
-	}, {
-		Name: "ServiceAccount not present in api reader(unlikely)",
-		Key:  key,
-		ExpectEvents: []rtesting.Event{
-			rtesting.NewEvent(parent, scheme, corev1.EventTypeNormal, "StatusUpdated", `Updated status`),
-		},
-		GivenObjects: []client.Object{
-			parent.
-				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
-					d.ServiceAccountName(saWithSecret)
-					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
-						d.SpecDie(func(d *diecorev1.PodSpecDie) {
-							d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
-								d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+		"ServiceAccount not present in api reader(unlikely)": {
+			Request: request,
+			StatusSubResourceTypes: []client.Object{
+				&conventionsv1alpha1.PodIntent{},
+			},
+			ExpectEvents: []rtesting.Event{
+				rtesting.NewEvent(parent, scheme, corev1.EventTypeNormal, "StatusUpdated", `Updated status`),
+			},
+			GivenObjects: []client.Object{
+				parent.
+					SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
+						d.ServiceAccountName(saWithSecret)
+						d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
+							d.SpecDie(func(d *diecorev1.PodSpecDie) {
+								d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
+									d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+								})
 							})
 						})
-					})
-				}),
-		},
-		ExpectStatusUpdates: []client.Object{
-			parent.
-				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
-					d.ServiceAccountName(saWithSecret)
-					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
-						d.SpecDie(func(d *diecorev1.PodSpecDie) {
-							d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
-								d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+					}),
+			},
+			ExpectStatusUpdates: []client.Object{
+				parent.
+					SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
+						d.ServiceAccountName(saWithSecret)
+						d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
+							d.SpecDie(func(d *diecorev1.PodSpecDie) {
+								d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
+									d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+								})
 							})
 						})
-					})
-				}).
-				StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
-					d.ConditionsDie(
-						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
-							Status(metav1.ConditionFalse).
-							Reason("ImageResolutionFailed").
-							Message("failed to authenticate: serviceaccounts \"test-sa-with-secret\" not found"),
-						dieconventionsv1alpha1.PodIntentConditionReadyBlank.
-							Status(metav1.ConditionFalse).
-							Reason("ImageResolutionFailed").
-							Message("failed to authenticate: serviceaccounts \"test-sa-with-secret\" not found"),
-					)
-				}),
+					}).
+					StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
+						d.ConditionsDie(
+							dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
+								Status(metav1.ConditionFalse).
+								Reason("ImageResolutionFailed").
+								Message("failed to authenticate: serviceaccounts \"test-sa-with-secret\" not found"),
+							dieconventionsv1alpha1.PodIntentConditionReadyBlank.
+								Status(metav1.ConditionFalse).
+								Reason("ImageResolutionFailed").
+								Message("failed to authenticate: serviceaccounts \"test-sa-with-secret\" not found"),
+						)
+					}),
+			},
+			ExpectTracks: []rtesting.TrackRequest{
+				rtesting.NewTrackRequest(sa, parent, scheme),
+			},
 		},
-		ExpectTracks: []rtesting.TrackRequest{
-			rtesting.NewTrackRequest(sa, parent, scheme),
-		},
-	}, {
-		Name: "secret not present in namespace",
-		Key:  key,
-		ExpectEvents: []rtesting.Event{
-			rtesting.NewEvent(parent, scheme, corev1.EventTypeNormal, "StatusUpdated", `Updated status`),
-		},
-		ExpectStatusUpdates: []client.Object{
-			parent.
-				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
-					d.ImagePullSecretsDie(
-						diecorev1.LocalObjectReferenceBlank.Name("wrong-secret"),
-					)
-					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
-						d.SpecDie(func(d *diecorev1.PodSpecDie) {
-							d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
-								d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+		"secret not present in namespace": {
+			Request: request,
+			StatusSubResourceTypes: []client.Object{
+				&conventionsv1alpha1.PodIntent{},
+			},
+			ExpectEvents: []rtesting.Event{
+				rtesting.NewEvent(parent, scheme, corev1.EventTypeNormal, "StatusUpdated", `Updated status`),
+			},
+			ExpectStatusUpdates: []client.Object{
+				parent.
+					SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
+						d.ImagePullSecretsDie(
+							diecorev1.LocalObjectReferenceBlank.Name("wrong-secret"),
+						)
+						d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
+							d.SpecDie(func(d *diecorev1.PodSpecDie) {
+								d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
+									d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+								})
 							})
 						})
-					})
-				}).
-				StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
-					d.ConditionsDie(
-						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
-							Status(metav1.ConditionFalse).
-							Reason("ImageResolutionFailed").
-							Message("failed to authenticate: secrets \"wrong-secret\" not found"),
-						dieconventionsv1alpha1.PodIntentConditionReadyBlank.
-							Status(metav1.ConditionFalse).
-							Reason("ImageResolutionFailed").
-							Message("failed to authenticate: secrets \"wrong-secret\" not found"),
-					)
-				}),
-		},
-		GivenObjects: []client.Object{
-			parent.
-				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
-					d.ImagePullSecretsDie(
-						diecorev1.LocalObjectReferenceBlank.Name("wrong-secret"),
-					)
-					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
-						d.SpecDie(func(d *diecorev1.PodSpecDie) {
-							d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
-								d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+					}).
+					StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
+						d.ConditionsDie(
+							dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
+								Status(metav1.ConditionFalse).
+								Reason("ImageResolutionFailed").
+								Message("failed to authenticate: secrets \"wrong-secret\" not found"),
+							dieconventionsv1alpha1.PodIntentConditionReadyBlank.
+								Status(metav1.ConditionFalse).
+								Reason("ImageResolutionFailed").
+								Message("failed to authenticate: secrets \"wrong-secret\" not found"),
+						)
+					}),
+			},
+			GivenObjects: []client.Object{
+				parent.
+					SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
+						d.ImagePullSecretsDie(
+							diecorev1.LocalObjectReferenceBlank.Name("wrong-secret"),
+						)
+						d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
+							d.SpecDie(func(d *diecorev1.PodSpecDie) {
+								d.ContainerDie("workload", func(d *diecorev1.ContainerDie) {
+									d.Image(fmt.Sprintf("%s/hello", registryUrl.Host))
+								})
 							})
 						})
-					})
-				}),
+					}),
+			},
+			ExpectTracks: []rtesting.TrackRequest{
+				rtesting.NewTrackRequest(absentSecret, parent, scheme),
+			},
 		},
-		ExpectTracks: []rtesting.TrackRequest{
-			rtesting.NewTrackRequest(absentSecret, parent, scheme),
-		},
-	}}
+	}
 	rts.Run(t, scheme, func(t *testing.T, rtc *rtesting.ReconcilerTestCase, c reconcilers.Config) reconcile.Reconciler {
 		return controllers.PodIntentReconciler(c, wc, rc)
 	})
@@ -615,10 +632,9 @@ func TestResolveConventions(t *testing.T) {
 	_ = conventionsv1alpha1.AddToScheme(scheme)
 	_ = certmanagerv1.AddToScheme(scheme)
 
-	rts := rtesting.SubReconcilerTestSuite{
-		{
-			Name:     "stash convention",
-			Resource: parent,
+	rts := rtesting.SubReconcilerTests[*conventionsv1alpha1.PodIntent]{
+		"stash convention": {
+			Resource: parent.DieReleasePtr(),
 			GivenObjects: []client.Object{
 				certReq.
 					MetadataDie(func(d *diemetav1.ObjectMetaDie) {
@@ -649,7 +665,7 @@ func TestResolveConventions(t *testing.T) {
 						})
 					}),
 			},
-			ExpectResource: parent,
+			ExpectResource: parent.DieReleasePtr(),
 			ExpectStashedValues: map[reconcilers.StashKey]interface{}{
 				controllers.ConventionsStashKey: []binding.Convention{
 					{
@@ -663,9 +679,9 @@ func TestResolveConventions(t *testing.T) {
 						ClientConfig: admissionregistrationv1.WebhookClientConfig{Service: serviceReference, CABundle: BadCACert},
 					}},
 			},
-		}, {
-			Name:     "error loading conventions",
-			Resource: parent,
+		},
+		"error loading conventions": {
+			Resource: parent.DieReleasePtr(),
 			GivenObjects: []client.Object{
 				testConvention.
 					MetadataDie(func(d *diemetav1.ObjectMetaDie) {
@@ -692,13 +708,13 @@ func TestResolveConventions(t *testing.T) {
 				rtesting.InduceFailure("list", "clusterpodconventionlist"),
 			},
 			ShouldErr:      true,
-			ExpectResource: parent,
+			ExpectResource: parent.DieReleasePtr(),
 			ExpectStashedValues: map[reconcilers.StashKey]interface{}{
 				controllers.ConventionsStashKey: nil,
 			},
-		}, {
-			Name:     "use three most recent ready CAs",
-			Resource: parent,
+		},
+		"use three most recent ready CAs": {
+			Resource: parent.DieReleasePtr(),
 			GivenObjects: []client.Object{
 				certReq.
 					MetadataDie(func(d *diemetav1.ObjectMetaDie) {
@@ -775,7 +791,7 @@ func TestResolveConventions(t *testing.T) {
 						})
 					}),
 			},
-			ExpectResource: parent,
+			ExpectResource: parent.DieReleasePtr(),
 			ExpectStashedValues: map[reconcilers.StashKey]interface{}{
 				controllers.ConventionsStashKey: []binding.Convention{
 					{
@@ -789,9 +805,9 @@ func TestResolveConventions(t *testing.T) {
 						ClientConfig: admissionregistrationv1.WebhookClientConfig{Service: serviceReference, CABundle: []byte("5\n4\n3\n")},
 					}},
 			},
-		}, {
-			Name:     "cert request not present",
-			Resource: parent,
+		},
+		"cert request not present": {
+			Resource: parent.DieReleasePtr(),
 			GivenObjects: []client.Object{
 				testConvention.
 					MetadataDie(func(d *diemetav1.ObjectMetaDie) {
@@ -821,13 +837,14 @@ func TestResolveConventions(t *testing.T) {
 							Reason("CABundleResolutionFailed").
 							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "ns/wrong-ca" configured in convention "test-convention"`),
 					)
-				}),
+				}).
+				DieReleasePtr(),
 			ExpectStashedValues: map[reconcilers.StashKey]interface{}{
 				controllers.ConventionsStashKey: nil,
 			},
-		}, {
-			Name:     "cert request not owned by cert",
-			Resource: parent,
+		},
+		"cert request not owned by cert": {
+			Resource: parent.DieReleasePtr(),
 			GivenObjects: []client.Object{
 				certReq.
 					MetadataDie(func(d *diemetav1.ObjectMetaDie) {
@@ -861,13 +878,14 @@ func TestResolveConventions(t *testing.T) {
 							Reason("CABundleResolutionFailed").
 							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "test-namespace/my-cert" configured in convention "test-convention"`),
 					)
-				}),
+				}).
+				DieReleasePtr(),
 			ExpectStashedValues: map[reconcilers.StashKey]interface{}{
 				controllers.ConventionsStashKey: nil,
 			},
-		}, {
-			Name:     "cert request not ready",
-			Resource: parent,
+		},
+		"cert request not ready": {
+			Resource: parent.DieReleasePtr(),
 			GivenObjects: []client.Object{
 				certReq.
 					StatusDie(func(d *diecertmanagerv1.CertificateRequestStatusDie) {
@@ -903,13 +921,14 @@ func TestResolveConventions(t *testing.T) {
 							Reason("CABundleResolutionFailed").
 							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "test-namespace/my-cert" configured in convention "test-convention"`),
 					)
-				}),
+				}).
+				DieReleasePtr(),
 			ExpectStashedValues: map[reconcilers.StashKey]interface{}{
 				controllers.ConventionsStashKey: nil,
 			},
-		}, {
-			Name:     "cert request no ca",
-			Resource: parent,
+		},
+		"cert request no ca": {
+			Resource: parent.DieReleasePtr(),
 			GivenObjects: []client.Object{
 				certReq.
 					StatusDie(func(d *diecertmanagerv1.CertificateRequestStatusDie) {
@@ -945,14 +964,15 @@ func TestResolveConventions(t *testing.T) {
 							Reason("CABundleResolutionFailed").
 							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "test-namespace/my-cert" configured in convention "test-convention"`),
 					)
-				}),
+				}).
+				DieReleasePtr(),
 			ExpectStashedValues: map[reconcilers.StashKey]interface{}{
 				controllers.ConventionsStashKey: nil,
 			},
 		},
 	}
 
-	rts.Run(t, scheme, func(t *testing.T, rtc *rtesting.SubReconcilerTestCase, c reconcilers.Config) reconcilers.SubReconciler {
+	rts.Run(t, scheme, func(t *testing.T, rtc *rtesting.SubReconcilerTestCase[*conventionsv1alpha1.PodIntent], c reconcilers.Config) reconcilers.SubReconciler[*conventionsv1alpha1.PodIntent] {
 		return controllers.ResolveConventions()
 	})
 }
@@ -1021,7 +1041,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to create k8s auth chain %v", err)
 	}
-	dir, err := ioutil.TempDir("", "ggcr-cache")
+	dir, err := os.MkdirTemp(os.TempDir(), "ggcr-cache")
 	if err != nil {
 		t.Fatalf("Unable to create temp dir %v", err)
 	}
@@ -1043,10 +1063,9 @@ func TestApplyConventionsReconciler(t *testing.T) {
 		t.Fatalf("Error pushing hello.tar.gz: %v", err)
 	}
 
-	rts := rtesting.SubReconcilerTestSuite{
-		{
-			Name:     "resolved from service",
-			Resource: workload,
+	rts := rtesting.SubReconcilerTests[*conventionsv1alpha1.PodIntent]{
+		"resolved from service": {
+			Resource: workload.DieReleasePtr(),
 			GivenStashedValues: map[reconcilers.StashKey]interface{}{
 				controllers.RegistryConfigKey: rc,
 				controllers.ConventionsStashKey: []binding.Convention{
@@ -1086,10 +1105,10 @@ func TestApplyConventionsReconciler(t *testing.T) {
 							Status(metav1.ConditionTrue).
 							Reason("ConventionsApplied"),
 					)
-				}),
+				}).
+				DieReleasePtr(),
 		},
-		{
-			Name: "selector target and matcher defined matcheslabels in podTemplateSpec values",
+		"selector target and matcher defined matcheslabels in podTemplateSpec values": {
 			Resource: workload.
 				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
 					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
@@ -1101,7 +1120,8 @@ func TestApplyConventionsReconciler(t *testing.T) {
 				}).
 				MetadataDie(func(d *diemetav1.ObjectMetaDie) {
 					d.AddLabel("environment", "development")
-				}),
+				}).
+				DieReleasePtr(),
 			GivenStashedValues: map[reconcilers.StashKey]interface{}{
 				controllers.RegistryConfigKey: rc,
 				controllers.ConventionsStashKey: []binding.Convention{
@@ -1116,7 +1136,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 							Service: &admissionregistrationv1.ServiceReference{
 								Namespace: "default",
 								Name:      "webhook-test",
-								Path:      rtesting.StringPtr(fmt.Sprintf("hellosidecar;host=%s", registryUrl.Host)),
+								Path:      pointer.String(fmt.Sprintf("hellosidecar;host=%s", registryUrl.Host)),
 							},
 							CABundle: caCert,
 						},
@@ -1132,7 +1152,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 							Service: &admissionregistrationv1.ServiceReference{
 								Namespace: "default",
 								Name:      "non-matching-webhook",
-								Path:      rtesting.StringPtr(fmt.Sprintf("hellosidecar;host=%s", registryUrl.Host)),
+								Path:      pointer.String(fmt.Sprintf("hellosidecar;host=%s", registryUrl.Host)),
 							},
 							CABundle: caCert,
 						},
@@ -1147,9 +1167,10 @@ func TestApplyConventionsReconciler(t *testing.T) {
 							d.AddLabel("zoo", "zebra")
 						})
 					})
-				}).MetadataDie(func(d *diemetav1.ObjectMetaDie) {
-				d.AddLabel("environment", "development")
-			}).
+				}).
+				MetadataDie(func(d *diemetav1.ObjectMetaDie) {
+					d.AddLabel("environment", "development")
+				}).
 				StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
 					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
 						d.MetadataDie(func(d *diemetav1.ObjectMetaDie) {
@@ -1172,20 +1193,22 @@ func TestApplyConventionsReconciler(t *testing.T) {
 							Status(metav1.ConditionTrue).
 							Reason("ConventionsApplied"),
 					)
-				}),
+				}).
+				DieReleasePtr(),
 		},
-		{
-			Name: "multiple selector targets and matching labels exist on specified target",
+		"multiple selector targets and matching labels exist on specified target": {
 			Resource: workload.
 				MetadataDie(func(d *diemetav1.ObjectMetaDie) {
 					d.AddLabel("intentselector", "true")
-				}).SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
-				d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
-					d.MetadataDie(func(d *diemetav1.ObjectMetaDie) {
-						d.AddLabel("zoo", "zebra")
+				}).
+				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
+					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
+						d.MetadataDie(func(d *diemetav1.ObjectMetaDie) {
+							d.AddLabel("zoo", "zebra")
+						})
 					})
-				})
-			}),
+				}).
+				DieReleasePtr(),
 			GivenStashedValues: map[reconcilers.StashKey]interface{}{
 				controllers.RegistryConfigKey: rc,
 				controllers.ConventionsStashKey: []binding.Convention{
@@ -1215,7 +1238,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 							Service: &admissionregistrationv1.ServiceReference{
 								Namespace: "default",
 								Name:      "webhook-test",
-								Path:      rtesting.StringPtr(fmt.Sprintf("hellosidecar;host=%s", registryUrl.Host)),
+								Path:      pointer.String(fmt.Sprintf("hellosidecar;host=%s", registryUrl.Host)),
 							},
 							CABundle: caCert,
 						},
@@ -1231,7 +1254,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 							Service: &admissionregistrationv1.ServiceReference{
 								Namespace: "default",
 								Name:      "webhook-test",
-								Path:      rtesting.StringPtr("labelonly"),
+								Path:      pointer.String("labelonly"),
 							},
 							CABundle: caCert,
 						},
@@ -1273,11 +1296,11 @@ func TestApplyConventionsReconciler(t *testing.T) {
 							Status(metav1.ConditionTrue).
 							Reason("ConventionsApplied"),
 					)
-				}),
+				}).
+				DieReleasePtr(),
 		},
-		{
-			Name:     "apply all conventions if no convnetion matchers are set and no matching labels are available on the pod intent",
-			Resource: workload,
+		"apply all conventions if no convnetion matchers are set and no matching labels are available on the pod intent": {
+			Resource: workload.DieReleasePtr(),
 			GivenStashedValues: map[reconcilers.StashKey]interface{}{
 				controllers.RegistryConfigKey: rc,
 				controllers.ConventionsStashKey: []binding.Convention{
@@ -1301,7 +1324,7 @@ func TestApplyConventionsReconciler(t *testing.T) {
 							Service: &admissionregistrationv1.ServiceReference{
 								Namespace: "default",
 								Name:      "webhook-test",
-								Path:      rtesting.StringPtr(fmt.Sprintf("hellosidecar;host=%s", registryUrl.Host)),
+								Path:      pointer.String(fmt.Sprintf("hellosidecar;host=%s", registryUrl.Host)),
 							},
 							CABundle: caCert,
 						},
@@ -1335,11 +1358,11 @@ func TestApplyConventionsReconciler(t *testing.T) {
 							Status(metav1.ConditionTrue).
 							Reason("ConventionsApplied"),
 					)
-				}),
+				}).
+				DieReleasePtr(),
 		},
-		{
-			Name:     "bad matching expression",
-			Resource: workload,
+		"bad matching expression": {
+			Resource: workload.DieReleasePtr(),
 			GivenStashedValues: map[reconcilers.StashKey]interface{}{
 				controllers.RegistryConfigKey: rc,
 				controllers.ConventionsStashKey: []binding.Convention{
@@ -1372,10 +1395,10 @@ func TestApplyConventionsReconciler(t *testing.T) {
 							Reason("LabelSelector").
 							Message("filtering conventions failed: converting label selector for clusterPodConvention \"my-conventions\" failed: key: Invalid value: \"\": name part must be non-empty; name part must consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character (e.g. 'MyName',  or 'my.name',  or '123-abc', regex used for validation is '([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]')"),
 					)
-				}),
+				}).
+				DieReleasePtr(),
 		},
-		{
-			Name: "error applying conventions",
+		"error applying conventions": {
 			Resource: workload.
 				SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
 					d.TemplateDie(func(d *diecorev1.PodTemplateSpecDie) {
@@ -1385,7 +1408,8 @@ func TestApplyConventionsReconciler(t *testing.T) {
 							})
 						})
 					})
-				}),
+				}).
+				DieReleasePtr(),
 			GivenStashedValues: map[reconcilers.StashKey]interface{}{
 				controllers.ConventionsStashKey: []binding.Convention{
 					{
@@ -1423,11 +1447,12 @@ func TestApplyConventionsReconciler(t *testing.T) {
 							Reason("ConventionsApplied").
 							Message("fetching metadata for Images failed: image: \"ubuntu\" error: registry config keys are not set"),
 					)
-				}),
+				}).
+				DieReleasePtr(),
 		},
 	}
 
-	rts.Run(t, scheme, func(t *testing.T, rtc *rtesting.SubReconcilerTestCase, c reconcilers.Config) reconcilers.SubReconciler {
+	rts.Run(t, scheme, func(t *testing.T, rtc *rtesting.SubReconcilerTestCase[*conventionsv1alpha1.PodIntent], c reconcilers.Config) reconcilers.SubReconciler[*conventionsv1alpha1.PodIntent] {
 		return controllers.ApplyConventionsReconciler(wc)
 	})
 }
@@ -1485,13 +1510,14 @@ func TestNilClientBuildRegistryConfig(t *testing.T) {
 			d.CreationTimestamp(now)
 		})
 
-	rts := rtesting.SubReconcilerTestSuite{{
-		Name:      "empty client",
-		Resource:  parent,
-		ShouldErr: true,
-	}}
+	rts := rtesting.SubReconcilerTests[*conventionsv1alpha1.PodIntent]{
+		"empty client": {
+			Resource:  parent.DieReleasePtr(),
+			ShouldErr: true,
+		},
+	}
 	rc := binding.RegistryConfig{}
-	rts.Run(t, scheme, func(t *testing.T, rtc *rtesting.SubReconcilerTestCase, c reconcilers.Config) reconcilers.SubReconciler {
+	rts.Run(t, scheme, func(t *testing.T, rtc *rtesting.SubReconcilerTestCase[*conventionsv1alpha1.PodIntent], c reconcilers.Config) reconcilers.SubReconciler[*conventionsv1alpha1.PodIntent] {
 		return controllers.BuildRegistryConfig(rc)
 	})
 }

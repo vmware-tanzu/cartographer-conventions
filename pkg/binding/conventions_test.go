@@ -1,5 +1,5 @@
 /*
-Copyright 2021 VMware Inc.
+Copyright 2021-2023 VMware Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import (
 	"context"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"net/http/httptest"
 	"net/url"
 	"os"
@@ -35,12 +34,12 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/cache"
 	"github.com/google/go-containerregistry/pkg/v1/random"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
-	rtesting "github.com/vmware-labs/reconciler-runtime/testing"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	webhooktesting "k8s.io/apiserver/pkg/admission/plugin/webhook/testing"
+	"k8s.io/utils/pointer"
 
 	conventionsv1alpha1 "github.com/vmware-tanzu/cartographer-conventions/pkg/apis/conventions/v1alpha1"
 	"github.com/vmware-tanzu/cartographer-conventions/pkg/binding"
@@ -285,7 +284,7 @@ func TestConventionApply(t *testing.T) {
 		ServiceResolver:  fake.NewStubServiceResolver(*serverURL),
 	}
 
-	dir, err := ioutil.TempDir("", "ggcr-cache")
+	dir, err := os.MkdirTemp(os.TempDir(), "ggcr-cache")
 	if err != nil {
 		t.Fatalf("Unable to create temp dir %v", err)
 	}
@@ -404,7 +403,7 @@ func TestConventionApply(t *testing.T) {
 				Service: &admissionregistrationv1.ServiceReference{
 					Namespace: "default",
 					Name:      "webhook-test",
-					Path:      rtesting.StringPtr("labelonly"),
+					Path:      pointer.String("labelonly"),
 				},
 				CABundle: caCert,
 			},
@@ -478,7 +477,7 @@ func TestConventionApply(t *testing.T) {
 				Service: &admissionregistrationv1.ServiceReference{
 					Namespace: "default",
 					Name:      "webhook-test",
-					Path:      rtesting.StringPtr(fmt.Sprintf("badimage;host=%s", registryUrl.Host)),
+					Path:      pointer.String(fmt.Sprintf("badimage;host=%s", registryUrl.Host)),
 				},
 				CABundle: caCert,
 			},
@@ -489,7 +488,7 @@ func TestConventionApply(t *testing.T) {
 					Service: &admissionregistrationv1.ServiceReference{
 						Namespace: "default",
 						Name:      "webhook-test",
-						Path:      rtesting.StringPtr("labelonly"),
+						Path:      pointer.String("labelonly"),
 					},
 					CABundle: caCert,
 				},
@@ -513,7 +512,7 @@ func TestConventionApply(t *testing.T) {
 					Service: &admissionregistrationv1.ServiceReference{
 						Namespace: "default",
 						Name:      "webhook-test",
-						Path:      rtesting.StringPtr(fmt.Sprintf("hellosidecar;host=%s", registryUrl.Host)),
+						Path:      pointer.String(fmt.Sprintf("hellosidecar;host=%s", registryUrl.Host)),
 					},
 					CABundle: caCert,
 				},
@@ -650,7 +649,7 @@ func TestRepositoryConfigWithAdditionalCert(t *testing.T) {
 		ServiceResolver:  fake.NewStubServiceResolver(*serverURL),
 	}
 
-	dir, err := ioutil.TempDir("", "ggcr-cache")
+	dir, err := os.MkdirTemp(os.TempDir(), "ggcr-cache")
 	if err != nil {
 		t.Fatalf("Unable to create temp dir %v", err)
 	}
@@ -682,7 +681,6 @@ func TestRepositoryConfigWithAdditionalCert(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to get image digest: %v", err)
 	}
-
 	digestedImage, err := name.NewDigest(rgUrl.Host + "/test@" + imageDigest.String())
 
 	if err != nil {

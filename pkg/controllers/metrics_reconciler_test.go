@@ -1,5 +1,5 @@
 /*
-Copyright 2021 VMware Inc.
+Copyright 2021-2023 VMware Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ func TestMetricsReconciler(t *testing.T) {
 	sanotherName := "test-another-convention"
 	dname := "test-intent"
 	anotherDname := "test-another-intent"
-	testKey := types.NamespacedName{Namespace: testNamespace, Name: testName}
+	request := reconcilers.Request{NamespacedName: types.NamespacedName{Namespace: testNamespace, Name: testName}}
 
 	scheme := runtime.NewScheme()
 	_ = clientgoscheme.AddToScheme(scheme)
@@ -86,14 +86,12 @@ func TestMetricsReconciler(t *testing.T) {
 
 	podIntentConditionReady := diemetav1.ConditionBlank.Type(conventionsv1alpha1.PodIntentConditionReady)
 
-	rts := rtesting.ReconcilerTestSuite{
-		{
-			Name: "builders configmap does not exist",
-			Key:  types.NamespacedName{Namespace: testNamespace, Name: "wrong-cm"},
+	rts := rtesting.ReconcilerTests{
+		"builders configmap does not exist": {
+			Request: reconcilers.Request{NamespacedName: types.NamespacedName{Namespace: testNamespace, Name: "wrong-cm"}},
 		},
-		{
-			Name:           "builders configmap with no resources",
-			Key:            testKey,
+		"builders configmap with no resources": {
+			Request:        request,
 			ExpectedResult: ctrl.Result{},
 			ExpectCreates: []client.Object{
 				testMetrics.
@@ -101,9 +99,8 @@ func TestMetricsReconciler(t *testing.T) {
 					AddData("podintents_count", "0"),
 			},
 		},
-		{
-			Name: "builders configmap with exiting resources",
-			Key:  testKey,
+		"builders configmap with exiting resources": {
+			Request: request,
 			GivenObjects: []client.Object{
 				testMetrics.
 					AddData("clusterpodconventions_names", "").
@@ -111,18 +108,16 @@ func TestMetricsReconciler(t *testing.T) {
 			},
 			ExpectedResult: ctrl.Result{},
 		},
-		{
-			Name:      "get configmap error",
-			Key:       testKey,
+		"get configmap error": {
+			Request:   request,
 			ShouldErr: true,
 			WithReactors: []rtesting.ReactionFunc{
 				rtesting.InduceFailure("get", "ConfigMap"),
 			},
 			ExpectedResult: ctrl.Result{},
 		},
-		{
-			Name:      "create configmap error",
-			Key:       testKey,
+		"create configmap error": {
+			Request:   request,
 			ShouldErr: true,
 			WithReactors: []rtesting.ReactionFunc{
 				rtesting.InduceFailure("create", "ConfigMap"),
@@ -134,9 +129,8 @@ func TestMetricsReconciler(t *testing.T) {
 			},
 			ExpectedResult: ctrl.Result{},
 		},
-		{
-			Name:      "update configmap error",
-			Key:       testKey,
+		"update configmap error": {
+			Request:   request,
 			ShouldErr: true,
 			WithReactors: []rtesting.ReactionFunc{
 				rtesting.InduceFailure("update", "ConfigMap"),
@@ -151,9 +145,8 @@ func TestMetricsReconciler(t *testing.T) {
 			},
 			ExpectedResult: ctrl.Result{},
 		},
-		{
-			Name:      "list cluster sources error",
-			Key:       testKey,
+		"list cluster sources error": {
+			Request:   request,
 			ShouldErr: true,
 			WithReactors: []rtesting.ReactionFunc{
 				rtesting.InduceFailure("list", "ClusterPodConventionList"),
@@ -164,9 +157,8 @@ func TestMetricsReconciler(t *testing.T) {
 			},
 			ExpectedResult: ctrl.Result{},
 		},
-		{
-			Name:      "list intent resources error",
-			Key:       testKey,
+		"list intent resources error": {
+			Request:   request,
 			ShouldErr: true,
 			WithReactors: []rtesting.ReactionFunc{
 				rtesting.InduceFailure("list", "PodIntentList"),
@@ -176,19 +168,18 @@ func TestMetricsReconciler(t *testing.T) {
 			},
 			ExpectedResult: ctrl.Result{},
 		},
-		{
-			Name: "configmap with delete timestamp",
-			Key:  testKey,
+		"configmap with delete timestamp": {
+			Request: request,
 			GivenObjects: []client.Object{
 				testMetrics.
 					MetadataDie(func(d *diemetav1.ObjectMetaDie) {
 						d.DeletionTimestamp(&now)
+						d.Finalizers("conventions.carto.run/finalizer")
 					}),
 			},
 		},
-		{
-			Name: "builders configmap with intent with different status",
-			Key:  testKey,
+		"builders configmap with intent with different status": {
+			Request: request,
 			GivenObjects: []client.Object{
 				intent.
 					StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
@@ -212,9 +203,8 @@ func TestMetricsReconciler(t *testing.T) {
 					AddData("podintents_ready_false_count", "1"),
 			},
 		},
-		{
-			Name: "builders configmap with intent resources",
-			Key:  testKey,
+		"builders configmap with intent resources": {
+			Request: request,
 			GivenObjects: []client.Object{
 				intent.
 					StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
@@ -239,9 +229,8 @@ func TestMetricsReconciler(t *testing.T) {
 					AddData("clusterpodconventions_names", "test-another-convention\ntest-convention"),
 			},
 		},
-		{
-			Name: "builders configmap with intent resources owner references",
-			Key:  testKey,
+		"builders configmap with intent resources owner references": {
+			Request: request,
 			GivenObjects: []client.Object{
 				anotherIntent.
 					MetadataDie(func(d *diemetav1.ObjectMetaDie) {

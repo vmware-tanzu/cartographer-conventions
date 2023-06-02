@@ -1,5 +1,5 @@
 /*
-Copyright 2021 VMware Inc.
+Copyright 2021-2023 VMware Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	conventionsv1alpha1 "github.com/vmware-tanzu/cartographer-conventions/pkg/apis/conventions/v1alpha1"
 )
@@ -185,7 +184,7 @@ func configMapSemanticEquals(desiredConfigMap, configMap *corev1.ConfigMap) bool
 
 func (r *MetricsReconciler) SetupWithManager(ctx context.Context, mgr ctrl.Manager) error {
 	enqueueConfigMap := handler.EnqueueRequestsFromMapFunc(
-		func(a client.Object) []reconcile.Request {
+		func(ctx context.Context, a client.Object) []reconcile.Request {
 			return []reconcile.Request{
 				{
 					NamespacedName: types.NamespacedName{
@@ -219,7 +218,7 @@ func (r *MetricsReconciler) SetupWithManager(ctx context.Context, mgr ctrl.Manag
 				return cm.Namespace == r.Namespace && cm.Name == r.Name
 			},
 		}).
-		Watches(&source.Kind{Type: &conventionsv1alpha1.ClusterPodConvention{}}, enqueueConfigMap).
-		Watches(&source.Kind{Type: &conventionsv1alpha1.PodIntent{}}, enqueueConfigMap).
+		Watches(&conventionsv1alpha1.ClusterPodConvention{}, enqueueConfigMap).
+		Watches(&conventionsv1alpha1.PodIntent{}, enqueueConfigMap).
 		Complete(r)
 }

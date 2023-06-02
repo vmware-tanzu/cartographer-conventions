@@ -1,5 +1,5 @@
 /*
-Copyright 2020 VMware Inc.
+Copyright 2020-2023 VMware Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/vmware-labs/reconciler-runtime/validation"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -99,7 +98,7 @@ func TestClusterPodConventionValidate(t *testing.T) {
 	for _, c := range []struct {
 		name     string
 		target   *ClusterPodConvention
-		expected validation.FieldErrors
+		expected field.ErrorList
 	}{{
 		name: "empty webhook",
 		target: &ClusterPodConvention{
@@ -108,7 +107,9 @@ func TestClusterPodConventionValidate(t *testing.T) {
 				Priority:       "Normal",
 			},
 		},
-		expected: validation.ErrMissingField("spec.webhook"),
+		expected: field.ErrorList{
+			field.Required(field.NewPath("spec", "webhook"), ""),
+		},
 	},
 		{
 			name: "neither URL nor service",
@@ -119,9 +120,9 @@ func TestClusterPodConventionValidate(t *testing.T) {
 					Webhook:        &ClusterPodConventionWebhook{},
 				},
 			},
-			expected: validation.FieldErrors{}.Also(
-				validation.ErrMissingOneOf("url", "service"),
-			).ViaField("clientConfig").ViaField("webhook").ViaField("spec"),
+			expected: field.ErrorList{
+				field.Required(field.NewPath("spec", "webhook", "clientConfig", "[url, service]"), "expected exactly one, got neither"),
+			},
 		}, {
 			name: "only URL",
 			target: &ClusterPodConvention{
@@ -138,7 +139,7 @@ func TestClusterPodConventionValidate(t *testing.T) {
 					},
 				},
 			},
-			expected: validation.FieldErrors{},
+			expected: field.ErrorList{},
 		}, {
 			name: "only service",
 			target: &ClusterPodConvention{
@@ -152,7 +153,7 @@ func TestClusterPodConventionValidate(t *testing.T) {
 					},
 				},
 			},
-			expected: validation.FieldErrors{},
+			expected: field.ErrorList{},
 		}, {
 			name: "both url and service",
 			target: &ClusterPodConvention{
@@ -167,9 +168,9 @@ func TestClusterPodConventionValidate(t *testing.T) {
 					},
 				},
 			},
-			expected: validation.FieldErrors{}.Also(
-				validation.ErrMultipleOneOf("url", "service"),
-			).ViaField("clientConfig").ViaField("webhook").ViaField("spec"),
+			expected: field.ErrorList{
+				field.Required(field.NewPath("spec", "webhook", "clientConfig", "[url, service]"), "expected exactly one, got both"),
+			},
 		}, {
 			name: "incomplete service",
 			target: &ClusterPodConvention{
@@ -185,12 +186,10 @@ func TestClusterPodConventionValidate(t *testing.T) {
 					},
 				},
 			},
-			expected: validation.FieldErrors{}.Also(
-				validation.FieldErrors{
-					field.Required(field.NewPath("service.name"), "service name is required"),
-					field.Required(field.NewPath("service.namespace"), "service namespace is required"),
-				},
-			).ViaField("clientConfig").ViaField("webhook").ViaField("spec"),
+			expected: field.ErrorList{
+				field.Required(field.NewPath("spec", "webhook", "clientConfig", "service", "name"), "service name is required"),
+				field.Required(field.NewPath("spec", "webhook", "clientConfig", "service", "namespace"), "service namespace is required"),
+			},
 		}, {
 			name: "invalid URL",
 			target: &ClusterPodConvention{
@@ -204,11 +203,9 @@ func TestClusterPodConventionValidate(t *testing.T) {
 					},
 				},
 			},
-			expected: validation.FieldErrors{}.Also(
-				validation.FieldErrors{
-					field.Required(field.NewPath("url"), "url must be a valid URL: parse \"://example.com\": missing protocol scheme; desired format: https://host[/path]"),
-				},
-			).ViaField("clientConfig").ViaField("webhook").ViaField("spec"),
+			expected: field.ErrorList{
+				field.Required(field.NewPath("spec", "webhook", "clientConfig", "url"), "url must be a valid URL: parse \"://example.com\": missing protocol scheme; desired format: https://host[/path]"),
+			},
 		}, {
 			name: "bad matching service",
 			target: &ClusterPodConvention{
@@ -228,12 +225,14 @@ func TestClusterPodConventionValidate(t *testing.T) {
 					},
 				},
 			},
-			expected: validation.ErrInvalidArrayValue(metav1.LabelSelector{
-				MatchExpressions: []metav1.LabelSelectorRequirement{{
-					Values:   []string{"foo", "bar"},
-					Operator: metav1.LabelSelectorOpIn,
-				}},
-			}, "selector", 0).ViaField("spec"),
+			expected: field.ErrorList{
+				field.Invalid(field.NewPath("spec", "selectors").Index(0), metav1.LabelSelector{
+					MatchExpressions: []metav1.LabelSelectorRequirement{{
+						Values:   []string{"foo", "bar"},
+						Operator: metav1.LabelSelectorOpIn,
+					}},
+				}, ""),
+			},
 		}, {
 			name: "with certificate",
 			target: &ClusterPodConvention{
@@ -251,7 +250,7 @@ func TestClusterPodConventionValidate(t *testing.T) {
 					},
 				},
 			},
-			expected: validation.FieldErrors{},
+			expected: field.ErrorList{},
 		}, {
 			name: "invalid certificate",
 			target: &ClusterPodConvention{
@@ -269,11 +268,10 @@ func TestClusterPodConventionValidate(t *testing.T) {
 					},
 				},
 			},
-			expected: validation.FieldErrors{}.Also(
-				validation.FieldErrors{
-					field.Required(field.NewPath("spec.webhook.certificate.namespace"), ""),
-					field.Required(field.NewPath("spec.webhook.certificate.name"), ""),
-				}),
+			expected: field.ErrorList{
+				field.Required(field.NewPath("spec", "webhook", "certificate", "namespace"), ""),
+				field.Required(field.NewPath("spec", "webhook", "certificate", "name"), ""),
+			},
 		}, {
 			name: "invalid selector target",
 			target: &ClusterPodConvention{
@@ -288,10 +286,9 @@ func TestClusterPodConventionValidate(t *testing.T) {
 					},
 				},
 			},
-			expected: validation.FieldErrors{}.Also(
-				validation.FieldErrors{
-					field.Invalid(field.NewPath("spec.selectorTarget"), InvalidSelectorTarget, "Accepted selector target values are \"PodIntent\" and \"PodTemplateSpec\". The default value is set to \"PodTemplateSpec\""),
-				}),
+			expected: field.ErrorList{
+				field.Invalid(field.NewPath("spec", "selectorTarget"), InvalidSelectorTarget, "Accepted selector target values are \"PodIntent\" and \"PodTemplateSpec\". The default value is set to \"PodTemplateSpec\""),
+			},
 		},
 		{
 			name: "wrong priority level",
@@ -307,10 +304,9 @@ func TestClusterPodConventionValidate(t *testing.T) {
 					},
 				},
 			},
-			expected: validation.FieldErrors{}.Also(
-				validation.FieldErrors{
-					field.Invalid(field.NewPath("spec.priority"), WrongPriority, "Accepted priority values \"Early\" or \"Normal\" or \"Late\""),
-				}),
+			expected: field.ErrorList{
+				field.Invalid(field.NewPath("spec", "priority"), WrongPriority, "Accepted priority values \"Early\" or \"Normal\" or \"Late\""),
+			},
 		}, {
 			name: "valid priority level",
 			target: &ClusterPodConvention{
@@ -325,22 +321,22 @@ func TestClusterPodConventionValidate(t *testing.T) {
 					},
 				},
 			},
-			expected: validation.FieldErrors{},
+			expected: field.ErrorList{},
 		}} {
 		t.Run(c.name, func(t *testing.T) {
-			actual := c.target.Validate()
+			actual := c.target.validate()
 			if diff := cmp.Diff(c.expected, actual); diff != "" {
 				t.Errorf("Validate() (-expected, +actual) = %v", diff)
 			}
-			create := c.target.ValidateCreate()
+			_, create := c.target.ValidateCreate()
 			if diff := cmp.Diff(c.expected.ToAggregate(), create); diff != "" {
 				t.Errorf("ValidateCreate() (-expected, +actual) = %v", diff)
 			}
-			update := c.target.ValidateUpdate(nil)
+			_, update := c.target.ValidateUpdate(nil)
 			if diff := cmp.Diff(c.expected.ToAggregate(), update); diff != "" {
 				t.Errorf("ValidateUpdate() (-expected, +actual) = %v", diff)
 			}
-			delete := c.target.ValidateDelete()
+			_, delete := c.target.ValidateDelete()
 			if diff := cmp.Diff(nil, delete); diff != "" {
 				t.Errorf("ValidateDelete() (-expected, +actual) = %v", diff)
 			}

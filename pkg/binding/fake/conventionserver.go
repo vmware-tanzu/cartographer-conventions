@@ -1,5 +1,5 @@
 /*
-Copyright 2020 VMware Inc.
+Copyright 2020-2023 VMware Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -151,7 +151,7 @@ func NewFakeConventionServer() (*httptest.Server, []byte, error) {
 func webhookHandler(w http.ResponseWriter, r *http.Request) {
 	reqObj := &webhookv1alpha1.PodConventionContext{}
 	if r.Body != nil {
-		reqBody, err := ioutil.ReadAll(r.Body)
+		reqBody, err := io.ReadAll(r.Body)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
