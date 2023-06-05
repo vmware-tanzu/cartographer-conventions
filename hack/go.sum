@@ -313,13 +313,13 @@ github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
-github.com/stretchr/testify v1.8.1 h1:w7B6lhMri9wdJUVmEZPGGhZzrYTPvgJArz7wNPgYKsk=
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
+github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
 github.com/subosito/gotenv v1.3.0 h1:mjC+YW8QpAdXibNi+vNWgzmgBH4+5l5dCXv8cNysBLI=
 github.com/subosito/gotenv v1.3.0/go.mod h1:YzJjq/33h7nrwdY+iHMhEOEEbW0ovIz0tB6t6PwAXzs=
 github.com/vito/go-interact v0.0.0-20171111012221-fa338ed9e9ec/go.mod h1:wPlfmglZmRWMYv/qJy3P+fK/UnoQB5ISk4txfNd9tDo=
-github.com/vmware-tanzu/carvel-ytt v0.45.1 h1:zjiOnV7WiKJbkLHkJCRxlmABOMIL4WhKKyahfCzFoIk=
-github.com/vmware-tanzu/carvel-ytt v0.45.1/go.mod h1:+r+ZVZLsETAYlRsgINztFdUdUufj2OwrTXCfOzYB4fY=
+github.com/vmware-tanzu/carvel-ytt v0.45.2 h1:0+aECp3BcMXkD8L/VXVn4KOh1jD3COAt3DOXZ76iZu0=
+github.com/vmware-tanzu/carvel-ytt v0.45.2/go.mod h1:oHqFBnn/JvqaUjcQo9T/a/WPUP1ituKjUpFPH+BTzfc=
 github.com/xanzy/ssh-agent v0.3.0/go.mod h1:3s9xbODqPuuhK9JV1R321M/FlMZSBvE5aY6eAcqrDh0=
 github.com/xlab/treeprint v1.1.0 h1:G/1DjNkPpfZCFt9CSh6b5/nY4VimlbHF3Rh4obvtzDk=
 github.com/xlab/treeprint v1.1.0/go.mod h1:gj5Gd3gPdKtR1ikdDK6fnFLdmIS0X30kTTuNd/WEJu0=
