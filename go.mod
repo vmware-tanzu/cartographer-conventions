@@ -32,8 +32,8 @@ require (
 	github.com/Azure/go-autorest/autorest/validation v0.1.0 // indirect
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
-	github.com/CycloneDX/cyclonedx-go v0.6.0 // indirect
 	github.com/aws/aws-sdk-go v1.39.4 // indirect
+	github.com/aws/aws-sdk-go v1.36.30 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
