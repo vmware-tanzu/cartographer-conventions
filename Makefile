@@ -21,7 +21,7 @@ test: generate fmt vet ## Run tests
 
 .PHONY:
 scan-terms: ## Scan for inclusive terminology
-	@$(WOKE) . -c https://via.vmw.com/its-woke-rules --exit-1-on-failure
+	@$(WOKE) . -c ./woke/woke.yaml --exit-1-on-failure
 
 # Generate manifests e.g. CRD, RBAC etc.
 .PHONY: manifests

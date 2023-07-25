@@ -1,0 +1,158 @@
+rules:
+  - name: black hat
+    terms: [black hat]
+    severity: error
+    regex: black[\s-_]*hat
+    regexMs: "[bB]lackhat(*)>"
+    alternatives: [ unethical(adj), unethical hacker(n) ]
+    description: This term is racially insensitive
+  - name: blacklist
+    terms: [blacklist]
+    severity: error
+    regex: black[\s-_]*list
+    regexMs: "[bB]lacklist(*)>"
+    alternatives: [ denylist(n), banned list(n), block(v), deny(v), ban(v) ]
+    description: This term is racially insensitive
+  - name: blackout
+    terms: [blackout]
+    severity: error
+    regex: black[\s-_]*out
+    regexMs: "[bB]lackout(*)>"
+    alternatives: [restriction(n), outage(n), restrict(v), failed (adj)]
+    description: This term is racially insensitive
+  - name: brownout
+    terms: [brownout]
+    severity: error
+    regex: brown[\s-_]*out
+    regexMs: "[bB]rownout(*)>"
+    alternatives: [restriction(n), outage(n), restrict(v), failed (adj), network degradation (np)]
+    description: This term is racially insensitive
+  - name: cakewalk
+    terms: [cakewalk]
+    severity: error
+    regex: cake[\s-_]*walk
+    regexMs: "[cC]akewalk(*)>"
+    alternatives: [ easy ]
+    description: [ This term is racially insensitive ]
+  - name: disable
+    terms: [disable]
+    severity: error
+    regex: "\\sdisabled*\\s"
+    regexMs: "[dD]isable(*)>"
+    alternatives: [ deactivate ]
+    description: This term is insensitive to persons with disabilities
+  - name: female
+    terms: [female]
+    severity: error
+    regex: "\\bfemale\\b"
+    regexMs: "[fF]emale(*)>"
+    alternatives: [ jack(n), socket(n) ]
+    description: This term can be genderist. Avoid using it in anthropomorphic contexts
+      such as for physical connections.
+  - name: grandfathered
+    terms: [grandfathered]
+    severity: error
+    regex: "\\bgrandfathered\\b"
+    regexMs: "[gG]randfathered(*)>"
+    alternatives: [ legacy (adj) ]
+    description: This is racially insensitive when used as an adjective or verb.
+  - name: handicap
+    terms: [handicap]
+    severity: error
+    regex: "\\bhandicap\\b"
+    regexMs: "[hH]andicap(*)>"
+    alternatives: [ obstacle (n), impede (v), restrict (v) ]
+    description: This term is insensitive to persons with disabilities
+  - name: kill
+    terms: [kill]
+    severity: error
+    regex: "\\bkill[a-zA-Z]*\\b"
+    regexMs: "[kK]ill(*)>"
+    alternatives: [ stop, halt ]
+    description: This term carries implications of violence
+  - name: male
+    terms: [male]
+    severity: error
+    regex: "\\bmale\\b"
+    regexMs: "[mM]ale(*)>"
+    alternatives: [plug]
+    description: This term can be genderist. Avoid using it in anthropomorphic contexts
+      such as for physical connections.
+  - name: master
+    terms: [master]
+    severity: error
+    regex: "\\bmaster(?!')\\b"
+    regexMs: "[mM]aster(*)>"
+    alternatives: [ primary, main, controller, control plane, original, reference, leader ]
+    description: This term is racially insensitive
+    note: This term is racially insensitive
+  - name: rule of thumb
+    terms: [rule of thumb]
+    severity: error
+    regex: rule[\s-]+of[\s-]+thumb
+    regexMs: "[rR]ule[-_]of[-_]thumb(*)>"
+    alternatives: [ rule, guideline ]
+    description: This term carries implications of domestic violence
+  - name: sanity check
+    terms: [sanity check]
+    severity: error
+    regex: sanity[\s-_]*check
+    regexMs: "[sS]anitycheck(*)>"
+    alternatives: [ confidence check ]
+    description: This term is insensitive to persons with disabilities
+  - name: sanity test
+    terms: [sanity test]
+    severity: error
+    regex: sanity[\s-_]*test
+    regexMs: "[sS]anitytest(*)>"
+    alternatives: [ confidence test ]
+    description: This term is insensitive to persons with disabilities
+  - name: segregate
+    terms: [segregate]
+    severity: error
+    regex: "\\bsegregate"
+    regexMs: "[sS]egregate(*)>"
+    alternatives: [ separate ]
+    description: This term is racially insensitive
+  - name: segregation
+    terms: [segregation]
+    severity: error
+    regex: "\\bsegregation\\b"
+    regexMs: "[sS]egregation(*)>"
+    alternatives: [ separation ]
+    description: This term is racially insensitive
+  - name: slave
+    terms: [slave]
+    severity: error
+    regex: "\\bslave\\b"
+    regexMs: "[sS]lave(*)>"
+    alternatives: [ secondary, worker, replica ]
+    description: This term is racially insensitive
+  - name: suffer
+    terms: [suffer]
+    severity: error
+    regex: "\\bsuffer\\b"
+    regexMs: "[sS]uffer(*)>"
+    alternatives: [ decrease, lessen, shrink, increase, growth, experience ]
+    description: This term carries implications of violence
+  - name: war room
+    terms: [war room]
+    severity: error
+    regex: war[\s-_]*room
+    regexMs: "[wW]arroom(*)>"
+    alternatives: [ operations room, ops room ]
+    description: This term carries implications of violence
+  - name: white hat
+    terms: [white hat]
+    severity: error
+    regex: white[\s-_]*hat
+    regexMs: "[wW]hitehat(*)>"
+    alternatives: [ ethical(adj) ]
+    description: This term is racially insensitive
+  - name: whitelist
+    terms: [whitelist]
+    severity: error
+    regex: white[\s-_]*list
+    regexMs: "[wW]hitelist(*)>"
+    alternatives: [ allowlist(n), safelist(n), acceptlist(n), approved list(n), allow(v), approve(v) ]
+    description: This term is racially insensitive
