@@ -25,7 +25,7 @@ jobs:
       uses: get-woke/woke-action@v0
       with: 
         fail-on-error: true
-        woke-args: -c https://via.vmw.com/its-woke-rules
+        woke-args: -c woke/woke.yaml
     - uses: codecov/codecov-action@v3
     - name: Build
       run: |
