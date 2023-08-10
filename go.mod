@@ -1,6 +1,6 @@
 module github.com/vmware-tanzu/cartographer-conventions
 
-go 1.19
+go 1.20
 
 replace github.com/vmware-tanzu/cartographer-conventions/webhook => ./webhook
 
