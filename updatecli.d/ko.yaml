@@ -6,6 +6,7 @@ sources:
     spec:
       image: "paketobuildpacks/run-jammy-tiny"
       tag: "latest"
+      hidetag: true
 
 # Defines "targets" which need to be updated if different than "source" information.
 targets:
@@ -13,7 +14,7 @@ targets:
     name: Bump Docker Image Tag
     kind: yaml
     transformers:
-      - addprefix: paketobuildpacks/run-jammy-tiny@ 
+      - addprefix: "paketobuildpacks/run-jammy-tiny" 
     spec:
-      key: defaultBaseImage
+      key: $.defaultBaseImage
       file: .ko.yaml
