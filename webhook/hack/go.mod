@@ -3,7 +3,7 @@ module github.com/vmware-tanzu/cartographer-conventions/tools
 go 1.19
 
 require (
-	dies.dev/diegen v0.7.0
+	dies.dev/diegen v0.9.0
 	github.com/k14s/ytt v0.39.0
 	golang.org/x/tools v0.5.0
 	sigs.k8s.io/controller-tools v0.11.0
