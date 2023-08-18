@@ -5,7 +5,7 @@ go 1.19
 require (
 	dies.dev/diegen v0.8.0
 	github.com/get-woke/woke v0.19.0
-	github.com/vmware-tanzu/carvel-ytt v0.45.3
+	github.com/vmware-tanzu/carvel-ytt v0.45.4
 	golang.org/x/tools v0.12.0
 	sigs.k8s.io/controller-tools v0.12.0
 	sigs.k8s.io/kustomize/kustomize/v4 v4.5.7
