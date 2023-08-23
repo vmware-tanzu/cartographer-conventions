@@ -7,7 +7,7 @@ require (
 	github.com/k14s/ytt v0.39.0
 	golang.org/x/tools v0.8.0
 	sigs.k8s.io/controller-tools v0.11.0
-	sigs.k8s.io/kustomize/kustomize/v4 v4.5.2
+	sigs.k8s.io/kustomize/kustomize/v5 v5.1.1
 )
 
 require (
