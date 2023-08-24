@@ -31,8 +31,10 @@ import (
 	"k8s.io/client-go/kubernetes"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
+	ctrlcache "sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	// credential providers
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -83,15 +85,23 @@ func main() {
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme:                 scheme,
-		MetricsBindAddress:     metricsAddr,
+		Scheme: scheme,
+		Metrics: server.Options{
+			BindAddress: metricsAddr,
+		},
 		HealthProbeBindAddress: probesAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "conventions-controller-leader-election-helper",
-		SyncPeriod:             &syncPeriod,
-		// wokeignore:rule=disable
-		ClientDisableCacheFor: []client.Object{
-			&corev1.Secret{},
+		Cache: ctrlcache.Options{
+			SyncPeriod: &syncPeriod,
+		},
+		Client: client.Options{
+			Cache: &client.CacheOptions{
+				// wokeignore:rule=disable
+				DisableFor: []client.Object{
+					&corev1.Secret{},
+				},
+			},
 		},
 	})
 	if err != nil {
