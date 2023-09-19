@@ -307,8 +307,8 @@ github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcU
 github.com/subosito/gotenv v1.3.0 h1:mjC+YW8QpAdXibNi+vNWgzmgBH4+5l5dCXv8cNysBLI=
 github.com/subosito/gotenv v1.3.0/go.mod h1:YzJjq/33h7nrwdY+iHMhEOEEbW0ovIz0tB6t6PwAXzs=
 github.com/vito/go-interact v0.0.0-20171111012221-fa338ed9e9ec/go.mod h1:wPlfmglZmRWMYv/qJy3P+fK/UnoQB5ISk4txfNd9tDo=
-github.com/vmware-tanzu/carvel-ytt v0.45.4 h1:SVYpBFlyskEmCHAP9jt/mJD8HgCQYSMmnhMzpYepypQ=
-github.com/vmware-tanzu/carvel-ytt v0.45.4/go.mod h1:oHqFBnn/JvqaUjcQo9T/a/WPUP1ituKjUpFPH+BTzfc=
+github.com/vmware-tanzu/carvel-ytt v0.45.5 h1:44TIwydLhPgJSmpwELda5fyq9PmgpDgruAJQ73uZpNY=
+github.com/vmware-tanzu/carvel-ytt v0.45.5/go.mod h1:Xarf0th61vX6VY07l3KBSi3uaMCQ2UyPPiCPiaVpHME=
 github.com/xanzy/ssh-agent v0.3.0/go.mod h1:3s9xbODqPuuhK9JV1R321M/FlMZSBvE5aY6eAcqrDh0=
 github.com/xlab/treeprint v1.2.0 h1:HzHnuAF1plUN2zGlAFHbSQP2qJ0ZAD3XF5XD7OesXRQ=
 github.com/xlab/treeprint v1.2.0/go.mod h1:gj5Gd3gPdKtR1ikdDK6fnFLdmIS0X30kTTuNd/WEJu0=
