@@ -10,28 +10,12 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
+  groups:
+    k8s-dependencies:
+      patterns:
+      - "k8s.io*"
 - package-ecosystem: gomod
   directory: "/webhook"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-- package-ecosystem: gomod
-  directory: "/samples/convention-server"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-- package-ecosystem: gomod
-  directory: "/samples/dumper-server"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-- package-ecosystem: gomod
-  directory: "/samples/spring-convention-server"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-- package-ecosystem: gomod
-  directory: "/hack"
   schedule:
     interval: daily
   open-pull-requests-limit: 10
@@ -39,3 +23,36 @@ updates:
     k8s-dependencies:
       patterns:
       - "k8s.io*"
+- package-ecosystem: gomod
+  directory: "/samples/convention-server"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  groups:
+    k8s-dependencies:
+      patterns:
+      - "k8s.io*"
+- package-ecosystem: gomod
+  directory: "/samples/dumper-server"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  groups:
+    k8s-dependencies:
+      patterns:
+      - "k8s.io*"
+- package-ecosystem: gomod
+  directory: "/samples/spring-convention-server"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  groups:
+    k8s-dependencies:
+      patterns:
+      - "k8s.io*"
+- package-ecosystem: gomod
+  directory: "/hack"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  
