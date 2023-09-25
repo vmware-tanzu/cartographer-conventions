@@ -6,5 +6,4 @@ dist/aks-webhooks.yaml
 **/go.sum
 **/go.work.sum
 dist/third-party/
-
-
+woke/woke.yaml

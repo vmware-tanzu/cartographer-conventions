@@ -831,11 +831,11 @@ func TestResolveConventions(t *testing.T) {
 						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
 							Status(metav1.ConditionFalse).
 							Reason("CABundleResolutionFailed").
-							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "ns/wrong-ca" configured in convention "test-convention"`),
+							Message(`failed to authenticate: unable to find valid "CertificateRequests" for certificate "ns/wrong-ca" configured in convention "test-convention"`),
 						dieconventionsv1alpha1.PodIntentConditionReadyBlank.
 							Status(metav1.ConditionFalse).
 							Reason("CABundleResolutionFailed").
-							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "ns/wrong-ca" configured in convention "test-convention"`),
+							Message(`failed to authenticate: unable to find valid "CertificateRequests" for certificate "ns/wrong-ca" configured in convention "test-convention"`),
 					)
 				}).
 				DieReleasePtr(),
@@ -872,11 +872,11 @@ func TestResolveConventions(t *testing.T) {
 						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
 							Status(metav1.ConditionFalse).
 							Reason("CABundleResolutionFailed").
-							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "test-namespace/my-cert" configured in convention "test-convention"`),
+							Message(`failed to authenticate: unable to find valid "CertificateRequests" for certificate "test-namespace/my-cert" configured in convention "test-convention"`),
 						dieconventionsv1alpha1.PodIntentConditionReadyBlank.
 							Status(metav1.ConditionFalse).
 							Reason("CABundleResolutionFailed").
-							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "test-namespace/my-cert" configured in convention "test-convention"`),
+							Message(`failed to authenticate: unable to find valid "CertificateRequests" for certificate "test-namespace/my-cert" configured in convention "test-convention"`),
 					)
 				}).
 				DieReleasePtr(),
@@ -915,11 +915,11 @@ func TestResolveConventions(t *testing.T) {
 						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
 							Status(metav1.ConditionFalse).
 							Reason("CABundleResolutionFailed").
-							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "test-namespace/my-cert" configured in convention "test-convention"`),
+							Message(`failed to authenticate: unable to find valid "CertificateRequests" for certificate "test-namespace/my-cert" configured in convention "test-convention"`),
 						dieconventionsv1alpha1.PodIntentConditionReadyBlank.
 							Status(metav1.ConditionFalse).
 							Reason("CABundleResolutionFailed").
-							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "test-namespace/my-cert" configured in convention "test-convention"`),
+							Message(`failed to authenticate: unable to find valid "CertificateRequests" for certificate "test-namespace/my-cert" configured in convention "test-convention"`),
 					)
 				}).
 				DieReleasePtr(),
@@ -958,11 +958,11 @@ func TestResolveConventions(t *testing.T) {
 						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
 							Status(metav1.ConditionFalse).
 							Reason("CABundleResolutionFailed").
-							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "test-namespace/my-cert" configured in convention "test-convention"`),
+							Message(`failed to authenticate: unable to find valid "CertificateRequests" for certificate "test-namespace/my-cert" configured in convention "test-convention"`),
 						dieconventionsv1alpha1.PodIntentConditionReadyBlank.
 							Status(metav1.ConditionFalse).
 							Reason("CABundleResolutionFailed").
-							Message(`failed to authenticate: unable to find valid certificaterequests for certificate "test-namespace/my-cert" configured in convention "test-convention"`),
+							Message(`failed to authenticate: unable to find valid "CertificateRequests" for certificate "test-namespace/my-cert" configured in convention "test-convention"`),
 					)
 				}).
 				DieReleasePtr(),
@@ -1389,11 +1389,11 @@ func TestApplyConventionsReconciler(t *testing.T) {
 						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
 							Status(metav1.ConditionFalse).
 							Reason("LabelSelector").
-							Message("filtering conventions failed: converting label selector for clusterPodConvention \"my-conventions\" failed: key: Invalid value: \"\": name part must be non-empty; name part must consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character (e.g. 'MyName',  or 'my.name',  or '123-abc', regex used for validation is '([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]')"),
+							Message("filtering conventions failed: unable to convert label selector for ClusterPodConvention \"my-conventions\": key: Invalid value: \"\": name part must be non-empty; name part must consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character (e.g. 'MyName',  or 'my.name',  or '123-abc', regex used for validation is '([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]')"),
 						dieconventionsv1alpha1.PodIntentConditionReadyBlank.
 							Status(metav1.ConditionFalse).
 							Reason("LabelSelector").
-							Message("filtering conventions failed: converting label selector for clusterPodConvention \"my-conventions\" failed: key: Invalid value: \"\": name part must be non-empty; name part must consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character (e.g. 'MyName',  or 'my.name',  or '123-abc', regex used for validation is '([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]')"),
+							Message("filtering conventions failed: unable to convert label selector for ClusterPodConvention \"my-conventions\": key: Invalid value: \"\": name part must be non-empty; name part must consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character (e.g. 'MyName',  or 'my.name',  or '123-abc', regex used for validation is '([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]')"),
 					)
 				}).
 				DieReleasePtr(),
@@ -1441,11 +1441,11 @@ func TestApplyConventionsReconciler(t *testing.T) {
 						dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
 							Status(metav1.ConditionFalse).
 							Reason("ConventionsApplied").
-							Message("fetching metadata for Images failed: image: \"ubuntu\" error: registry config keys are not set"),
+							Message("failed to fetch metadata for Images: image: \"ubuntu\" error: registry config keys are not set"),
 						dieconventionsv1alpha1.PodIntentConditionReadyBlank.
 							Status(metav1.ConditionFalse).
 							Reason("ConventionsApplied").
-							Message("fetching metadata for Images failed: image: \"ubuntu\" error: registry config keys are not set"),
+							Message("failed to fetch metadata for Images: image: \"ubuntu\" error: registry config keys are not set"),
 					)
 				}).
 				DieReleasePtr(),
