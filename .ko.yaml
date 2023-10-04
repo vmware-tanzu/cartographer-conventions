@@ -1,1 +1,1 @@
-defaultBaseImage: paketobuildpacks/run-jammy-tiny@sha256:2879c44347b5aba185d5a8306db4e87eb437edfedf085a3b442f5ad79cdc6a6a
+defaultBaseImage: paketobuildpacks/run-jammy-tiny@sha256:ee7249ceeb935324922ed5564fc2dd0f26e7561d8c97f0ee60b75a1cbac1d8f8
