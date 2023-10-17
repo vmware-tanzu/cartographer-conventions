@@ -105,17 +105,17 @@ func main() {
 		},
 	})
 	if err != nil {
-		setupLog.Error(err, "unable to start manager")
+		setupLog.Error(err, "there was an error initializing a new `Manager` object")
 		os.Exit(1)
 	}
 	client, err := kubernetes.NewForConfig(mgr.GetConfig())
 	if err != nil {
-		setupLog.Error(err, "unable to create clientset")
+		setupLog.Error(err, "there was an error creating a new clientset using config provided")
 		os.Exit(1)
 	}
 	authInfoResolver, err := webhookutil.NewDefaultAuthenticationInfoResolver("")
 	if err != nil {
-		setupLog.Error(err, "unable to create authentication info resolver")
+		setupLog.Error(err, "there was an error creating a new authentication info resolver object")
 		os.Exit(1)
 	}
 	wc := binding.WebhookConfig{
@@ -170,7 +170,7 @@ func main() {
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctx); err != nil {
-		setupLog.Error(err, "problem running manager")
+		setupLog.Error(err, "there was an error starting the manager")
 		os.Exit(1)
 	}
 }

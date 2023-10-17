@@ -58,7 +58,7 @@ func (c *Conventions) Filter(collectedLabels map[string]labels.Set) (Conventions
 		for _, selector := range selectors {
 			sourceLabels, err := metav1.LabelSelectorAsSelector(&selector)
 			if err != nil {
-				return nil, fmt.Errorf("converting label selector for clusterPodConvention %q failed: %v", source.Name, err)
+				return nil, fmt.Errorf("unable to convert label selector for ClusterPodConvention %q: %v", source.Name, err)
 			}
 
 			if sourceLabels.Matches(collectedLabels[string(source.SelectorTarget)]) {
@@ -91,7 +91,7 @@ func (c *Conventions) Apply(ctx context.Context,
 ) (*corev1.PodTemplateSpec, error) {
 	log := logr.FromContextOrDiscard(ctx)
 	if parent == nil {
-		return nil, fmt.Errorf("pod intent value cannot be nil")
+		return nil, fmt.Errorf("PodIntent value cannot be nil")
 	}
 	workload := parent.Spec.Template.AsPodTemplateSpec()
 	appliedConventions := []string{}
@@ -103,7 +103,7 @@ func (c *Conventions) Apply(ctx context.Context,
 		imageConfigList, err := rc.ResolveImageMetadata(ctx, workload)
 		if err != nil {
 			log.Error(err, "fetching metadata for Images failed")
-			return nil, fmt.Errorf("fetching metadata for Images failed: %v", err)
+			return nil, fmt.Errorf("failed to fetch metadata for Images: %v", err)
 		}
 		conventionRequestObj := &webhookv1alpha1.PodConventionContext{
 			ObjectMeta: metav1.ObjectMeta{

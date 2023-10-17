@@ -115,7 +115,7 @@ func (rc *RegistryConfig) ResolveImageMetadata(ctx context.Context, template *co
 func (rc *RegistryConfig) resolveImageMetadata(ctx context.Context, imageRef string, opts ...name.Option) (webhookv1alpha1.ImageConfig, error) {
 	ref, resolved, err := resolveTagsToDigest(imageRef, opts...)
 	if err != nil {
-		return webhookv1alpha1.ImageConfig{}, fmt.Errorf("failed to resolve image %q: %v", imageRef, err)
+		return webhookv1alpha1.ImageConfig{}, fmt.Errorf("failed to resolve image %q: %v as digest could not be determined from tag provided", imageRef, err)
 	}
 	if rc.Keys == nil {
 		return webhookv1alpha1.ImageConfig{}, fmt.Errorf("registry config keys are not set")

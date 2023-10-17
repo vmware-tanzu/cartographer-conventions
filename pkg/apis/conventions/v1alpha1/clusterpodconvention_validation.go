@@ -64,7 +64,7 @@ func (s *ClusterPodConventionSpec) validate(fldPath *field.Path) field.ErrorList
 	}
 
 	if s.Priority != EarlyPriority && s.Priority != LatePriority && s.Priority != NormalPriority {
-		errs = append(errs, field.Invalid(fldPath.Child("priority"), s.Priority, "Accepted priority values \"Early\" or \"Normal\" or \"Late\""))
+		errs = append(errs, field.Invalid(fldPath.Child("priority"), s.Priority, `The priority value provided is invalid. Accepted priority values include \"Early\" or \"Normal\" or \"Late\". The default value is set to \"Normal\"`))
 	}
 
 	// Webhook will be required mutually exclusive of other options that don't exist yet
@@ -77,7 +77,7 @@ func (s *ClusterPodConventionSpec) validate(fldPath *field.Path) field.ErrorList
 	if s.SelectorTarget != PodTemplateSpecLabels && s.SelectorTarget != PodIntentLabels {
 		errs = append(errs,
 			field.Invalid(fldPath.Child("selectorTarget"), s.SelectorTarget,
-				`Accepted selector target values are "PodIntent" and "PodTemplateSpec". The default value is set to "PodTemplateSpec"`),
+				`The value provided for the selectorTarget field is invalid. Accepted selectorTarget values include \"PodIntent\" and \"PodTemplateSpec\". The default value is set to \"PodTemplateSpec\"`),
 		)
 	}
 

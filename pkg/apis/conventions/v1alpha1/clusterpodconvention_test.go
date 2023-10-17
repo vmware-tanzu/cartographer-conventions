@@ -287,7 +287,7 @@ func TestClusterPodConventionValidate(t *testing.T) {
 				},
 			},
 			expected: field.ErrorList{
-				field.Invalid(field.NewPath("spec", "selectorTarget"), InvalidSelectorTarget, "Accepted selector target values are \"PodIntent\" and \"PodTemplateSpec\". The default value is set to \"PodTemplateSpec\""),
+				field.Invalid(field.NewPath("spec", "selectorTarget"), InvalidSelectorTarget, `The value provided for the selectorTarget field is invalid. Accepted selectorTarget values include \"PodIntent\" and \"PodTemplateSpec\". The default value is set to \"PodTemplateSpec\"`),
 			},
 		},
 		{
@@ -305,7 +305,7 @@ func TestClusterPodConventionValidate(t *testing.T) {
 				},
 			},
 			expected: field.ErrorList{
-				field.Invalid(field.NewPath("spec", "priority"), WrongPriority, "Accepted priority values \"Early\" or \"Normal\" or \"Late\""),
+				field.Invalid(field.NewPath("spec", "priority"), WrongPriority, `The priority value provided is invalid. Accepted priority values include \"Early\" or \"Normal\" or \"Late\". The default value is set to \"Normal\"`),
 			},
 		}, {
 			name: "valid priority level",
