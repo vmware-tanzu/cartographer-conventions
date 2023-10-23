@@ -42,9 +42,11 @@ spec:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
           runAsNonRoot: true
+          seccompProfile:
+              type: RuntimeDefault
           capabilities:
             drop:
-            - all
+            - ALL
       volumes:
       - name: cache-volume
         emptyDir: {}
