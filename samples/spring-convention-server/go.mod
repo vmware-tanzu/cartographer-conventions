@@ -8,7 +8,7 @@ require (
 	github.com/CycloneDX/cyclonedx-go v0.6.0
 	// wokeignore:rule=Masterminds
 	github.com/Masterminds/semver v1.5.0
-	github.com/go-logr/logr v1.2.4
+	github.com/go-logr/logr v1.3.0
 	github.com/go-logr/zapr v1.2.4
 	github.com/vmware-tanzu/cartographer-conventions/webhook v0.5.1
 	go.uber.org/zap v1.26.0
