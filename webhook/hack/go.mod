@@ -1,6 +1,6 @@
 module github.com/vmware-tanzu/cartographer-conventions/tools
 
-go 1.19
+go 1.20
 
 require (
 	dies.dev/diegen v0.9.0
