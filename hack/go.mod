@@ -6,7 +6,7 @@ require (
 	dies.dev/diegen v0.9.0
 	github.com/get-woke/woke v0.19.0
 	github.com/vmware-tanzu/carvel-ytt v0.46.2
-	golang.org/x/tools v0.15.0
+	golang.org/x/tools v0.16.0
 	sigs.k8s.io/controller-tools v0.12.0
 	sigs.k8s.io/kustomize/kustomize/v5 v5.2.1
 )
@@ -68,8 +68,8 @@ require (
 	github.com/xlab/treeprint v1.2.0 // indirect
 	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
 	golang.org/x/mod v0.14.0 // indirect
-	golang.org/x/net v0.18.0 // indirect
-	golang.org/x/sys v0.14.0 // indirect
+	golang.org/x/net v0.19.0 // indirect
+	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/evanphx/json-patch.v5 v5.6.0 // indirect
