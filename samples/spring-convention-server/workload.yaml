@@ -8,4 +8,4 @@ spec:
     spec:
       containers:
       - name: workload
-        image: scothis/petclinic:sbom-20211210@sha256:8b517f21f283229e855e316e2753396239884eb9c4009ab6c797bdf2a041140f
+        image: krashed843/tanzu-java-app@sha256:9f90358e4c4eff2255bab81e3fa6316418ef435465dbae3bba74a2262f7c227d
