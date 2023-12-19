@@ -176,12 +176,12 @@ jobs:
           imgpkg push -f "${scratch}" -b "${BUNDLE}/samples"
           imgpkg copy -b "${BUNDLE}/samples" --to-tar cartographer-conventions-samples-bundle.tar
         echo "##[endgroup]"
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: cartographer-conventions-bundle.tar
         path: cartographer-conventions-bundle.tar
         retention-days: 1
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: cartographer-conventions-samples-bundle.tar
         path: cartographer-conventions-samples-bundle.tar
@@ -318,11 +318,11 @@ jobs:
             help: "https://kind.sigs.k8s.io/docs/user/local-registry/"
         EOF
     - name: Download staged Cartographer Conventions build
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: cartographer-conventions-bundle.tar
     - name: Download staged Cartographer Conventions build
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: cartographer-conventions-samples-bundle.tar
     - name: Relocate bundles
@@ -651,7 +651,7 @@ jobs:
 
         curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
     - name: Download staged Cartographer Conventions bundle
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: cartographer-conventions-bundle.tar
     - name: Scan source
@@ -719,11 +719,11 @@ jobs:
         release_name: Release ${{ steps.get_version.outputs.VERSION }}
         draft: true
     - name: Download staged Cartographer Conventions build
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: cartographer-conventions-bundle.tar
     - name: Download staged samples build
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: cartographer-conventions-samples-bundle.tar
     - name: Upload Cartographer Conventions release
