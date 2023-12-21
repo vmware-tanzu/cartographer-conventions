@@ -10,7 +10,8 @@ DIEGEN ?= go run -modfile hack/go.mod dies.dev/diegen
 GOIMPORTS ?= go run -modfile hack/go.mod golang.org/x/tools/cmd/goimports
 KUSTOMIZE ?= go run -modfile hack/go.mod sigs.k8s.io/kustomize/kustomize/v5
 YTT ?= go run -modfile hack/go.mod github.com/vmware-tanzu/carvel-ytt/cmd/ytt
-WOKE ?= go run -modfile hack/go.mod github.com/get-woke/woke
+WOKE ?= go run -modfile hack/woke/go.mod github.com/get-woke/woke
+
 
 .PHONY: all
 all: test dist scan-terms
@@ -68,6 +69,7 @@ generate-internal:
 tidy: ## Run go mod tidy
 	go mod tidy -v
 	cd hack && go mod tidy -v
+	cd hack/woke && go mod tidy -v
 	cd samples/convention-server && go mod tidy -v
 	cd samples/dumper-server && go mod tidy -v
 	cd samples/spring-convention-server && go mod tidy -v
