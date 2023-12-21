@@ -33,40 +33,77 @@ If everything works correctly, the status will contain a transformed template th
 apiVersion: conventions.carto.run/v1alpha1
 kind: PodIntent
 metadata:
-  creationTimestamp: "2021-03-24T23:56:20Z"
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"conventions.carto.run/v1alpha1","kind":"PodIntent","metadata":{"annotations":{},"name":"spring-sample","namespace":"test"},"spec":{"template":{"spec":{"containers":[{"image":"krashed843/tanzu-java-app@sha256:9f90358e4c4eff2255bab81e3fa6316418ef435465dbae3bba74a2262f7c227d","name":"workload"}]}}}}
+  creationTimestamp: "2023-12-21T20:40:59Z"
   generation: 1
   name: spring-sample
-  namespace: default
-  resourceVersion: "6978954"
-  selfLink: /apis/conventions.carto.run/v1alpha1/namespaces/default/podintents/sample
-  uid: d8ade195-7f9d-4694-99b1-47b01052461b
+  namespace: test
+  resourceVersion: "7568605"
+  uid: 3c263b9c-a586-4933-97a8-604a1badeccb
 spec:
+  serviceAccountName: default
   template:
     metadata: {}
     spec:
       containers:
-      - image: scothis/petclinic:service-bindings-20200922
+      - image: krashed843/tanzu-java-app@sha256:9f90358e4c4eff2255bab81e3fa6316418ef435465dbae3bba74a2262f7c227d
         name: workload
         resources: {}
 status:
   conditions:
-  - lastTransitionTime: "2021-03-24T23:56:21Z"
+  - lastTransitionTime: "2023-12-21T20:40:59Z"
+    message: ""
+    reason: Applied
     status: "True"
     type: ConventionsApplied
-  - lastTransitionTime: "2021-03-24T23:56:21Z"
+  - lastTransitionTime: "2023-12-21T20:40:59Z"
+    message: ""
+    reason: ConventionsApplied
     status: "True"
     type: Ready
   observedGeneration: 1
   template:
     metadata:
       annotations:
-        boot.spring.io/version: 2.3.3.RELEASE
-        conventions.carto.run/applied-conventions: spring-sample/spring-boot
+        boot.spring.io/actuator: http://:8080/actuator
+        boot.spring.io/version: 2.7.15
+        conventions.carto.run/applied-conventions: |-
+          spring-sample/spring-boot
+          spring-sample/spring-boot-web
+          spring-sample/spring-boot-actuator
+          spring-sample/spring-boot-actuator-probes
       labels:
         conventions.carto.run/framework: spring-boot
     spec:
       containers:
-      - image: scothis/petclinic:service-bindings-20200922
+      - env:
+        - name: JAVA_TOOL_OPTIONS
+          value: -Dmanagement.endpoints.web.base-path=/actuator -Dmanagement.health.probes.enabled=true
+            -Dmanagement.server.port=8080 -Dserver.port=8080
+        image: index.docker.io/krashed843/tanzu-java-app@sha256:9f90358e4c4eff2255bab81e3fa6316418ef435465dbae3bba74a2262f7c227d
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+            scheme: HTTP
         name: workload
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+            scheme: HTTP
         resources: {}
+        startupProbe:
+          failureThreshold: 120
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 1
+          periodSeconds: 1
 ```
