@@ -5,7 +5,7 @@ go 1.20
 replace github.com/vmware-tanzu/cartographer-conventions/webhook => ../../webhook
 
 require (
-	github.com/CycloneDX/cyclonedx-go v0.6.0
+	github.com/CycloneDX/cyclonedx-go v0.8.0
 	// wokeignore:rule=Masterminds
 	github.com/Masterminds/semver v1.5.0
 	github.com/go-logr/logr v1.3.0
