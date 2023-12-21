@@ -194,9 +194,9 @@ jobs:
       fail-fast: false
       matrix:
         k8s:
-        - 1.25.0
-        - 1.26.0
-        - 1.27.2
+        - 1.25.11
+        - 1.26.6
+        - 1.27.3
         - 1.28.0
     env:
       REGISTRY_NAME: registry.local

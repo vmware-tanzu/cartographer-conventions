@@ -3,12 +3,12 @@ updates:
 - package-ecosystem: github-actions
   directory: "/"
   schedule:
-    interval: daily
+    interval: weekly
   open-pull-requests-limit: 10
 - package-ecosystem: gomod
   directory: "/"
   schedule:
-    interval: daily
+    interval: weekly
   open-pull-requests-limit: 10
   groups:
     k8s-dependencies:
@@ -17,7 +17,7 @@ updates:
 - package-ecosystem: gomod
   directory: "/webhook"
   schedule:
-    interval: daily
+    interval: weekly
   open-pull-requests-limit: 10
   groups:
     k8s-dependencies:
@@ -26,7 +26,7 @@ updates:
 - package-ecosystem: gomod
   directory: "/samples/convention-server"
   schedule:
-    interval: daily
+    interval: weekly
   open-pull-requests-limit: 10
   groups:
     k8s-dependencies:
@@ -35,7 +35,7 @@ updates:
 - package-ecosystem: gomod
   directory: "/samples/dumper-server"
   schedule:
-    interval: daily
+    interval: weekly
   open-pull-requests-limit: 10
   groups:
     k8s-dependencies:
@@ -44,7 +44,7 @@ updates:
 - package-ecosystem: gomod
   directory: "/samples/spring-convention-server"
   schedule:
-    interval: daily
+    interval: weekly
   open-pull-requests-limit: 10
   groups:
     k8s-dependencies:
@@ -53,6 +53,11 @@ updates:
 - package-ecosystem: gomod
   directory: "/hack"
   schedule:
-    interval: daily
+    interval: weekly
+  open-pull-requests-limit: 10
+- package-ecosystem: gomod
+  directory: "/hack/woke"
+  schedule:
+    interval: weekly
   open-pull-requests-limit: 10
   
