@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/CycloneDX/cyclonedx-go v0.8.0
-	github.com/go-logr/logr v1.3.0
+	github.com/go-logr/logr v1.4.1
 	github.com/google/go-containerregistry v0.17.0
 	k8s.io/api v0.28.4
 	k8s.io/apimachinery v0.28.4
