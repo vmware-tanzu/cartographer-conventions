@@ -5,7 +5,7 @@ go 1.20
 replace github.com/vmware-tanzu/cartographer-conventions/webhook => ../../webhook
 
 require (
-	github.com/go-logr/logr v1.3.0
+	github.com/go-logr/logr v1.4.1
 	github.com/go-logr/zapr v1.3.0
 	github.com/vmware-tanzu/cartographer-conventions/webhook v0.5.1
 	go.uber.org/zap v1.26.0
