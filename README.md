@@ -29,7 +29,7 @@ We use [Golang 1.19+](https://golang.org) and [`ko`](https://github.com/google/k
 2. Create a namespace to deploy components, if it doesn't already exist
 
    ```sh
-   kubectl create ns cartographer-system
+   kubectl create ns conventions-system
    ```
 
 3. Optional: Trust additional certificate authorities certificate
@@ -43,7 +43,7 @@ We use [Golang 1.19+](https://golang.org) and [`ko`](https://github.com/google/k
 4. Build and install Cartographer Conventions
 
     ```sh
-    kapp deploy -n cartographer-system -a conventions \
+    kapp deploy -n conventions-system -a conventions \
       -f <( \
         ko resolve -f <( \
           ytt \
@@ -61,7 +61,7 @@ We use [Golang 1.19+](https://golang.org) and [`ko`](https://github.com/google/k
 In order to [attach an IAM role](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) to the service account that the controller uses, provide the role [arn](https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html) during installation phase.
 
   ```sh
-  kapp deploy -n cartographer-system -a conventions \
+  kapp deploy -n conventions-system -a conventions \
     -f <( \
       ko resolve -f <( \
         ytt \
@@ -83,7 +83,7 @@ The service account `cartographer-conventions-controller-manager` would have the
     labels:
       app.kubernetes.io/component: conventions
     name: cartographer-conventions-controller-manager
-    namespace: cartographer-system
+    namespace: conventions-system
     annotations:
       eks.amazonaws.com/role-arn: 'eks.amazonaws.com/role-arn: arn:aws:iam::133523324:role/role_name'
   ```

@@ -5,7 +5,7 @@
 #@ load("@ytt:data", "data")
 
 #@ if/end hasattr(data.values, "aws_iam_role_arn") and data.values.aws_iam_role_arn != "":
-#@overlay/match by=overlay.subset({"apiVersion":"v1","kind":"ServiceAccount","metadata":{"namespace":"cartographer-system", "name":"cartographer-conventions-controller-manager"}})
+#@overlay/match by=overlay.subset({"apiVersion":"v1","kind":"ServiceAccount","metadata":{"namespace":"conventions-system", "name":"cartographer-conventions-controller-manager"}})
 ---
 metadata:
   #@overlay/match missing_ok=True

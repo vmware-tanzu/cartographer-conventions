@@ -32,7 +32,7 @@ spec:
           default: ""
         stand_alone:
           type: boolean
-          description: "Optional: run independent of Cartographer, creates the cartographer-system namespace"
+          description: "Optional: run independent of Cartographer, creates the conventions-system namespace"
           default: false
         aws_iam_role_arn:
           type: string
