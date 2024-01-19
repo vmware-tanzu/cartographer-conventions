@@ -27,7 +27,7 @@ scan-terms: ## Scan for inclusive terminology
 # Generate manifests e.g. CRD, RBAC etc.
 .PHONY: manifests
 manifests:
-	$(CONTROLLER_GEN) crd:crdVersions=v1 rbac:roleName=manager-role webhook crd:maxDescLen=0 \
+	$(CONTROLLER_GEN) "crd:crdVersions=v1,maxDescLen=0" rbac:roleName=manager-role webhook \
 		paths="./pkg/apis/conventions/...;./pkg/controllers/..." \
 		output:crd:dir=./config/crd/bases \
 		output:rbac:dir=./config/rbac \

@@ -487,7 +487,9 @@ func (d *ClusterPodConventionSpecDie) DeepCopy() *ClusterPodConventionSpecDie {
 	}
 }
 
-// Label selector for workloads. It must match the workload's pod template's labels.
+// Label selector for workloads.
+//
+// It must match the workload's pod template's labels.
 func (d *ClusterPodConventionSpecDie) Selectors(v ...metav1.LabelSelector) *ClusterPodConventionSpecDie {
 	return d.DieStamp(func(r *conventionsv1alpha1.ClusterPodConventionSpec) {
 		r.Selectors = v
@@ -1363,14 +1365,20 @@ func (d *PodIntentSpecDie) DeepCopy() *PodIntentSpecDie {
 	}
 }
 
-// ServiceAccountName is the name of the Kubernetes ServiceAccount used to authenticate the image pull if the service account has attached pull secrets. For more information: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#add-imagepullsecrets-to-a-service-account
+// ServiceAccountName is the name of the Kubernetes ServiceAccount used to authenticate
+//
+// the image pull if the service account has attached pull secrets. For more information:
+//
+// https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#add-imagepullsecrets-to-a-service-account
 func (d *PodIntentSpecDie) ServiceAccountName(v string) *PodIntentSpecDie {
 	return d.DieStamp(func(r *conventionsv1alpha1.PodIntentSpec) {
 		r.ServiceAccountName = v
 	})
 }
 
-// ImagePullSecrets contains the names of the Kubernetes Secrets containing registry login information to resolve image metadata.
+// ImagePullSecrets contains the names of the Kubernetes Secrets containing registry login
+//
+// information to resolve image metadata.
 func (d *PodIntentSpecDie) ImagePullSecrets(v ...corev1.LocalObjectReference) *PodIntentSpecDie {
 	return d.DieStamp(func(r *conventionsv1alpha1.PodIntentSpec) {
 		r.ImagePullSecrets = v
