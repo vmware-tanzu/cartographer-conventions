@@ -502,63 +502,95 @@ func (d *CertificateRequestSpecDie) DeepCopy() *CertificateRequestSpecDie {
 	}
 }
 
-// The requested 'duration' (i.e. lifetime) of the Certificate. This option may be ignored/overridden by some issuer types.
+// The requested 'duration' (i.e. lifetime) of the Certificate.
+//
+// This option may be ignored/overridden by some issuer types.
 func (d *CertificateRequestSpecDie) Duration(v *apismetav1.Duration) *CertificateRequestSpecDie {
 	return d.DieStamp(func(r *v1.CertificateRequestSpec) {
 		r.Duration = v
 	})
 }
 
-// IssuerRef is a reference to the issuer for this CertificateRequest.  If the `kind` field is not set, or set to `Issuer`, an Issuer resource with the given name in the same namespace as the CertificateRequest will be used.  If the `kind` field is set to `ClusterIssuer`, a ClusterIssuer with the provided name will be used. The `name` field in this stanza is required at all times. The group field refers to the API group of the issuer which defaults to `cert-manager.io` if empty.
+// IssuerRef is a reference to the issuer for this CertificateRequest.  If
+//
+// the `kind` field is not set, or set to `Issuer`, an Issuer resource with
+//
+// the given name in the same namespace as the CertificateRequest will be
+//
+// used.  If the `kind` field is set to `ClusterIssuer`, a ClusterIssuer with
+//
+// the provided name will be used. The `name` field in this stanza is
+//
+// required at all times. The group field refers to the API group of the
+//
+// issuer which defaults to `cert-manager.io` if empty.
 func (d *CertificateRequestSpecDie) IssuerRef(v corev1.ObjectReference) *CertificateRequestSpecDie {
 	return d.DieStamp(func(r *v1.CertificateRequestSpec) {
 		r.IssuerRef = v
 	})
 }
 
-// The PEM-encoded x509 certificate signing request to be submitted to the CA for signing.
+// The PEM-encoded x509 certificate signing request to be submitted to the
+//
+// CA for signing.
 func (d *CertificateRequestSpecDie) Request(v []byte) *CertificateRequestSpecDie {
 	return d.DieStamp(func(r *v1.CertificateRequestSpec) {
 		r.Request = v
 	})
 }
 
-// IsCA will request to mark the certificate as valid for certificate signing when submitting to the issuer. This will automatically add the `cert sign` usage to the list of `usages`.
+// IsCA will request to mark the certificate as valid for certificate signing
+//
+// when submitting to the issuer.
+//
+// This will automatically add the `cert sign` usage to the list of `usages`.
 func (d *CertificateRequestSpecDie) IsCA(v bool) *CertificateRequestSpecDie {
 	return d.DieStamp(func(r *v1.CertificateRequestSpec) {
 		r.IsCA = v
 	})
 }
 
-// Usages is the set of x509 usages that are requested for the certificate. If usages are set they SHOULD be encoded inside the CSR spec Defaults to `digital signature` and `key encipherment` if not specified.
+// Usages is the set of x509 usages that are requested for the certificate.
+//
+// # If usages are set they SHOULD be encoded inside the CSR spec
+//
+// Defaults to `digital signature` and `key encipherment` if not specified.
 func (d *CertificateRequestSpecDie) Usages(v ...v1.KeyUsage) *CertificateRequestSpecDie {
 	return d.DieStamp(func(r *v1.CertificateRequestSpec) {
 		r.Usages = v
 	})
 }
 
-// Username contains the name of the user that created the CertificateRequest. Populated by the cert-manager webhook on creation and immutable.
+// Username contains the name of the user that created the CertificateRequest.
+//
+// Populated by the cert-manager webhook on creation and immutable.
 func (d *CertificateRequestSpecDie) Username(v string) *CertificateRequestSpecDie {
 	return d.DieStamp(func(r *v1.CertificateRequestSpec) {
 		r.Username = v
 	})
 }
 
-// UID contains the uid of the user that created the CertificateRequest. Populated by the cert-manager webhook on creation and immutable.
+// UID contains the uid of the user that created the CertificateRequest.
+//
+// Populated by the cert-manager webhook on creation and immutable.
 func (d *CertificateRequestSpecDie) UID(v string) *CertificateRequestSpecDie {
 	return d.DieStamp(func(r *v1.CertificateRequestSpec) {
 		r.UID = v
 	})
 }
 
-// Groups contains group membership of the user that created the CertificateRequest. Populated by the cert-manager webhook on creation and immutable.
+// Groups contains group membership of the user that created the CertificateRequest.
+//
+// Populated by the cert-manager webhook on creation and immutable.
 func (d *CertificateRequestSpecDie) Groups(v ...string) *CertificateRequestSpecDie {
 	return d.DieStamp(func(r *v1.CertificateRequestSpec) {
 		r.Groups = v
 	})
 }
 
-// Extra contains extra attributes of the user that created the CertificateRequest. Populated by the cert-manager webhook on creation and immutable.
+// Extra contains extra attributes of the user that created the CertificateRequest.
+//
+// Populated by the cert-manager webhook on creation and immutable.
 func (d *CertificateRequestSpecDie) Extra(v map[string][]string) *CertificateRequestSpecDie {
 	return d.DieStamp(func(r *v1.CertificateRequestSpec) {
 		r.Extra = v
@@ -747,28 +779,46 @@ func (d *CertificateRequestStatusDie) DeepCopy() *CertificateRequestStatusDie {
 	}
 }
 
-// List of status conditions to indicate the status of a CertificateRequest. Known condition types are `Ready` and `InvalidRequest`.
+// List of status conditions to indicate the status of a CertificateRequest.
+//
+// Known condition types are `Ready` and `InvalidRequest`.
 func (d *CertificateRequestStatusDie) Conditions(v ...v1.CertificateRequestCondition) *CertificateRequestStatusDie {
 	return d.DieStamp(func(r *v1.CertificateRequestStatus) {
 		r.Conditions = v
 	})
 }
 
-// The PEM encoded x509 certificate resulting from the certificate signing request. If not set, the CertificateRequest has either not been completed or has failed. More information on failure can be found by checking the `conditions` field.
+// The PEM encoded x509 certificate resulting from the certificate
+//
+// signing request.
+//
+// # If not set, the CertificateRequest has either not been completed or has
+//
+// failed. More information on failure can be found by checking the
+//
+// `conditions` field.
 func (d *CertificateRequestStatusDie) Certificate(v []byte) *CertificateRequestStatusDie {
 	return d.DieStamp(func(r *v1.CertificateRequestStatus) {
 		r.Certificate = v
 	})
 }
 
-// The PEM encoded x509 certificate of the signer, also known as the CA (Certificate Authority). This is set on a best-effort basis by different issuers. If not set, the CA is assumed to be unknown/not available.
+// The PEM encoded x509 certificate of the signer, also known as the CA
+//
+// (Certificate Authority).
+//
+// This is set on a best-effort basis by different issuers.
+//
+// If not set, the CA is assumed to be unknown/not available.
 func (d *CertificateRequestStatusDie) CA(v []byte) *CertificateRequestStatusDie {
 	return d.DieStamp(func(r *v1.CertificateRequestStatus) {
 		r.CA = v
 	})
 }
 
-// FailureTime stores the time that this CertificateRequest failed. This is used to influence garbage collection and back-off.
+// FailureTime stores the time that this CertificateRequest failed. This is
+//
+// used to influence garbage collection and back-off.
 func (d *CertificateRequestStatusDie) FailureTime(v *apismetav1.Time) *CertificateRequestStatusDie {
 	return d.DieStamp(func(r *v1.CertificateRequestStatus) {
 		r.FailureTime = v
