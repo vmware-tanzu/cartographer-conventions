@@ -1,6 +1,6 @@
 module github.com/vmware-tanzu/cartographer-conventions/hack/woke
 
-go 1.20
+go 1.21
 
 require github.com/get-woke/woke v0.19.0
 
