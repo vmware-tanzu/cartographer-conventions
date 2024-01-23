@@ -17,5 +17,4 @@
 #@data/values
 ---
 ca_cert_data: ""
-stand_alone: false
 aws_iam_role_arn: ""

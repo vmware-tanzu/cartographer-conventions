@@ -30,10 +30,6 @@ spec:
           type: string
           description: "Optional: PEM Encoded certificate data for image registries with private CA."
           default: ""
-        stand_alone:
-          type: boolean
-          description: "Optional: run independent of Cartographer, creates the conventions-system namespace"
-          default: false
         aws_iam_role_arn:
           type: string
           description: 'Optional: Arn role that has access to pull images from ECR container registry'

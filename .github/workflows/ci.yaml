@@ -378,7 +378,6 @@ jobs:
         set -o nounset
         set -o pipefail
 
-        kubectl create ns conventions-system
         kapp deploy -a cartographer-conventions-controller -y \
           -f <( \
             ytt -f dist/package-install.yaml -f dist/package-install.values.yaml \
@@ -387,7 +386,6 @@ jobs:
           )
 
         kapp delete -a cartographer-conventions-controller --wait-timeout 5m -y
-        kubectl delete ns conventions-system
 
     - name: Deploy Cartographer Conventions
       run: |
@@ -402,8 +400,7 @@ jobs:
               --data-value-yaml 'package_prerelease={}' \
               --data-value sync_period=10s \
               --data-value-yaml 'has_values=true' \
-              --data-value-file ca_cert_data=${CERT_DIR}/ca.pem \
-              --data-value-yaml 'stand_alone=true'
+              --data-value-file ca_cert_data=${CERT_DIR}/ca.pem
           )
 
     - name: Deploy Convention Dumper
