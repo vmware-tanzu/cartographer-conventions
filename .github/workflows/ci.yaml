@@ -378,7 +378,6 @@ jobs:
         set -o nounset
         set -o pipefail
 
-        kubectl create ns cartographer-system
         kapp deploy -a cartographer-conventions-controller -y \
           -f <( \
             ytt -f dist/package-install.yaml -f dist/package-install.values.yaml \
@@ -387,7 +386,6 @@ jobs:
           )
 
         kapp delete -a cartographer-conventions-controller --wait-timeout 5m -y
-        kubectl delete ns cartographer-system
 
     - name: Deploy Cartographer Conventions
       run: |
@@ -402,8 +400,7 @@ jobs:
               --data-value-yaml 'package_prerelease={}' \
               --data-value sync_period=10s \
               --data-value-yaml 'has_values=true' \
-              --data-value-file ca_cert_data=${CERT_DIR}/ca.pem \
-              --data-value-yaml 'stand_alone=true'
+              --data-value-file ca_cert_data=${CERT_DIR}/ca.pem
           )
 
     - name: Deploy Convention Dumper
@@ -484,7 +481,7 @@ jobs:
           kubectl logs -n kapp-controller -l app=kapp-controller -c kapp-controller --tail 1000
         echo "##[endgroup]"
         echo "##[group]Cartographer Conventions logs"
-          kubectl logs -n cartographer-system -l component=conventions.carto.run,control-plane=controller-manager -c manager --tail 1000
+          kubectl logs -n conventions-system -l component=conventions.carto.run,control-plane=controller-manager -c manager --tail 1000
         echo "##[endgroup]"
         echo "##[group]Convention Server deployment"
           kubectl describe deployment webhook -n sample-conventions

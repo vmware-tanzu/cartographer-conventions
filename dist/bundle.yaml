@@ -16,19 +16,12 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:base64", "base64")
 
-#@ if/end data.values.stand_alone:
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: cartographer-system
-
 ---
 apiVersion: v1
 kind: Secret
 metadata:
   name: cartographer-conventions-reg-creds
-  namespace: cartographer-system
+  namespace: conventions-system
   annotations:
     secretgen.carvel.dev/image-pull-secret: ""
 type: kubernetes.io/dockerconfigjson

@@ -1,3 +1,11 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    app.kubernetes.io/component: conventions
+    control-plane: controller-manager
+  name: conventions-system
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -6710,7 +6718,7 @@ metadata:
   labels:
     app.kubernetes.io/component: conventions
   name: cartographer-conventions-controller-manager
-  namespace: cartographer-system
+  namespace: conventions-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -6718,7 +6726,7 @@ metadata:
   labels:
     app.kubernetes.io/component: conventions
   name: cartographer-conventions-leader-election-role
-  namespace: cartographer-system
+  namespace: conventions-system
 rules:
 - apiGroups:
   - coordination.k8s.io
@@ -6883,7 +6891,7 @@ metadata:
   labels:
     app.kubernetes.io/component: conventions
   name: cartographer-conventions-leader-election-rolebinding
-  namespace: cartographer-system
+  namespace: conventions-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -6891,7 +6899,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: cartographer-conventions-controller-manager
-  namespace: cartographer-system
+  namespace: conventions-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -6906,7 +6914,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: cartographer-conventions-controller-manager
-  namespace: cartographer-system
+  namespace: conventions-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -6921,7 +6929,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: cartographer-conventions-controller-manager
-  namespace: cartographer-system
+  namespace: conventions-system
 ---
 apiVersion: v1
 data:
@@ -6932,7 +6940,7 @@ metadata:
     app.kubernetes.io/component: conventions
     control-plane: controller-manager
   name: cartographer-conventions-ca-certificates
-  namespace: cartographer-system
+  namespace: conventions-system
 type: Opaque
 ---
 apiVersion: v1
@@ -6946,7 +6954,7 @@ metadata:
     app.kubernetes.io/component: conventions
     control-plane: controller-manager
   name: cartographer-conventions-controller-manager-metrics-service
-  namespace: cartographer-system
+  namespace: conventions-system
 spec:
   ports:
   - name: https
@@ -6962,7 +6970,7 @@ metadata:
   labels:
     app.kubernetes.io/component: conventions
   name: cartographer-conventions-webhook-service
-  namespace: cartographer-system
+  namespace: conventions-system
 spec:
   ports:
   - port: 443
@@ -6978,7 +6986,7 @@ metadata:
     app.kubernetes.io/component: conventions
     control-plane: controller-manager
   name: cartographer-conventions-controller-manager
-  namespace: cartographer-system
+  namespace: conventions-system
 spec:
   replicas: 1
   selector:
@@ -7056,12 +7064,12 @@ metadata:
   labels:
     app.kubernetes.io/component: conventions
   name: cartographer-conventions-serving-cert
-  namespace: cartographer-system
+  namespace: conventions-system
 spec:
   commonName: cartographer-conventions-webhook-service
   dnsNames:
-  - cartographer-conventions-webhook-service.cartographer-system.svc
-  - cartographer-conventions-webhook-service.cartographer-system.svc.cluster.local
+  - cartographer-conventions-webhook-service.conventions-system.svc
+  - cartographer-conventions-webhook-service.conventions-system.svc.cluster.local
   issuerRef:
     kind: Issuer
     name: cartographer-conventions-selfsigned-issuer
@@ -7073,7 +7081,7 @@ metadata:
   labels:
     app.kubernetes.io/component: conventions
   name: cartographer-conventions-selfsigned-issuer
-  namespace: cartographer-system
+  namespace: conventions-system
 spec:
   selfSigned: {}
 ---
@@ -7081,7 +7089,7 @@ apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
   annotations:
-    cert-manager.io/inject-ca-from: cartographer-system/cartographer-conventions-serving-cert
+    cert-manager.io/inject-ca-from: conventions-system/cartographer-conventions-serving-cert
     admissions.enforcer/disabled: "true"
   labels:
     app.kubernetes.io/component: conventions
@@ -7092,7 +7100,7 @@ webhooks:
   clientConfig:
     service:
       name: cartographer-conventions-webhook-service
-      namespace: cartographer-system
+      namespace: conventions-system
       path: /mutate-conventions-carto-run-v1alpha1-clusterpodconvention
   failurePolicy: Fail
   name: clusterpodconventions.conventions.carto.run
@@ -7112,7 +7120,7 @@ webhooks:
   clientConfig:
     service:
       name: cartographer-conventions-webhook-service
-      namespace: cartographer-system
+      namespace: conventions-system
       path: /mutate-conventions-carto-run-v1alpha1-podintent
   failurePolicy: Fail
   name: podintents.conventions.carto.run
@@ -7132,7 +7140,7 @@ apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   annotations:
-    cert-manager.io/inject-ca-from: cartographer-system/cartographer-conventions-serving-cert
+    cert-manager.io/inject-ca-from: conventions-system/cartographer-conventions-serving-cert
     admissions.enforcer/disabled: "true"
   labels:
     app.kubernetes.io/component: conventions
@@ -7143,7 +7151,7 @@ webhooks:
   clientConfig:
     service:
       name: cartographer-conventions-webhook-service
-      namespace: cartographer-system
+      namespace: conventions-system
       path: /validate-conventions-carto-run-v1alpha1-clusterpodconvention
   failurePolicy: Fail
   name: clusterpodconventions.conventions.carto.run
@@ -7163,7 +7171,7 @@ webhooks:
   clientConfig:
     service:
       name: cartographer-conventions-webhook-service
-      namespace: cartographer-system
+      namespace: conventions-system
       path: /validate-conventions-carto-run-v1alpha1-podintent
   failurePolicy: Fail
   name: podintents.conventions.carto.run
