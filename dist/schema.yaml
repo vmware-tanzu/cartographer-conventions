@@ -1,0 +1,9 @@
+#@data/values-schema
+#@schema/desc "OpenAPIv3 Schema for Cartographer Conventions"
+
+---
+#@schema/desc "Optional: PEM Encoded certificate data for image registries with private CA."
+  ca_cert_data: ""
+
+#@schema/desc "Optional: Arn role that has access to pull images from ECR container registry"
+  aws_iam_role_arn: ""
