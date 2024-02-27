@@ -7,3 +7,7 @@
 
 #@schema/desc "Optional: Arn role that has access to pull images from ECR container registry"
   aws_iam_role_arn: ""
+
+#@schema/desc "Optional: Cartographer Conventions controller resource limit configuration"
+#@schema/type any=True
+  resources: {}
