@@ -5,7 +5,7 @@ go 1.21
 replace github.com/vmware-tanzu/cartographer-conventions/webhook => ./webhook
 
 require (
-	dies.dev v0.10.0
+	dies.dev v0.10.1
 	github.com/go-logr/logr v1.4.1
 	github.com/google/go-cmp v0.6.0
 	github.com/google/go-containerregistry v0.19.0
