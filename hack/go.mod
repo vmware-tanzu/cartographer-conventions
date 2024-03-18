@@ -3,8 +3,8 @@ module github.com/vmware-tanzu/cartographer-conventions/tools
 go 1.21
 
 require (
+	carvel.dev/ytt v0.48.0
 	dies.dev/diegen v0.10.1
-	github.com/vmware-tanzu/carvel-ytt v0.47.0
 	golang.org/x/tools v0.19.0
 	sigs.k8s.io/controller-tools v0.14.0
 	sigs.k8s.io/kustomize/kustomize/v5 v5.3.0
