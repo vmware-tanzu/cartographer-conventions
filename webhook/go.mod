@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/CycloneDX/cyclonedx-go v0.8.0
 	github.com/go-logr/logr v1.4.1
-	github.com/google/go-containerregistry v0.19.0
+	github.com/google/go-containerregistry v0.19.1
 	k8s.io/api v0.29.2
 	k8s.io/apimachinery v0.29.2
 	sigs.k8s.io/controller-runtime v0.17.2
