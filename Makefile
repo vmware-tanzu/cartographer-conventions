@@ -6,7 +6,7 @@ GOBIN=$(shell go env GOBIN)
 endif
 
 CONTROLLER_GEN ?= go run -modfile hack/go.mod sigs.k8s.io/controller-tools/cmd/controller-gen
-DIEGEN ?= go run -modfile hack/go.mod dies.dev/diegen
+DIEGEN ?= go run -modfile hack/go.mod reconciler.io/dies/diegen
 GOIMPORTS ?= go run -modfile hack/go.mod golang.org/x/tools/cmd/goimports
 KUSTOMIZE ?= go run -modfile hack/go.mod sigs.k8s.io/kustomize/kustomize/v5
 YTT ?= go run -modfile hack/go.mod carvel.dev/ytt/cmd/ytt

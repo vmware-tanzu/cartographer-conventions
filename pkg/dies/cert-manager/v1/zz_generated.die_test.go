@@ -24,7 +24,7 @@ package v1alpha1
 import (
 	testingx "testing"
 
-	testing "dies.dev/testing"
+	testing "reconciler.io/dies/testing"
 )
 
 func TestCertificateRequestDie_MissingMethods(t *testingx.T) {

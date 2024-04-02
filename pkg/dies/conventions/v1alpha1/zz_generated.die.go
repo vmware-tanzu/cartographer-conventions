@@ -27,8 +27,6 @@ import (
 	osx "os"
 	reflectx "reflect"
 
-	v1 "dies.dev/apis/meta/v1"
-	apis "github.com/vmware-labs/reconciler-runtime/apis"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,6 +34,8 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	jsonpath "k8s.io/client-go/util/jsonpath"
+	v1 "reconciler.io/dies/apis/meta/v1"
+	apis "reconciler.io/runtime/apis"
 	yaml "sigs.k8s.io/yaml"
 
 	conventionsv1alpha1 "github.com/vmware-tanzu/cartographer-conventions/pkg/apis/conventions/v1alpha1"

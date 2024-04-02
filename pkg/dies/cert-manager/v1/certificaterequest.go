@@ -17,8 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
-	diecorev1 "dies.dev/apis/core/v1"
-	diemetav1 "dies.dev/apis/meta/v1"
+	diecorev1 "reconciler.io/dies/apis/core/v1"
+	diemetav1 "reconciler.io/dies/apis/meta/v1"
 
 	certmanagerv1 "github.com/vmware-tanzu/cartographer-conventions/pkg/apis/thirdparty/cert-manager/v1"
 )

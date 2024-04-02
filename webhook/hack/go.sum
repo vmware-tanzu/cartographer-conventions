@@ -1,5 +1,5 @@
-dies.dev/diegen v0.9.0 h1:R93K2M9UYLk2kUiDBdNkzAuHGofmzmvfR7v2OyfWKuc=
-dies.dev/diegen v0.9.0/go.mod h1:zs6MsYz+EEw4vSQjGhH9y3NFPupZZazb5CguUJpO0Zc=
+reconciler.io/dies/diegen v0.9.0 h1:R93K2M9UYLk2kUiDBdNkzAuHGofmzmvfR7v2OyfWKuc=
+reconciler.io/dies/diegen v0.9.0/go.mod h1:zs6MsYz+EEw4vSQjGhH9y3NFPupZZazb5CguUJpO0Zc=
 github.com/BurntSushi/toml v1.0.0 h1:dtDWrepsVPfW9H/4y7dDgFc2MBUSeJhlaDtK13CxFlU=
 github.com/BurntSushi/toml v1.0.0/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=

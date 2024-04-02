@@ -27,13 +27,13 @@ import (
 	osx "os"
 	reflectx "reflect"
 
-	metav1 "dies.dev/apis/meta/v1"
 	corev1 "k8s.io/api/core/v1"
 	apismetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	jsonpath "k8s.io/client-go/util/jsonpath"
+	metav1 "reconciler.io/dies/apis/meta/v1"
 	yaml "sigs.k8s.io/yaml"
 
 	v1 "github.com/vmware-tanzu/cartographer-conventions/pkg/apis/thirdparty/cert-manager/v1"

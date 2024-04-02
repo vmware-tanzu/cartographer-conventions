@@ -1,7 +1,5 @@
 carvel.dev/ytt v0.48.0 h1:NNLW6mHBxYFhz8tRlaUW4xjtDmq8u8unmC0dcsCKPxU=
 carvel.dev/ytt v0.48.0/go.mod h1:ss9N6IKCUxg5yH5xomguFBQmuLnEwQr8slbAjTToCPQ=
-dies.dev/diegen v0.10.1 h1:bUjO7L3ALdyT6nRuntcCAfy4Vx4ny4cC8kemT/GY240=
-dies.dev/diegen v0.10.1/go.mod h1:08auIh8JtE32P7wVv7IC1EmAxSRoziWLwbOiMfk8cNI=
 github.com/BurntSushi/toml v1.2.1 h1:9F2/+DoOYIOksmaJFPw1tGFy1eDnIJXg+UHjuD8lTak=
 github.com/BurntSushi/toml v1.2.1/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
@@ -228,6 +226,8 @@ k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00 h1:aVUu9fTY98ivBPKR9Y5w/A
 k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00/go.mod h1:AsvuZPBlUDVuCdzJ87iajxtXuR9oktsTctW/R9wwouA=
 k8s.io/utils v0.0.0-20230726121419-3b25d923346b h1:sgn3ZU783SCgtaSJjpcVVlRqd6GSnlTLKgpAAttJvpI=
 k8s.io/utils v0.0.0-20230726121419-3b25d923346b/go.mod h1:OLgZIPagt7ERELqWJFomSt595RzquPNLL48iOWgYOg0=
+reconciler.io/dies/diegen v0.11.0 h1:mB9Z7lVqrG5Ld+9sqgpRtGEnvL86BLWxfdvcioDAFWQ=
+reconciler.io/dies/diegen v0.11.0/go.mod h1:K2Y514FWyBp3R7VQk7zq8zFA6fGK2QsOBRnaShMAj4Q=
 sigs.k8s.io/controller-tools v0.14.0 h1:rnNoCC5wSXlrNoBKKzL70LNJKIQKEzT6lloG6/LF73A=
 sigs.k8s.io/controller-tools v0.14.0/go.mod h1:TV7uOtNNnnR72SpzhStvPkoS/U5ir0nMudrkrC4M9Sc=
 sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd h1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=
