@@ -17,9 +17,9 @@ limitations under the License.
 package v1alpha1
 
 import (
-	dieadmissionregistrationv1 "dies.dev/apis/admissionregistration/v1"
-	diemetav1 "dies.dev/apis/meta/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	dieadmissionregistrationv1 "reconciler.io/dies/apis/admissionregistration/v1"
+	diemetav1 "reconciler.io/dies/apis/meta/v1"
 
 	conventionsv1alpha1 "github.com/vmware-tanzu/cartographer-conventions/pkg/apis/conventions/v1alpha1"
 )

@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/vmware-labs/reconciler-runtime/apis"
+	"reconciler.io/runtime/apis"
 )
 
 const (

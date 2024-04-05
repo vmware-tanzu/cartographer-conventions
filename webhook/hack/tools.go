@@ -5,9 +5,9 @@
 package tools
 
 import (
-	_ "dies.dev/diegen"
 	_ "github.com/k14s/ytt/cmd/ytt"
 	_ "golang.org/x/tools/cmd/goimports"
+	_ "reconciler.io/dies/diegen"
 	_ "sigs.k8s.io/controller-tools/cmd/controller-gen"
 	_ "sigs.k8s.io/kustomize/kustomize/v5"
 )

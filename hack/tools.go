@@ -6,8 +6,8 @@ package tools
 
 import (
 	_ "carvel.dev/ytt/cmd/ytt"
-	_ "dies.dev/diegen"
 	_ "golang.org/x/tools/cmd/goimports"
+	_ "reconciler.io/dies/diegen"
 	_ "sigs.k8s.io/controller-tools/cmd/controller-gen"
 	_ "sigs.k8s.io/kustomize/kustomize/v5"
 )

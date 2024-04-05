@@ -17,7 +17,7 @@ limitations under the License.
 package apis
 
 import (
-	"github.com/vmware-labs/reconciler-runtime/apis"
+	"reconciler.io/runtime/apis"
 )
 
 // ConditionSetAccessor is the interface for a Resource that accesses the
