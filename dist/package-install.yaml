@@ -25,6 +25,7 @@ metadata:
   annotations:
     kapp.k14s.io/change-group: conventions.carto.run/install
     kapp.k14s.io/change-rule: "upsert after upserting conventions.carto.run/install-rbac"
+    kapp.k14s.io/change-rule.cartographer: "upsert after upserting cartographer"
 spec:
   serviceAccountName: #@ data.values.service_account_name
   syncPeriod: #@ data.values.sync_period
