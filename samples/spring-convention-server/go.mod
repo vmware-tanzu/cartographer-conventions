@@ -7,7 +7,7 @@ toolchain go1.22.2
 replace github.com/vmware-tanzu/cartographer-conventions/webhook => ../../webhook
 
 require (
-	github.com/CycloneDX/cyclonedx-go v0.8.0
+	github.com/CycloneDX/cyclonedx-go v0.9.0
 	// wokeignore:rule=Masterminds
 	github.com/Masterminds/semver v1.5.0
 	github.com/go-logr/logr v1.4.2
