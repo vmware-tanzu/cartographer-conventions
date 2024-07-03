@@ -22,18 +22,21 @@ limitations under the License.
 package v1alpha1
 
 import (
-	json "encoding/json"
 	fmtx "fmt"
 	osx "os"
 	reflectx "reflect"
 
+	cmp "github.com/google/go-cmp/cmp"
 	corev1 "k8s.io/api/core/v1"
 	apismetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
+	types "k8s.io/apimachinery/pkg/types"
+	json "k8s.io/apimachinery/pkg/util/json"
 	jsonpath "k8s.io/client-go/util/jsonpath"
 	metav1 "reconciler.io/dies/apis/meta/v1"
+	patch "reconciler.io/dies/patch"
 	yaml "sigs.k8s.io/yaml"
 
 	v1 "github.com/vmware-tanzu/cartographer-conventions/pkg/apis/thirdparty/cert-manager/v1"
@@ -45,6 +48,7 @@ type CertificateRequestDie struct {
 	metav1.FrozenObjectMeta
 	mutable bool
 	r       v1.CertificateRequest
+	seal    v1.CertificateRequest
 }
 
 // DieImmutable returns a new die for the current die's state that is either mutable (`false`) or immutable (`true`).
@@ -68,6 +72,7 @@ func (d *CertificateRequestDie) DieFeed(r v1.CertificateRequest) *CertificateReq
 		FrozenObjectMeta: metav1.FreezeObjectMeta(r.ObjectMeta),
 		mutable:          d.mutable,
 		r:                r,
+		seal:             d.seal,
 	}
 }
 
@@ -234,7 +239,51 @@ func (d *CertificateRequestDie) DeepCopy() *CertificateRequestDie {
 		FrozenObjectMeta: metav1.FreezeObjectMeta(r.ObjectMeta),
 		mutable:          d.mutable,
 		r:                r,
+		seal:             d.seal,
 	}
+}
+
+// DieSeal returns a new die for the current die's state that is sealed for comparison in future diff and patch operations.
+func (d *CertificateRequestDie) DieSeal() *CertificateRequestDie {
+	return d.DieSealFeed(d.r)
+}
+
+// DieSealFeed returns a new die for the current die's state that uses a specific resource for comparison in future diff and patch operations.
+func (d *CertificateRequestDie) DieSealFeed(r v1.CertificateRequest) *CertificateRequestDie {
+	if !d.mutable {
+		d = d.DeepCopy()
+	}
+	d.seal = *r.DeepCopy()
+	return d
+}
+
+// DieSealFeedPtr returns a new die for the current die's state that uses a specific resource pointer for comparison in future diff and patch operations. If the resource is nil, the empty value is used instead.
+func (d *CertificateRequestDie) DieSealFeedPtr(r *v1.CertificateRequest) *CertificateRequestDie {
+	if r == nil {
+		r = &v1.CertificateRequest{}
+	}
+	return d.DieSealFeed(*r)
+}
+
+// DieSealRelease returns the sealed resource managed by the die.
+func (d *CertificateRequestDie) DieSealRelease() v1.CertificateRequest {
+	return *d.seal.DeepCopy()
+}
+
+// DieSealReleasePtr returns the sealed resource pointer managed by the die.
+func (d *CertificateRequestDie) DieSealReleasePtr() *v1.CertificateRequest {
+	r := d.DieSealRelease()
+	return &r
+}
+
+// DieDiff uses cmp.Diff to compare the current value of the die with the sealed value.
+func (d *CertificateRequestDie) DieDiff(opts ...cmp.Option) string {
+	return cmp.Diff(d.seal, d.r, opts...)
+}
+
+// DiePatch generates a patch between the current value of the die and the sealed value.
+func (d *CertificateRequestDie) DiePatch(patchType types.PatchType) ([]byte, error) {
+	return patch.Create(d.seal, d.r, patchType)
 }
 
 var _ runtime.Object = (*CertificateRequestDie)(nil)
@@ -253,15 +302,12 @@ func (d *CertificateRequestDie) MarshalJSON() ([]byte, error) {
 }
 
 func (d *CertificateRequestDie) UnmarshalJSON(b []byte) error {
-	if d == CertificateRequestBlank {
-		return fmtx.Errorf("cannot unmarshal into the blank die, create a copy first")
-	}
 	if !d.mutable {
 		return fmtx.Errorf("cannot unmarshal into immutable dies, create a mutable version first")
 	}
-	r := &v1.CertificateRequest{}
-	err := json.Unmarshal(b, r)
-	*d = *d.DieFeed(*r)
+	resource := &v1.CertificateRequest{}
+	err := json.Unmarshal(b, resource)
+	*d = *d.DieFeed(*resource)
 	return err
 }
 
@@ -276,6 +322,29 @@ func (d *CertificateRequestDie) APIVersion(v string) *CertificateRequestDie {
 func (d *CertificateRequestDie) Kind(v string) *CertificateRequestDie {
 	return d.DieStamp(func(r *v1.CertificateRequest) {
 		r.Kind = v
+	})
+}
+
+// TypeMetadata standard object's type metadata.
+func (d *CertificateRequestDie) TypeMetadata(v apismetav1.TypeMeta) *CertificateRequestDie {
+	return d.DieStamp(func(r *v1.CertificateRequest) {
+		r.TypeMeta = v
+	})
+}
+
+// TypeMetadataDie stamps the resource's TypeMeta field with a mutable die.
+func (d *CertificateRequestDie) TypeMetadataDie(fn func(d *metav1.TypeMetaDie)) *CertificateRequestDie {
+	return d.DieStamp(func(r *v1.CertificateRequest) {
+		d := metav1.TypeMetaBlank.DieImmutable(false).DieFeed(r.TypeMeta)
+		fn(d)
+		r.TypeMeta = d.DieRelease()
+	})
+}
+
+// Metadata standard object's metadata.
+func (d *CertificateRequestDie) Metadata(v apismetav1.ObjectMeta) *CertificateRequestDie {
+	return d.DieStamp(func(r *v1.CertificateRequest) {
+		r.ObjectMeta = v
 	})
 }
 
@@ -325,6 +394,7 @@ var CertificateRequestSpecBlank = (&CertificateRequestSpecDie{}).DieFeed(v1.Cert
 type CertificateRequestSpecDie struct {
 	mutable bool
 	r       v1.CertificateRequestSpec
+	seal    v1.CertificateRequestSpec
 }
 
 // DieImmutable returns a new die for the current die's state that is either mutable (`false`) or immutable (`true`).
@@ -346,6 +416,7 @@ func (d *CertificateRequestSpecDie) DieFeed(r v1.CertificateRequestSpec) *Certif
 	return &CertificateRequestSpecDie{
 		mutable: d.mutable,
 		r:       r,
+		seal:    d.seal,
 	}
 }
 
@@ -499,7 +570,51 @@ func (d *CertificateRequestSpecDie) DeepCopy() *CertificateRequestSpecDie {
 	return &CertificateRequestSpecDie{
 		mutable: d.mutable,
 		r:       r,
+		seal:    d.seal,
 	}
+}
+
+// DieSeal returns a new die for the current die's state that is sealed for comparison in future diff and patch operations.
+func (d *CertificateRequestSpecDie) DieSeal() *CertificateRequestSpecDie {
+	return d.DieSealFeed(d.r)
+}
+
+// DieSealFeed returns a new die for the current die's state that uses a specific resource for comparison in future diff and patch operations.
+func (d *CertificateRequestSpecDie) DieSealFeed(r v1.CertificateRequestSpec) *CertificateRequestSpecDie {
+	if !d.mutable {
+		d = d.DeepCopy()
+	}
+	d.seal = *r.DeepCopy()
+	return d
+}
+
+// DieSealFeedPtr returns a new die for the current die's state that uses a specific resource pointer for comparison in future diff and patch operations. If the resource is nil, the empty value is used instead.
+func (d *CertificateRequestSpecDie) DieSealFeedPtr(r *v1.CertificateRequestSpec) *CertificateRequestSpecDie {
+	if r == nil {
+		r = &v1.CertificateRequestSpec{}
+	}
+	return d.DieSealFeed(*r)
+}
+
+// DieSealRelease returns the sealed resource managed by the die.
+func (d *CertificateRequestSpecDie) DieSealRelease() v1.CertificateRequestSpec {
+	return *d.seal.DeepCopy()
+}
+
+// DieSealReleasePtr returns the sealed resource pointer managed by the die.
+func (d *CertificateRequestSpecDie) DieSealReleasePtr() *v1.CertificateRequestSpec {
+	r := d.DieSealRelease()
+	return &r
+}
+
+// DieDiff uses cmp.Diff to compare the current value of the die with the sealed value.
+func (d *CertificateRequestSpecDie) DieDiff(opts ...cmp.Option) string {
+	return cmp.Diff(d.seal, d.r, opts...)
+}
+
+// DiePatch generates a patch between the current value of the die and the sealed value.
+func (d *CertificateRequestSpecDie) DiePatch(patchType types.PatchType) ([]byte, error) {
+	return patch.Create(d.seal, d.r, patchType)
 }
 
 // The requested 'duration' (i.e. lifetime) of the Certificate.
@@ -602,6 +717,7 @@ var CertificateRequestStatusBlank = (&CertificateRequestStatusDie{}).DieFeed(v1.
 type CertificateRequestStatusDie struct {
 	mutable bool
 	r       v1.CertificateRequestStatus
+	seal    v1.CertificateRequestStatus
 }
 
 // DieImmutable returns a new die for the current die's state that is either mutable (`false`) or immutable (`true`).
@@ -623,6 +739,7 @@ func (d *CertificateRequestStatusDie) DieFeed(r v1.CertificateRequestStatus) *Ce
 	return &CertificateRequestStatusDie{
 		mutable: d.mutable,
 		r:       r,
+		seal:    d.seal,
 	}
 }
 
@@ -776,7 +893,51 @@ func (d *CertificateRequestStatusDie) DeepCopy() *CertificateRequestStatusDie {
 	return &CertificateRequestStatusDie{
 		mutable: d.mutable,
 		r:       r,
+		seal:    d.seal,
 	}
+}
+
+// DieSeal returns a new die for the current die's state that is sealed for comparison in future diff and patch operations.
+func (d *CertificateRequestStatusDie) DieSeal() *CertificateRequestStatusDie {
+	return d.DieSealFeed(d.r)
+}
+
+// DieSealFeed returns a new die for the current die's state that uses a specific resource for comparison in future diff and patch operations.
+func (d *CertificateRequestStatusDie) DieSealFeed(r v1.CertificateRequestStatus) *CertificateRequestStatusDie {
+	if !d.mutable {
+		d = d.DeepCopy()
+	}
+	d.seal = *r.DeepCopy()
+	return d
+}
+
+// DieSealFeedPtr returns a new die for the current die's state that uses a specific resource pointer for comparison in future diff and patch operations. If the resource is nil, the empty value is used instead.
+func (d *CertificateRequestStatusDie) DieSealFeedPtr(r *v1.CertificateRequestStatus) *CertificateRequestStatusDie {
+	if r == nil {
+		r = &v1.CertificateRequestStatus{}
+	}
+	return d.DieSealFeed(*r)
+}
+
+// DieSealRelease returns the sealed resource managed by the die.
+func (d *CertificateRequestStatusDie) DieSealRelease() v1.CertificateRequestStatus {
+	return *d.seal.DeepCopy()
+}
+
+// DieSealReleasePtr returns the sealed resource pointer managed by the die.
+func (d *CertificateRequestStatusDie) DieSealReleasePtr() *v1.CertificateRequestStatus {
+	r := d.DieSealRelease()
+	return &r
+}
+
+// DieDiff uses cmp.Diff to compare the current value of the die with the sealed value.
+func (d *CertificateRequestStatusDie) DieDiff(opts ...cmp.Option) string {
+	return cmp.Diff(d.seal, d.r, opts...)
+}
+
+// DiePatch generates a patch between the current value of the die and the sealed value.
+func (d *CertificateRequestStatusDie) DiePatch(patchType types.PatchType) ([]byte, error) {
+	return patch.Create(d.seal, d.r, patchType)
 }
 
 // List of status conditions to indicate the status of a CertificateRequest.

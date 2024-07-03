@@ -22,19 +22,22 @@ limitations under the License.
 package v1alpha1
 
 import (
-	json "encoding/json"
 	fmtx "fmt"
 	osx "os"
 	reflectx "reflect"
 
+	cmp "github.com/google/go-cmp/cmp"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
+	types "k8s.io/apimachinery/pkg/types"
+	json "k8s.io/apimachinery/pkg/util/json"
 	jsonpath "k8s.io/client-go/util/jsonpath"
 	v1 "reconciler.io/dies/apis/meta/v1"
+	patch "reconciler.io/dies/patch"
 	apis "reconciler.io/runtime/apis"
 	yaml "sigs.k8s.io/yaml"
 
@@ -47,6 +50,7 @@ type ClusterPodConventionDie struct {
 	v1.FrozenObjectMeta
 	mutable bool
 	r       conventionsv1alpha1.ClusterPodConvention
+	seal    conventionsv1alpha1.ClusterPodConvention
 }
 
 // DieImmutable returns a new die for the current die's state that is either mutable (`false`) or immutable (`true`).
@@ -70,6 +74,7 @@ func (d *ClusterPodConventionDie) DieFeed(r conventionsv1alpha1.ClusterPodConven
 		FrozenObjectMeta: v1.FreezeObjectMeta(r.ObjectMeta),
 		mutable:          d.mutable,
 		r:                r,
+		seal:             d.seal,
 	}
 }
 
@@ -236,7 +241,51 @@ func (d *ClusterPodConventionDie) DeepCopy() *ClusterPodConventionDie {
 		FrozenObjectMeta: v1.FreezeObjectMeta(r.ObjectMeta),
 		mutable:          d.mutable,
 		r:                r,
+		seal:             d.seal,
 	}
+}
+
+// DieSeal returns a new die for the current die's state that is sealed for comparison in future diff and patch operations.
+func (d *ClusterPodConventionDie) DieSeal() *ClusterPodConventionDie {
+	return d.DieSealFeed(d.r)
+}
+
+// DieSealFeed returns a new die for the current die's state that uses a specific resource for comparison in future diff and patch operations.
+func (d *ClusterPodConventionDie) DieSealFeed(r conventionsv1alpha1.ClusterPodConvention) *ClusterPodConventionDie {
+	if !d.mutable {
+		d = d.DeepCopy()
+	}
+	d.seal = *r.DeepCopy()
+	return d
+}
+
+// DieSealFeedPtr returns a new die for the current die's state that uses a specific resource pointer for comparison in future diff and patch operations. If the resource is nil, the empty value is used instead.
+func (d *ClusterPodConventionDie) DieSealFeedPtr(r *conventionsv1alpha1.ClusterPodConvention) *ClusterPodConventionDie {
+	if r == nil {
+		r = &conventionsv1alpha1.ClusterPodConvention{}
+	}
+	return d.DieSealFeed(*r)
+}
+
+// DieSealRelease returns the sealed resource managed by the die.
+func (d *ClusterPodConventionDie) DieSealRelease() conventionsv1alpha1.ClusterPodConvention {
+	return *d.seal.DeepCopy()
+}
+
+// DieSealReleasePtr returns the sealed resource pointer managed by the die.
+func (d *ClusterPodConventionDie) DieSealReleasePtr() *conventionsv1alpha1.ClusterPodConvention {
+	r := d.DieSealRelease()
+	return &r
+}
+
+// DieDiff uses cmp.Diff to compare the current value of the die with the sealed value.
+func (d *ClusterPodConventionDie) DieDiff(opts ...cmp.Option) string {
+	return cmp.Diff(d.seal, d.r, opts...)
+}
+
+// DiePatch generates a patch between the current value of the die and the sealed value.
+func (d *ClusterPodConventionDie) DiePatch(patchType types.PatchType) ([]byte, error) {
+	return patch.Create(d.seal, d.r, patchType)
 }
 
 var _ runtime.Object = (*ClusterPodConventionDie)(nil)
@@ -255,15 +304,12 @@ func (d *ClusterPodConventionDie) MarshalJSON() ([]byte, error) {
 }
 
 func (d *ClusterPodConventionDie) UnmarshalJSON(b []byte) error {
-	if d == ClusterPodConventionBlank {
-		return fmtx.Errorf("cannot unmarshal into the blank die, create a copy first")
-	}
 	if !d.mutable {
 		return fmtx.Errorf("cannot unmarshal into immutable dies, create a mutable version first")
 	}
-	r := &conventionsv1alpha1.ClusterPodConvention{}
-	err := json.Unmarshal(b, r)
-	*d = *d.DieFeed(*r)
+	resource := &conventionsv1alpha1.ClusterPodConvention{}
+	err := json.Unmarshal(b, resource)
+	*d = *d.DieFeed(*resource)
 	return err
 }
 
@@ -278,6 +324,29 @@ func (d *ClusterPodConventionDie) APIVersion(v string) *ClusterPodConventionDie 
 func (d *ClusterPodConventionDie) Kind(v string) *ClusterPodConventionDie {
 	return d.DieStamp(func(r *conventionsv1alpha1.ClusterPodConvention) {
 		r.Kind = v
+	})
+}
+
+// TypeMetadata standard object's type metadata.
+func (d *ClusterPodConventionDie) TypeMetadata(v metav1.TypeMeta) *ClusterPodConventionDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.ClusterPodConvention) {
+		r.TypeMeta = v
+	})
+}
+
+// TypeMetadataDie stamps the resource's TypeMeta field with a mutable die.
+func (d *ClusterPodConventionDie) TypeMetadataDie(fn func(d *v1.TypeMetaDie)) *ClusterPodConventionDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.ClusterPodConvention) {
+		d := v1.TypeMetaBlank.DieImmutable(false).DieFeed(r.TypeMeta)
+		fn(d)
+		r.TypeMeta = d.DieRelease()
+	})
+}
+
+// Metadata standard object's metadata.
+func (d *ClusterPodConventionDie) Metadata(v metav1.ObjectMeta) *ClusterPodConventionDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.ClusterPodConvention) {
+		r.ObjectMeta = v
 	})
 }
 
@@ -310,6 +379,7 @@ var ClusterPodConventionSpecBlank = (&ClusterPodConventionSpecDie{}).DieFeed(con
 type ClusterPodConventionSpecDie struct {
 	mutable bool
 	r       conventionsv1alpha1.ClusterPodConventionSpec
+	seal    conventionsv1alpha1.ClusterPodConventionSpec
 }
 
 // DieImmutable returns a new die for the current die's state that is either mutable (`false`) or immutable (`true`).
@@ -331,6 +401,7 @@ func (d *ClusterPodConventionSpecDie) DieFeed(r conventionsv1alpha1.ClusterPodCo
 	return &ClusterPodConventionSpecDie{
 		mutable: d.mutable,
 		r:       r,
+		seal:    d.seal,
 	}
 }
 
@@ -484,7 +555,51 @@ func (d *ClusterPodConventionSpecDie) DeepCopy() *ClusterPodConventionSpecDie {
 	return &ClusterPodConventionSpecDie{
 		mutable: d.mutable,
 		r:       r,
+		seal:    d.seal,
 	}
+}
+
+// DieSeal returns a new die for the current die's state that is sealed for comparison in future diff and patch operations.
+func (d *ClusterPodConventionSpecDie) DieSeal() *ClusterPodConventionSpecDie {
+	return d.DieSealFeed(d.r)
+}
+
+// DieSealFeed returns a new die for the current die's state that uses a specific resource for comparison in future diff and patch operations.
+func (d *ClusterPodConventionSpecDie) DieSealFeed(r conventionsv1alpha1.ClusterPodConventionSpec) *ClusterPodConventionSpecDie {
+	if !d.mutable {
+		d = d.DeepCopy()
+	}
+	d.seal = *r.DeepCopy()
+	return d
+}
+
+// DieSealFeedPtr returns a new die for the current die's state that uses a specific resource pointer for comparison in future diff and patch operations. If the resource is nil, the empty value is used instead.
+func (d *ClusterPodConventionSpecDie) DieSealFeedPtr(r *conventionsv1alpha1.ClusterPodConventionSpec) *ClusterPodConventionSpecDie {
+	if r == nil {
+		r = &conventionsv1alpha1.ClusterPodConventionSpec{}
+	}
+	return d.DieSealFeed(*r)
+}
+
+// DieSealRelease returns the sealed resource managed by the die.
+func (d *ClusterPodConventionSpecDie) DieSealRelease() conventionsv1alpha1.ClusterPodConventionSpec {
+	return *d.seal.DeepCopy()
+}
+
+// DieSealReleasePtr returns the sealed resource pointer managed by the die.
+func (d *ClusterPodConventionSpecDie) DieSealReleasePtr() *conventionsv1alpha1.ClusterPodConventionSpec {
+	r := d.DieSealRelease()
+	return &r
+}
+
+// DieDiff uses cmp.Diff to compare the current value of the die with the sealed value.
+func (d *ClusterPodConventionSpecDie) DieDiff(opts ...cmp.Option) string {
+	return cmp.Diff(d.seal, d.r, opts...)
+}
+
+// DiePatch generates a patch between the current value of the die and the sealed value.
+func (d *ClusterPodConventionSpecDie) DiePatch(patchType types.PatchType) ([]byte, error) {
+	return patch.Create(d.seal, d.r, patchType)
 }
 
 // Label selector for workloads.
@@ -519,6 +634,7 @@ var ClusterPodConventionWebhookBlank = (&ClusterPodConventionWebhookDie{}).DieFe
 type ClusterPodConventionWebhookDie struct {
 	mutable bool
 	r       conventionsv1alpha1.ClusterPodConventionWebhook
+	seal    conventionsv1alpha1.ClusterPodConventionWebhook
 }
 
 // DieImmutable returns a new die for the current die's state that is either mutable (`false`) or immutable (`true`).
@@ -540,6 +656,7 @@ func (d *ClusterPodConventionWebhookDie) DieFeed(r conventionsv1alpha1.ClusterPo
 	return &ClusterPodConventionWebhookDie{
 		mutable: d.mutable,
 		r:       r,
+		seal:    d.seal,
 	}
 }
 
@@ -693,7 +810,51 @@ func (d *ClusterPodConventionWebhookDie) DeepCopy() *ClusterPodConventionWebhook
 	return &ClusterPodConventionWebhookDie{
 		mutable: d.mutable,
 		r:       r,
+		seal:    d.seal,
 	}
+}
+
+// DieSeal returns a new die for the current die's state that is sealed for comparison in future diff and patch operations.
+func (d *ClusterPodConventionWebhookDie) DieSeal() *ClusterPodConventionWebhookDie {
+	return d.DieSealFeed(d.r)
+}
+
+// DieSealFeed returns a new die for the current die's state that uses a specific resource for comparison in future diff and patch operations.
+func (d *ClusterPodConventionWebhookDie) DieSealFeed(r conventionsv1alpha1.ClusterPodConventionWebhook) *ClusterPodConventionWebhookDie {
+	if !d.mutable {
+		d = d.DeepCopy()
+	}
+	d.seal = *r.DeepCopy()
+	return d
+}
+
+// DieSealFeedPtr returns a new die for the current die's state that uses a specific resource pointer for comparison in future diff and patch operations. If the resource is nil, the empty value is used instead.
+func (d *ClusterPodConventionWebhookDie) DieSealFeedPtr(r *conventionsv1alpha1.ClusterPodConventionWebhook) *ClusterPodConventionWebhookDie {
+	if r == nil {
+		r = &conventionsv1alpha1.ClusterPodConventionWebhook{}
+	}
+	return d.DieSealFeed(*r)
+}
+
+// DieSealRelease returns the sealed resource managed by the die.
+func (d *ClusterPodConventionWebhookDie) DieSealRelease() conventionsv1alpha1.ClusterPodConventionWebhook {
+	return *d.seal.DeepCopy()
+}
+
+// DieSealReleasePtr returns the sealed resource pointer managed by the die.
+func (d *ClusterPodConventionWebhookDie) DieSealReleasePtr() *conventionsv1alpha1.ClusterPodConventionWebhook {
+	r := d.DieSealRelease()
+	return &r
+}
+
+// DieDiff uses cmp.Diff to compare the current value of the die with the sealed value.
+func (d *ClusterPodConventionWebhookDie) DieDiff(opts ...cmp.Option) string {
+	return cmp.Diff(d.seal, d.r, opts...)
+}
+
+// DiePatch generates a patch between the current value of the die and the sealed value.
+func (d *ClusterPodConventionWebhookDie) DiePatch(patchType types.PatchType) ([]byte, error) {
+	return patch.Create(d.seal, d.r, patchType)
 }
 
 // ClientConfig defines how to communicate with the convention.
@@ -715,6 +876,7 @@ var ClusterPodConventionWebhookCertificateBlank = (&ClusterPodConventionWebhookC
 type ClusterPodConventionWebhookCertificateDie struct {
 	mutable bool
 	r       conventionsv1alpha1.ClusterPodConventionWebhookCertificate
+	seal    conventionsv1alpha1.ClusterPodConventionWebhookCertificate
 }
 
 // DieImmutable returns a new die for the current die's state that is either mutable (`false`) or immutable (`true`).
@@ -736,6 +898,7 @@ func (d *ClusterPodConventionWebhookCertificateDie) DieFeed(r conventionsv1alpha
 	return &ClusterPodConventionWebhookCertificateDie{
 		mutable: d.mutable,
 		r:       r,
+		seal:    d.seal,
 	}
 }
 
@@ -889,7 +1052,51 @@ func (d *ClusterPodConventionWebhookCertificateDie) DeepCopy() *ClusterPodConven
 	return &ClusterPodConventionWebhookCertificateDie{
 		mutable: d.mutable,
 		r:       r,
+		seal:    d.seal,
 	}
+}
+
+// DieSeal returns a new die for the current die's state that is sealed for comparison in future diff and patch operations.
+func (d *ClusterPodConventionWebhookCertificateDie) DieSeal() *ClusterPodConventionWebhookCertificateDie {
+	return d.DieSealFeed(d.r)
+}
+
+// DieSealFeed returns a new die for the current die's state that uses a specific resource for comparison in future diff and patch operations.
+func (d *ClusterPodConventionWebhookCertificateDie) DieSealFeed(r conventionsv1alpha1.ClusterPodConventionWebhookCertificate) *ClusterPodConventionWebhookCertificateDie {
+	if !d.mutable {
+		d = d.DeepCopy()
+	}
+	d.seal = *r.DeepCopy()
+	return d
+}
+
+// DieSealFeedPtr returns a new die for the current die's state that uses a specific resource pointer for comparison in future diff and patch operations. If the resource is nil, the empty value is used instead.
+func (d *ClusterPodConventionWebhookCertificateDie) DieSealFeedPtr(r *conventionsv1alpha1.ClusterPodConventionWebhookCertificate) *ClusterPodConventionWebhookCertificateDie {
+	if r == nil {
+		r = &conventionsv1alpha1.ClusterPodConventionWebhookCertificate{}
+	}
+	return d.DieSealFeed(*r)
+}
+
+// DieSealRelease returns the sealed resource managed by the die.
+func (d *ClusterPodConventionWebhookCertificateDie) DieSealRelease() conventionsv1alpha1.ClusterPodConventionWebhookCertificate {
+	return *d.seal.DeepCopy()
+}
+
+// DieSealReleasePtr returns the sealed resource pointer managed by the die.
+func (d *ClusterPodConventionWebhookCertificateDie) DieSealReleasePtr() *conventionsv1alpha1.ClusterPodConventionWebhookCertificate {
+	r := d.DieSealRelease()
+	return &r
+}
+
+// DieDiff uses cmp.Diff to compare the current value of the die with the sealed value.
+func (d *ClusterPodConventionWebhookCertificateDie) DieDiff(opts ...cmp.Option) string {
+	return cmp.Diff(d.seal, d.r, opts...)
+}
+
+// DiePatch generates a patch between the current value of the die and the sealed value.
+func (d *ClusterPodConventionWebhookCertificateDie) DiePatch(patchType types.PatchType) ([]byte, error) {
+	return patch.Create(d.seal, d.r, patchType)
 }
 
 func (d *ClusterPodConventionWebhookCertificateDie) Namespace(v string) *ClusterPodConventionWebhookCertificateDie {
@@ -910,6 +1117,7 @@ type PodIntentDie struct {
 	v1.FrozenObjectMeta
 	mutable bool
 	r       conventionsv1alpha1.PodIntent
+	seal    conventionsv1alpha1.PodIntent
 }
 
 // DieImmutable returns a new die for the current die's state that is either mutable (`false`) or immutable (`true`).
@@ -933,6 +1141,7 @@ func (d *PodIntentDie) DieFeed(r conventionsv1alpha1.PodIntent) *PodIntentDie {
 		FrozenObjectMeta: v1.FreezeObjectMeta(r.ObjectMeta),
 		mutable:          d.mutable,
 		r:                r,
+		seal:             d.seal,
 	}
 }
 
@@ -1099,7 +1308,51 @@ func (d *PodIntentDie) DeepCopy() *PodIntentDie {
 		FrozenObjectMeta: v1.FreezeObjectMeta(r.ObjectMeta),
 		mutable:          d.mutable,
 		r:                r,
+		seal:             d.seal,
 	}
+}
+
+// DieSeal returns a new die for the current die's state that is sealed for comparison in future diff and patch operations.
+func (d *PodIntentDie) DieSeal() *PodIntentDie {
+	return d.DieSealFeed(d.r)
+}
+
+// DieSealFeed returns a new die for the current die's state that uses a specific resource for comparison in future diff and patch operations.
+func (d *PodIntentDie) DieSealFeed(r conventionsv1alpha1.PodIntent) *PodIntentDie {
+	if !d.mutable {
+		d = d.DeepCopy()
+	}
+	d.seal = *r.DeepCopy()
+	return d
+}
+
+// DieSealFeedPtr returns a new die for the current die's state that uses a specific resource pointer for comparison in future diff and patch operations. If the resource is nil, the empty value is used instead.
+func (d *PodIntentDie) DieSealFeedPtr(r *conventionsv1alpha1.PodIntent) *PodIntentDie {
+	if r == nil {
+		r = &conventionsv1alpha1.PodIntent{}
+	}
+	return d.DieSealFeed(*r)
+}
+
+// DieSealRelease returns the sealed resource managed by the die.
+func (d *PodIntentDie) DieSealRelease() conventionsv1alpha1.PodIntent {
+	return *d.seal.DeepCopy()
+}
+
+// DieSealReleasePtr returns the sealed resource pointer managed by the die.
+func (d *PodIntentDie) DieSealReleasePtr() *conventionsv1alpha1.PodIntent {
+	r := d.DieSealRelease()
+	return &r
+}
+
+// DieDiff uses cmp.Diff to compare the current value of the die with the sealed value.
+func (d *PodIntentDie) DieDiff(opts ...cmp.Option) string {
+	return cmp.Diff(d.seal, d.r, opts...)
+}
+
+// DiePatch generates a patch between the current value of the die and the sealed value.
+func (d *PodIntentDie) DiePatch(patchType types.PatchType) ([]byte, error) {
+	return patch.Create(d.seal, d.r, patchType)
 }
 
 var _ runtime.Object = (*PodIntentDie)(nil)
@@ -1118,15 +1371,12 @@ func (d *PodIntentDie) MarshalJSON() ([]byte, error) {
 }
 
 func (d *PodIntentDie) UnmarshalJSON(b []byte) error {
-	if d == PodIntentBlank {
-		return fmtx.Errorf("cannot unmarshal into the blank die, create a copy first")
-	}
 	if !d.mutable {
 		return fmtx.Errorf("cannot unmarshal into immutable dies, create a mutable version first")
 	}
-	r := &conventionsv1alpha1.PodIntent{}
-	err := json.Unmarshal(b, r)
-	*d = *d.DieFeed(*r)
+	resource := &conventionsv1alpha1.PodIntent{}
+	err := json.Unmarshal(b, resource)
+	*d = *d.DieFeed(*resource)
 	return err
 }
 
@@ -1141,6 +1391,29 @@ func (d *PodIntentDie) APIVersion(v string) *PodIntentDie {
 func (d *PodIntentDie) Kind(v string) *PodIntentDie {
 	return d.DieStamp(func(r *conventionsv1alpha1.PodIntent) {
 		r.Kind = v
+	})
+}
+
+// TypeMetadata standard object's type metadata.
+func (d *PodIntentDie) TypeMetadata(v metav1.TypeMeta) *PodIntentDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.PodIntent) {
+		r.TypeMeta = v
+	})
+}
+
+// TypeMetadataDie stamps the resource's TypeMeta field with a mutable die.
+func (d *PodIntentDie) TypeMetadataDie(fn func(d *v1.TypeMetaDie)) *PodIntentDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.PodIntent) {
+		d := v1.TypeMetaBlank.DieImmutable(false).DieFeed(r.TypeMeta)
+		fn(d)
+		r.TypeMeta = d.DieRelease()
+	})
+}
+
+// Metadata standard object's metadata.
+func (d *PodIntentDie) Metadata(v metav1.ObjectMeta) *PodIntentDie {
+	return d.DieStamp(func(r *conventionsv1alpha1.PodIntent) {
+		r.ObjectMeta = v
 	})
 }
 
@@ -1188,6 +1461,7 @@ var PodIntentSpecBlank = (&PodIntentSpecDie{}).DieFeed(conventionsv1alpha1.PodIn
 type PodIntentSpecDie struct {
 	mutable bool
 	r       conventionsv1alpha1.PodIntentSpec
+	seal    conventionsv1alpha1.PodIntentSpec
 }
 
 // DieImmutable returns a new die for the current die's state that is either mutable (`false`) or immutable (`true`).
@@ -1209,6 +1483,7 @@ func (d *PodIntentSpecDie) DieFeed(r conventionsv1alpha1.PodIntentSpec) *PodInte
 	return &PodIntentSpecDie{
 		mutable: d.mutable,
 		r:       r,
+		seal:    d.seal,
 	}
 }
 
@@ -1362,7 +1637,51 @@ func (d *PodIntentSpecDie) DeepCopy() *PodIntentSpecDie {
 	return &PodIntentSpecDie{
 		mutable: d.mutable,
 		r:       r,
+		seal:    d.seal,
 	}
+}
+
+// DieSeal returns a new die for the current die's state that is sealed for comparison in future diff and patch operations.
+func (d *PodIntentSpecDie) DieSeal() *PodIntentSpecDie {
+	return d.DieSealFeed(d.r)
+}
+
+// DieSealFeed returns a new die for the current die's state that uses a specific resource for comparison in future diff and patch operations.
+func (d *PodIntentSpecDie) DieSealFeed(r conventionsv1alpha1.PodIntentSpec) *PodIntentSpecDie {
+	if !d.mutable {
+		d = d.DeepCopy()
+	}
+	d.seal = *r.DeepCopy()
+	return d
+}
+
+// DieSealFeedPtr returns a new die for the current die's state that uses a specific resource pointer for comparison in future diff and patch operations. If the resource is nil, the empty value is used instead.
+func (d *PodIntentSpecDie) DieSealFeedPtr(r *conventionsv1alpha1.PodIntentSpec) *PodIntentSpecDie {
+	if r == nil {
+		r = &conventionsv1alpha1.PodIntentSpec{}
+	}
+	return d.DieSealFeed(*r)
+}
+
+// DieSealRelease returns the sealed resource managed by the die.
+func (d *PodIntentSpecDie) DieSealRelease() conventionsv1alpha1.PodIntentSpec {
+	return *d.seal.DeepCopy()
+}
+
+// DieSealReleasePtr returns the sealed resource pointer managed by the die.
+func (d *PodIntentSpecDie) DieSealReleasePtr() *conventionsv1alpha1.PodIntentSpec {
+	r := d.DieSealRelease()
+	return &r
+}
+
+// DieDiff uses cmp.Diff to compare the current value of the die with the sealed value.
+func (d *PodIntentSpecDie) DieDiff(opts ...cmp.Option) string {
+	return cmp.Diff(d.seal, d.r, opts...)
+}
+
+// DiePatch generates a patch between the current value of the die and the sealed value.
+func (d *PodIntentSpecDie) DiePatch(patchType types.PatchType) ([]byte, error) {
+	return patch.Create(d.seal, d.r, patchType)
 }
 
 // ServiceAccountName is the name of the Kubernetes ServiceAccount used to authenticate
@@ -1397,6 +1716,7 @@ var PodIntentStatusBlank = (&PodIntentStatusDie{}).DieFeed(conventionsv1alpha1.P
 type PodIntentStatusDie struct {
 	mutable bool
 	r       conventionsv1alpha1.PodIntentStatus
+	seal    conventionsv1alpha1.PodIntentStatus
 }
 
 // DieImmutable returns a new die for the current die's state that is either mutable (`false`) or immutable (`true`).
@@ -1418,6 +1738,7 @@ func (d *PodIntentStatusDie) DieFeed(r conventionsv1alpha1.PodIntentStatus) *Pod
 	return &PodIntentStatusDie{
 		mutable: d.mutable,
 		r:       r,
+		seal:    d.seal,
 	}
 }
 
@@ -1571,7 +1892,51 @@ func (d *PodIntentStatusDie) DeepCopy() *PodIntentStatusDie {
 	return &PodIntentStatusDie{
 		mutable: d.mutable,
 		r:       r,
+		seal:    d.seal,
 	}
+}
+
+// DieSeal returns a new die for the current die's state that is sealed for comparison in future diff and patch operations.
+func (d *PodIntentStatusDie) DieSeal() *PodIntentStatusDie {
+	return d.DieSealFeed(d.r)
+}
+
+// DieSealFeed returns a new die for the current die's state that uses a specific resource for comparison in future diff and patch operations.
+func (d *PodIntentStatusDie) DieSealFeed(r conventionsv1alpha1.PodIntentStatus) *PodIntentStatusDie {
+	if !d.mutable {
+		d = d.DeepCopy()
+	}
+	d.seal = *r.DeepCopy()
+	return d
+}
+
+// DieSealFeedPtr returns a new die for the current die's state that uses a specific resource pointer for comparison in future diff and patch operations. If the resource is nil, the empty value is used instead.
+func (d *PodIntentStatusDie) DieSealFeedPtr(r *conventionsv1alpha1.PodIntentStatus) *PodIntentStatusDie {
+	if r == nil {
+		r = &conventionsv1alpha1.PodIntentStatus{}
+	}
+	return d.DieSealFeed(*r)
+}
+
+// DieSealRelease returns the sealed resource managed by the die.
+func (d *PodIntentStatusDie) DieSealRelease() conventionsv1alpha1.PodIntentStatus {
+	return *d.seal.DeepCopy()
+}
+
+// DieSealReleasePtr returns the sealed resource pointer managed by the die.
+func (d *PodIntentStatusDie) DieSealReleasePtr() *conventionsv1alpha1.PodIntentStatus {
+	r := d.DieSealRelease()
+	return &r
+}
+
+// DieDiff uses cmp.Diff to compare the current value of the die with the sealed value.
+func (d *PodIntentStatusDie) DieDiff(opts ...cmp.Option) string {
+	return cmp.Diff(d.seal, d.r, opts...)
+}
+
+// DiePatch generates a patch between the current value of the die and the sealed value.
+func (d *PodIntentStatusDie) DiePatch(patchType types.PatchType) ([]byte, error) {
+	return patch.Create(d.seal, d.r, patchType)
 }
 
 func (d *PodIntentStatusDie) Status(v apis.Status) *PodIntentStatusDie {
