@@ -7,7 +7,7 @@ toolchain go1.22.3
 require (
 	github.com/CycloneDX/cyclonedx-go v0.9.0
 	github.com/go-logr/logr v1.4.2
-	github.com/google/go-containerregistry v0.19.2
+	github.com/google/go-containerregistry v0.20.1
 	k8s.io/api v0.30.2
 	k8s.io/apimachinery v0.30.2
 	sigs.k8s.io/controller-runtime v0.18.4
