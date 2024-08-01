@@ -2,7 +2,7 @@ module github.com/vmware-tanzu/cartographer-conventions/samples/spring-conventio
 
 go 1.22.0
 
-toolchain go1.22.2
+toolchain go1.22.5
 
 replace github.com/vmware-tanzu/cartographer-conventions/webhook => ../../webhook
 
