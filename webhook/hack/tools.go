@@ -5,7 +5,7 @@
 package tools
 
 import (
-	_ "github.com/k14s/ytt/cmd/ytt"
+	_ "carvel.dev/ytt/cmd/ytt"
 	_ "golang.org/x/tools/cmd/goimports"
 	_ "reconciler.io/dies/diegen"
 	_ "sigs.k8s.io/controller-tools/cmd/controller-gen"

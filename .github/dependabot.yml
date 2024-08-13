@@ -24,6 +24,15 @@ updates:
       patterns:
       - "k8s.io*"
 - package-ecosystem: gomod
+  directory: "/webhook/hack"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 10
+  groups:
+    k8s-dependencies:
+      patterns:
+        - "k8s.io*"
+- package-ecosystem: gomod
   directory: "/samples/convention-server"
   schedule:
     interval: weekly
