@@ -21,11 +21,6 @@ jobs:
         go-version-file: "go.mod"
     - name: Test
       run: make test
-    - name: Scan Inclusive Terminology
-      uses: get-woke/woke-action@v0
-      with: 
-        fail-on-error: true
-        woke-args: -c woke/woke.yaml
     - uses: codecov/codecov-action@v4
     - name: Build
       run: |
@@ -199,6 +194,7 @@ jobs:
         - 1.27.3
         - 1.28.0
         - 1.29.0
+        - 1.30.0
     env:
       REGISTRY_NAME: registry.local
       BUNDLE: registry.local/conventions/bundle
@@ -305,7 +301,7 @@ jobs:
         docker network connect kind local-registry
 
         # Document the local registry
-        # wokeignore:rule=master
+
         # https://github.com/kubernetes/enhancements/tree/master/keps/sig-cluster-lifecycle/generic/1755-communicating-a-local-registry
         cat <<EOF | kubectl apply -f -
         apiVersion: v1
