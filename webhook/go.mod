@@ -10,7 +10,7 @@ require (
 	github.com/google/go-containerregistry v0.20.2
 	k8s.io/api v0.30.3
 	k8s.io/apimachinery v0.30.3
-	sigs.k8s.io/controller-runtime v0.18.4
+	sigs.k8s.io/controller-runtime v0.18.5
 )
 
 require (
