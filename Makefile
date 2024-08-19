@@ -10,19 +10,16 @@ DIEGEN ?= go run -modfile hack/go.mod reconciler.io/dies/diegen
 GOIMPORTS ?= go run -modfile hack/go.mod golang.org/x/tools/cmd/goimports
 KUSTOMIZE ?= go run -modfile hack/go.mod sigs.k8s.io/kustomize/kustomize/v5
 YTT ?= go run -modfile hack/go.mod carvel.dev/ytt/cmd/ytt
-WOKE ?= go run -modfile hack/woke/go.mod github.com/get-woke/woke
 
 
 .PHONY: all
-all: test dist scan-terms
+all: test dist
 
 .PHONY: test
 test: generate fmt vet ## Run tests
 	go test ./... -coverprofile cover.out
 
-.PHONY:
-scan-terms: ## Scan for inclusive terminology
-	@$(WOKE) . -c ./woke/woke.yaml --exit-1-on-failure
+
 
 # Generate manifests e.g. CRD, RBAC etc.
 .PHONY: manifests
@@ -69,7 +66,6 @@ generate-internal:
 tidy: ## Run go mod tidy
 	go mod tidy -v
 	cd hack && go mod tidy -v
-	cd hack/woke && go mod tidy -v
 	cd samples/convention-server && go mod tidy -v
 	cd samples/dumper-server && go mod tidy -v
 	cd samples/spring-convention-server && go mod tidy -v
