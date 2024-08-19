@@ -44,17 +44,6 @@ rules:
   - ""
   resources:
   - configmaps
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
   - events
   verbs:
   - create
@@ -68,13 +57,6 @@ rules:
   - ""
   resources:
   - secrets
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
   - serviceaccounts
   verbs:
   - get
