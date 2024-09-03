@@ -10,7 +10,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.16.2
   labels:
     app.kubernetes.io/component: conventions
   name: clusterpodconventions.conventions.carto.run
@@ -123,7 +123,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.16.2
   labels:
     app.kubernetes.io/component: conventions
     duck.knative.dev/podspecable: "true"
@@ -7518,6 +7518,28 @@ metadata:
   name: cartographer-conventions-manager-role
 rules:
 - apiGroups:
+  - ""
+  resources:
+  - configmaps
+  - events
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  - serviceaccounts
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - cert-manager.io
   resources:
   - certificaterequests
@@ -7553,28 +7575,6 @@ rules:
   - get
   - patch
   - update
-- apiGroups:
-  - ""
-  resources:
-  - configmaps
-  - events
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  - serviceaccounts
-  verbs:
-  - get
-  - list
-  - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
