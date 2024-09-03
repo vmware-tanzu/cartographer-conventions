@@ -5,6 +5,28 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
+  - ""
+  resources:
+  - configmaps
+  - events
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  - serviceaccounts
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - cert-manager.io
   resources:
   - certificaterequests
@@ -40,25 +62,3 @@ rules:
   - get
   - patch
   - update
-- apiGroups:
-  - ""
-  resources:
-  - configmaps
-  - events
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  - serviceaccounts
-  verbs:
-  - get
-  - list
-  - watch
