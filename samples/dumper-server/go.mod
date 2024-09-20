@@ -29,8 +29,8 @@ require (
 	golang.org/x/text v0.16.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/api v0.31.0 // indirect
-	k8s.io/apimachinery v0.31.0 // indirect
+	k8s.io/api v0.31.1 // indirect
+	k8s.io/apimachinery v0.31.1 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/utils v0.0.0-20240711033017-18e509b52bc8 // indirect
 	sigs.k8s.io/controller-runtime v0.19.0 // indirect
