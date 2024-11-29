@@ -1,8 +1,8 @@
 module github.com/vmware-tanzu/cartographer-conventions/webhook
 
-go 1.22.0
+go 1.23.0
 
-toolchain go1.22.3
+toolchain go1.23.3
 
 require (
 	github.com/CycloneDX/cyclonedx-go v0.9.1
