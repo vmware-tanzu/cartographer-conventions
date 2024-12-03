@@ -21,7 +21,7 @@ jobs:
         go-version-file: "go.mod"
     - name: Test
       run: make test
-    - uses: codecov/codecov-action@v4
+    - uses: codecov/codecov-action@v5
     - name: Build
       run: |
         set -o errexit
