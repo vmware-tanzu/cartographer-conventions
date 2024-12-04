@@ -1,6 +1,7 @@
 module github.com/vmware-tanzu/cartographer-conventions/tools
 
-go 1.23.0
+go 1.23.2
+
 toolchain go1.23.3
 
 require (
