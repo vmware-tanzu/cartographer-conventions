@@ -107,6 +107,8 @@ jobs:
 
         # Make the $REGISTRY_NAME -> local-registry
         echo "$(hostname -I | cut -d' ' -f1) $REGISTRY_NAME" | sudo tee -a /etc/hosts
+    - name: Go mod tidy
+      run: make tidy
     - name: Build Cartographer Conventions
       run: |
         set -o errexit
