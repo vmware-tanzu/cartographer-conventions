@@ -64,9 +64,3 @@ updates:
   schedule:
     interval: weekly
   open-pull-requests-limit: 10
-- package-ecosystem: gomod
-  directory: "/hack/woke"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 10
-  
