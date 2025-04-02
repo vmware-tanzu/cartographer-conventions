@@ -72,6 +72,24 @@ func TestPodIntentValidate(t *testing.T) {
 		expected: field.ErrorList{
 			field.Required(field.NewPath("spec", "imagePullSecrets").Index(0).Child("name"), ""),
 		},
+	}, {
+		name: "invalid env keys",
+		target: &PodIntent{
+			Spec: PodIntentSpec{
+				Template: PodTemplateSpec{
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{{
+							Name:  "foo",
+							Image: "foo",
+							Env: []corev1.EnvVar{
+								{Name: "foo", Value: "bar"}, {Name: "foo", Value: "bar"},
+							},
+						}},
+					},
+				},
+			},
+		},
+		expected: field.ErrorList{},
 	}} {
 		t.Run(c.name, func(t *testing.T) {
 			actual := c.target.validate()

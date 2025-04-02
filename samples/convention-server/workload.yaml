@@ -9,3 +9,8 @@ spec:
       containers:
       - name: workload
         image: ubuntu
+        env:
+          - name: test
+            value: test-value
+          - name: test
+            value: test-value
