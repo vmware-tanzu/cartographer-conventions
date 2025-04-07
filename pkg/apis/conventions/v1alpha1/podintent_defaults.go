@@ -16,19 +16,32 @@ limitations under the License.
 
 package v1alpha1
 
-import "sigs.k8s.io/controller-runtime/pkg/webhook"
+import (
+	"context"
+	"fmt"
+
+	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
+)
 
 // +kubebuilder:webhook:path=/mutate-conventions-carto-run-v1alpha1-podintent,mutating=true,failurePolicy=fail,sideEffects=none,admissionReviewVersions=v1beta1,groups=conventions.carto.run,resources=podintents,verbs=create;update,versions=v1alpha1,name=podintents.conventions.carto.run
 
-var _ webhook.Defaulter = &PodIntent{}
+type PodIntentDefaulter struct{}
+
+var _ webhook.CustomDefaulter = &PodIntentDefaulter{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
-func (r *PodIntent) Default() {
-	r.Spec.Default()
+func (r *PodIntentDefaulter) Default(ctx context.Context, obj runtime.Object) error {
+	podIntent, ok := obj.(*PodIntent)
+	if !ok {
+		return fmt.Errorf("expected a PodIntent object, but got %T", obj)
+	}
+	return podIntent.Spec.Default()
 }
 
-func (s *PodIntentSpec) Default() {
+func (s *PodIntentSpec) Default() error {
 	if s.ServiceAccountName == "" {
 		s.ServiceAccountName = "default"
 	}
+	return nil
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -45,7 +46,7 @@ func TestPodIntentDefault(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			got := test.in
-			got.Default()
+			_ = got.Spec.Default()
 			if diff := cmp.Diff(test.want, got); diff != "" {
 				t.Errorf("Default() (-want, +got) = %v", diff)
 			}
@@ -55,9 +56,10 @@ func TestPodIntentDefault(t *testing.T) {
 
 func TestPodIntentValidate(t *testing.T) {
 	for _, c := range []struct {
-		name     string
-		target   *PodIntent
-		expected field.ErrorList
+		name      string
+		target    *PodIntent
+		validator PodIntentValidator
+		expected  field.ErrorList
 	}{{
 		name:     "empty",
 		target:   &PodIntent{},
@@ -78,16 +80,16 @@ func TestPodIntentValidate(t *testing.T) {
 			if diff := cmp.Diff(c.expected, actual); diff != "" {
 				t.Errorf("Validate() (-expected, +actual) = %v", diff)
 			}
-			_, create := c.target.ValidateCreate()
+			_, create := c.validator.ValidateCreate(context.TODO(), c.target)
 			if diff := cmp.Diff(c.expected.ToAggregate(), create); diff != "" {
 				t.Errorf("ValidateCreate() (-expected, +actual) = %v", diff)
 			}
-			_, update := c.target.ValidateUpdate(nil)
+			_, update := c.validator.ValidateUpdate(context.TODO(), nil, c.target)
 			if diff := cmp.Diff(c.expected.ToAggregate(), update); diff != "" {
 				t.Errorf("ValidateUpdate() (-expected, +actual) = %v", diff)
 			}
-			_, delete := c.target.ValidateDelete()
-			if diff := cmp.Diff(nil, delete); diff != "" {
+			_, deleteValidation := c.validator.ValidateDelete(context.TODO(), c.target)
+			if diff := cmp.Diff(nil, deleteValidation); diff != "" {
 				t.Errorf("ValidateUpdate() (-expected, +actual) = %v", diff)
 			}
 		})
@@ -102,7 +104,7 @@ func TestPodIntentConditions(t *testing.T) {
 	}{{
 		name: "initialize",
 		work: func(s *PodIntent) {
-			s.Status.InitializeConditions()
+			s.Status.InitializeConditions(context.TODO())
 		},
 		expected: &PodIntentStatus{
 			Status: apis.Status{
@@ -124,7 +126,7 @@ func TestPodIntentConditions(t *testing.T) {
 		name: "reset",
 		work: func(s *PodIntent) {
 			s.GetConditionSet().Manage(s.GetConditionsAccessor()).MarkTrue(PodIntentConditionConventionsApplied, "Applied", "")
-			s.Status.InitializeConditions()
+			s.Status.InitializeConditions(context.Background())
 		},
 		expected: &PodIntentStatus{
 			Status: apis.Status{
@@ -145,7 +147,7 @@ func TestPodIntentConditions(t *testing.T) {
 	}, {
 		name: "ready",
 		work: func(s *PodIntent) {
-			s.Status.InitializeConditions()
+			s.Status.InitializeConditions(context.TODO())
 			s.GetConditionSet().Manage(s.GetConditionsAccessor()).MarkTrue(PodIntentConditionConventionsApplied, "Applied", "")
 		},
 		expected: &PodIntentStatus{

@@ -1,8 +1,8 @@
 module github.com/vmware-tanzu/cartographer-conventions
 
-go 1.23.0
+go 1.23.7
 
-toolchain go1.23.3
+toolchain go1.24.2
 
 replace github.com/vmware-tanzu/cartographer-conventions/webhook => ./webhook
 
@@ -20,7 +20,7 @@ require (
 	k8s.io/utils v0.0.0-20241104100929-3ea5e8cea738
 	reconciler.io/dies v0.15.0
 	reconciler.io/runtime v0.23.0
-	sigs.k8s.io/controller-runtime v0.20.2
+	sigs.k8s.io/controller-runtime v0.20.4
 	sigs.k8s.io/yaml v1.4.0
 )
 

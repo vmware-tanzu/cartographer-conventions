@@ -1,8 +1,8 @@
 module github.com/vmware-tanzu/cartographer-conventions/webhook
 
-go 1.23.0
+go 1.23.7
 
-toolchain go1.23.3
+toolchain go1.24.2
 
 require (
 	github.com/CycloneDX/cyclonedx-go v0.9.2
@@ -10,7 +10,7 @@ require (
 	github.com/google/go-containerregistry v0.20.3
 	k8s.io/api v0.32.3
 	k8s.io/apimachinery v0.32.3
-	sigs.k8s.io/controller-runtime v0.19.3
+	sigs.k8s.io/controller-runtime v0.20.4
 )
 
 require (

@@ -17,6 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
+
 	"reconciler.io/runtime/apis"
 )
 
@@ -42,8 +44,8 @@ func (s *PodIntent) GetConditionSet() apis.ConditionSet {
 	return podintentCondSet
 }
 
-func (s *PodIntentStatus) InitializeConditions() {
-	conditionManager := podintentCondSet.Manage(s)
+func (s *PodIntentStatus) InitializeConditions(ctx context.Context) {
+	conditionManager := podintentCondSet.ManageWithContext(ctx, s)
 	conditionManager.InitializeConditions()
 	// reset existing managed conditions
 	conditionManager.MarkUnknown(PodIntentConditionConventionsApplied, "Initializing", "")

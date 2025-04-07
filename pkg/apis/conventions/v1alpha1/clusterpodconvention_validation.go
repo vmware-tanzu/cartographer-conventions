@@ -17,6 +17,9 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
+	"fmt"
+
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
@@ -28,23 +31,33 @@ import (
 
 // +kubebuilder:webhook:path=/validate-conventions-carto-run-v1alpha1-clusterpodconvention,mutating=false,failurePolicy=fail,sideEffects=none,admissionReviewVersions=v1beta1,groups=conventions.carto.run,resources=clusterpodconventions,verbs=create;update,versions=v1alpha1,name=clusterpodconventions.conventions.carto.run
 
+type ClusterPodConventionValidator struct{}
+
 var (
-	_ webhook.Validator = &ClusterPodConvention{}
+	_ webhook.CustomValidator = &ClusterPodConventionValidator{}
 )
 
-// ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *ClusterPodConvention) ValidateCreate() (admission.Warnings, error) {
-	return nil, r.validate().ToAggregate()
+// ValidateCreate implements webhook.CustomValidator so a webhook will be registered for the type
+func (r *ClusterPodConventionValidator) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
+	clusterPodConvention, ok := obj.(*ClusterPodConvention)
+	if !ok {
+		return nil, fmt.Errorf("expected a ClusterPodConvention object, but got git %T", obj)
+	}
+	return nil, clusterPodConvention.validate().ToAggregate()
 }
 
-// ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (c *ClusterPodConvention) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
+// ValidateUpdate implements webhook.CustomValidator so a webhook will be registered for the type
+func (c *ClusterPodConventionValidator) ValidateUpdate(ctx context.Context, old runtime.Object, new runtime.Object) (admission.Warnings, error) {
+	clusterPodConvention, ok := new.(*ClusterPodConvention)
+	if !ok {
+		return nil, fmt.Errorf("expected a ClusterPodConvention object, but got git %T", new)
+	}
 	// TODO check for immutable fields
-	return nil, c.validate().ToAggregate()
+	return nil, clusterPodConvention.validate().ToAggregate()
 }
 
-// ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (c *ClusterPodConvention) ValidateDelete() (admission.Warnings, error) {
+// ValidateDelete implements webhook.CustomValidator so a webhook will be registered for the type
+func (c *ClusterPodConventionValidator) ValidateDelete(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	return nil, nil
 }
 
