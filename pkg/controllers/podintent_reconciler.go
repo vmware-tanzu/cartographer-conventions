@@ -102,10 +102,10 @@ func ResolveConventions() reconcilers.SubReconciler[*conventionsv1alpha1.PodInte
 				return err
 			}
 			var conventions binding.Conventions
-			conditionManager := parent.GetConditionSet().Manage(&parent.Status)
+			conditionManager := parent.GetConditionSet().ManageWithContext(ctx, &parent.Status)
 			for i := range sources.Items {
 				source := sources.Items[i].DeepCopy()
-				source.Default()
+				_ = source.Spec.Default()
 				convention := binding.Convention{
 					Name:      source.Name,
 					Selectors: source.Spec.Selectors,
@@ -153,7 +153,7 @@ func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler[*c
 			if rc.Client == nil {
 				return ctrl.Result{}, fmt.Errorf("kubernetes client is not set")
 			}
-			conditionManager := parent.GetConditionSet().Manage(&parent.Status)
+			conditionManager := parent.GetConditionSet().ManageWithContext(ctx, &parent.Status)
 
 			var imagePullSecrets []string
 			for _, ips := range parent.Spec.ImagePullSecrets {
@@ -167,7 +167,7 @@ func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler[*c
 				}
 				c.Tracker.TrackReference(ref, parent)
 			}
-
+			_ = parent.Spec.Default()
 			serviceAccountName := parent.Spec.ServiceAccountName
 
 			kc, err := k8schain.New(ctx, rc.Client, k8schain.Options{

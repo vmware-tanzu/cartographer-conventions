@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -32,9 +33,7 @@ const InvalidSelectorTarget SelectorTargetSource = "invalidSelectorTarget"
 func strPtr(s string) *string { return &s }
 
 var (
-	InvalidFailureType admissionregistrationv1.FailurePolicyType = "Invalid"
-	DefaultFailureType                                           = admissionregistrationv1.Fail
-	validClientConfig                                            = admissionregistrationv1.WebhookClientConfig{
+	validClientConfig = admissionregistrationv1.WebhookClientConfig{
 		URL: strPtr("https://example.com"),
 	}
 	validaServiceRef = admissionregistrationv1.ServiceReference{
@@ -86,7 +85,10 @@ func TestClusterPodConventionDefault(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			got := test.in
-			got.Default()
+			err := got.Spec.Default()
+			if err != nil {
+				return
+			}
 			if diff := cmp.Diff(test.want, got); diff != "" {
 				t.Errorf("Default() (-want, +got) = %v", diff)
 			}
@@ -96,9 +98,10 @@ func TestClusterPodConventionDefault(t *testing.T) {
 
 func TestClusterPodConventionValidate(t *testing.T) {
 	for _, c := range []struct {
-		name     string
-		target   *ClusterPodConvention
-		expected field.ErrorList
+		name      string
+		target    *ClusterPodConvention
+		validator ClusterPodConventionValidator
+		expected  field.ErrorList
 	}{{
 		name: "empty webhook",
 		target: &ClusterPodConvention{
@@ -328,16 +331,16 @@ func TestClusterPodConventionValidate(t *testing.T) {
 			if diff := cmp.Diff(c.expected, actual); diff != "" {
 				t.Errorf("Validate() (-expected, +actual) = %v", diff)
 			}
-			_, create := c.target.ValidateCreate()
+			_, create := c.validator.ValidateCreate(context.TODO(), c.target)
 			if diff := cmp.Diff(c.expected.ToAggregate(), create); diff != "" {
 				t.Errorf("ValidateCreate() (-expected, +actual) = %v", diff)
 			}
-			_, update := c.target.ValidateUpdate(nil)
+			_, update := c.validator.ValidateUpdate(context.TODO(), nil, c.target)
 			if diff := cmp.Diff(c.expected.ToAggregate(), update); diff != "" {
 				t.Errorf("ValidateUpdate() (-expected, +actual) = %v", diff)
 			}
-			_, delete := c.target.ValidateDelete()
-			if diff := cmp.Diff(nil, delete); diff != "" {
+			_, deleteValidation := c.validator.ValidateDelete(context.TODO(), c.target)
+			if diff := cmp.Diff(nil, deleteValidation); diff != "" {
 				t.Errorf("ValidateDelete() (-expected, +actual) = %v", diff)
 			}
 		})

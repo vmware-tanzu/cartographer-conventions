@@ -17,6 +17,9 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
+	"fmt"
+
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -25,23 +28,34 @@ import (
 
 // +kubebuilder:webhook:path=/validate-conventions-carto-run-v1alpha1-podintent,mutating=false,failurePolicy=fail,sideEffects=none,admissionReviewVersions=v1beta1,groups=conventions.carto.run,resources=podintents,verbs=create;update,versions=v1alpha1,name=podintents.conventions.carto.run
 
+type PodIntentValidator struct{}
+
 var (
-	_ webhook.Validator = &PodIntent{}
+	_ webhook.CustomValidator = &PodIntentValidator{}
 )
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *PodIntent) ValidateCreate() (admission.Warnings, error) {
-	return nil, r.validate().ToAggregate()
+func (r *PodIntentValidator) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
+	podIntent, ok := obj.(*PodIntent)
+	if !ok {
+		return admission.Warnings{}, fmt.Errorf("expected a PodIntent, but got %T", obj)
+	}
+
+	return nil, podIntent.validate().ToAggregate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *PodIntent) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
+func (r *PodIntentValidator) ValidateUpdate(ctx context.Context, old runtime.Object, new runtime.Object) (admission.Warnings, error) {
+	podIntent, ok := new.(*PodIntent)
+	if !ok {
+		return admission.Warnings{}, fmt.Errorf("expected a PodIntent, but got %T", new)
+	}
 	// TODO check for immutable fields
-	return nil, r.validate().ToAggregate()
+	return nil, podIntent.validate().ToAggregate()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *PodIntent) ValidateDelete() (admission.Warnings, error) {
+func (r *PodIntentValidator) ValidateDelete(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	return nil, nil
 }
 

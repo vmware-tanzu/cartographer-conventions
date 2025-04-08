@@ -116,7 +116,7 @@ func TestPodIntentReconciler(t *testing.T) {
 
 	defer os.RemoveAll(dir)
 	testCache := cache.NewFilesystemCache(dir)
-	testClient := fakeclient.NewSimpleClientset(&corev1.Secret{
+	testClient := fakeclient.NewClientset(&corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      secretName,
 			Namespace: namespace,

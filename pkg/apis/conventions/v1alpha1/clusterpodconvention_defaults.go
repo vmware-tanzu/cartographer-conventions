@@ -17,20 +17,30 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
+	"fmt"
+
+	"k8s.io/apimachinery/pkg/runtime"
 	utilpointer "k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
 // +kubebuilder:webhook:path=/mutate-conventions-carto-run-v1alpha1-clusterpodconvention,mutating=true,failurePolicy=fail,sideEffects=none,admissionReviewVersions=v1beta1,groups=conventions.carto.run,resources=clusterpodconventions,verbs=create;update,versions=v1alpha1,name=clusterpodconventions.conventions.carto.run
 
-var _ webhook.Defaulter = &ClusterPodConvention{}
+type ClusterPodConventionDefaults struct{}
+
+var _ webhook.CustomDefaulter = &ClusterPodConventionDefaults{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
-func (r *ClusterPodConvention) Default() {
-	r.Spec.Default()
+func (r *ClusterPodConventionDefaults) Default(ctx context.Context, obj runtime.Object) error {
+	clusterPodConvention, ok := obj.(*ClusterPodConvention)
+	if !ok {
+		return fmt.Errorf("expected a ClusterPodConvention object, but got git %T", obj)
+	}
+	return clusterPodConvention.Spec.Default()
 }
 
-func (s *ClusterPodConventionSpec) Default() {
+func (s *ClusterPodConventionSpec) Default() error {
 	if s.Priority == "" {
 		s.Priority = NormalPriority
 	}
@@ -40,6 +50,7 @@ func (s *ClusterPodConventionSpec) Default() {
 	if s.SelectorTarget == "" {
 		s.SelectorTarget = PodTemplateSpecLabels
 	}
+	return nil
 }
 
 func (s *ClusterPodConventionWebhook) Default() {
