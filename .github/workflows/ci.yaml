@@ -50,7 +50,7 @@ jobs:
     - uses: carvel-dev/setup-action@v2
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-    - uses: ko-build/setup-ko@v0.8
+    - uses: ko-build/setup-ko@v0.9
     - name: Generate certs
       run: |
         set -o errexit
