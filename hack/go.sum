@@ -228,8 +228,8 @@ k8s.io/kube-openapi v0.0.0-20241212222426-2c72e554b1e7 h1:hcha5B1kVACrLujCKLbr8X
 k8s.io/kube-openapi v0.0.0-20241212222426-2c72e554b1e7/go.mod h1:GewRfANuJ70iYzvn+i4lezLDAFzvjxZYK1gn1lWcfas=
 k8s.io/utils v0.0.0-20241104100929-3ea5e8cea738 h1:M3sRQVHv7vB20Xc2ybTt7ODCeFj6JSWYFzOFnYeS6Ro=
 k8s.io/utils v0.0.0-20241104100929-3ea5e8cea738/go.mod h1:OLgZIPagt7ERELqWJFomSt595RzquPNLL48iOWgYOg0=
-reconciler.io/dies/diegen v0.15.0 h1:GjalIQ3FviFtQNCQUGlEtfCV9coCP74eIghCDNtYv/E=
-reconciler.io/dies/diegen v0.15.0/go.mod h1:G61kNv5FiUThiO1urCdeQJtFDQRGKW67E0jOsxP3qw8=
+reconciler.io/dies/diegen v0.15.1 h1:xi6HzfV/cJj7xwCj7xciROqVfUum4vHePWpwOPk2jgE=
+reconciler.io/dies/diegen v0.15.1/go.mod h1:G61kNv5FiUThiO1urCdeQJtFDQRGKW67E0jOsxP3qw8=
 sigs.k8s.io/controller-tools v0.17.3 h1:lwFPLicpBKLgIepah+c8ikRBubFW5kOQyT88r3EwfNw=
 sigs.k8s.io/controller-tools v0.17.3/go.mod h1:1ii+oXcYZkxcBXzwv3YZBlzjt1fvkrCGjVF73blosJI=
 sigs.k8s.io/json v0.0.0-20241010143419-9aa6b5e7a4b3 h1:/Rv+M11QRah1itp8VhT6HoVx1Ray9eB4DBr+K+/sCJ8=
