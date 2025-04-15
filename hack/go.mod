@@ -7,7 +7,7 @@ toolchain go1.24.2
 require (
 	carvel.dev/ytt v0.51.2
 	golang.org/x/tools v0.32.0
-	reconciler.io/dies/diegen v0.15.0
+	reconciler.io/dies/diegen v0.15.1
 	sigs.k8s.io/controller-tools v0.17.3
 	sigs.k8s.io/kustomize/kustomize/v5 v5.6.0
 )
