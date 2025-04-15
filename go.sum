@@ -1528,8 +1528,8 @@ k8s.io/utils v0.0.0-20201110183641-67b214c5f920/go.mod h1:jPW/WVKK9YHAvNhRxK0md/
 k8s.io/utils v0.0.0-20210819203725-bdf08cb9a70a/go.mod h1:jPW/WVKK9YHAvNhRxK0md/EJ228hCsBRufyofKtW8HA=
 k8s.io/utils v0.0.0-20241104100929-3ea5e8cea738 h1:M3sRQVHv7vB20Xc2ybTt7ODCeFj6JSWYFzOFnYeS6Ro=
 k8s.io/utils v0.0.0-20241104100929-3ea5e8cea738/go.mod h1:OLgZIPagt7ERELqWJFomSt595RzquPNLL48iOWgYOg0=
-reconciler.io/dies v0.15.0 h1:aEADaXzDRUEn/ebI2xSsfHafODvnz3gTuT4EaXWffm8=
-reconciler.io/dies v0.15.0/go.mod h1:vEZ2Dksi9NVeBtwzbLwNWs12znergOUoYzR7hU0e60M=
+reconciler.io/dies v0.15.1 h1:pzEhkIbnoR7FcWOCvXVHpR1wQTKctj4Z+7AvpilLznc=
+reconciler.io/dies v0.15.1/go.mod h1:vEZ2Dksi9NVeBtwzbLwNWs12znergOUoYzR7hU0e60M=
 reconciler.io/runtime v0.23.0 h1:rRSwYffCrctFBw9KUJJ4xxJpzn93zFhbM64PvKcXdsA=
 reconciler.io/runtime v0.23.0/go.mod h1:kNsLnvdYEACzkZ1QCYBOoYA7oqlaZtxvaV89RT4QILs=
 rsc.io/binaryregexp v0.2.0/go.mod h1:qTv7/COck+e2FymRvadv62gMdZztPaShugOCi3I+8D8=
