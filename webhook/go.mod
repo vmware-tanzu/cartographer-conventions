@@ -1,6 +1,7 @@
 module github.com/vmware-tanzu/cartographer-conventions/webhook
 
-go 1.24
+go 1.24.0
+
 toolchain go1.24.2
 
 require (
