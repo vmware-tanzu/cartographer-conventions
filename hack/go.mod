@@ -1,10 +1,8 @@
 module github.com/vmware-tanzu/cartographer-conventions/tools
 
 go 1.23.7
-toolchain go1.24.2
-
 require (
-	carvel.dev/ytt v0.51.2
+	carvel.dev/ytt v0.52.0
 	golang.org/x/tools v0.32.0
 	reconciler.io/dies/diegen v0.16.0
 	sigs.k8s.io/controller-tools v0.17.3

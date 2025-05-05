@@ -1,5 +1,5 @@
-carvel.dev/ytt v0.51.2 h1:g4zjw99F6drrqJNElm5XC1Wo1B/EBAAf4A/AVTfqbwg=
-carvel.dev/ytt v0.51.2/go.mod h1:niVHGIX/6R4qy5e9U5s19qUbwNGBTStaExwCVUPSGdo=
+carvel.dev/ytt v0.52.0 h1:tkJPL8Gun5snVfypNXbmMKwnbwMyspcTi3Ypyso3nRY=
+carvel.dev/ytt v0.52.0/go.mod h1:QgmuU7E15EXW1r2wxTt7zExVz14IHwEG4WNMmaFBkJo=
 github.com/BurntSushi/toml v1.2.1 h1:9F2/+DoOYIOksmaJFPw1tGFy1eDnIJXg+UHjuD8lTak=
 github.com/BurntSushi/toml v1.2.1/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/blang/semver/v4 v4.0.0 h1:1PFHFE6yCCTv8C1TeyNNarDzntLi7wMI5i/pzqYIsAM=
