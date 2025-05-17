@@ -86,6 +86,15 @@ func (d *ClusterPodConventionDie) DieFeedPtr(r *conventionsv1alpha1.ClusterPodCo
 	return d.DieFeed(*r)
 }
 
+// DieFeedDuck returns a new die with the provided value converted into the underlying type. Panics on error.
+func (d *ClusterPodConventionDie) DieFeedDuck(v any) *ClusterPodConventionDie {
+	data, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+	return d.DieFeedJSON(data)
+}
+
 // DieFeedJSON returns a new die with the provided JSON. Panics on error.
 func (d *ClusterPodConventionDie) DieFeedJSON(j []byte) *ClusterPodConventionDie {
 	r := conventionsv1alpha1.ClusterPodConvention{}
@@ -146,6 +155,15 @@ func (d *ClusterPodConventionDie) DieReleaseUnstructured() *unstructured.Unstruc
 	return &unstructured.Unstructured{
 		Object: u,
 	}
+}
+
+// DieReleaseDuck releases the value into the passed value and returns the same. Panics on error.
+func (d *ClusterPodConventionDie) DieReleaseDuck(v any) any {
+	data := d.DieReleaseJSON()
+	if err := json.Unmarshal(data, v); err != nil {
+		panic(err)
+	}
+	return v
 }
 
 // DieReleaseJSON returns the resource managed by the die as JSON. Panics on error.
@@ -413,6 +431,15 @@ func (d *ClusterPodConventionSpecDie) DieFeedPtr(r *conventionsv1alpha1.ClusterP
 	return d.DieFeed(*r)
 }
 
+// DieFeedDuck returns a new die with the provided value converted into the underlying type. Panics on error.
+func (d *ClusterPodConventionSpecDie) DieFeedDuck(v any) *ClusterPodConventionSpecDie {
+	data, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+	return d.DieFeedJSON(data)
+}
+
 // DieFeedJSON returns a new die with the provided JSON. Panics on error.
 func (d *ClusterPodConventionSpecDie) DieFeedJSON(j []byte) *ClusterPodConventionSpecDie {
 	r := conventionsv1alpha1.ClusterPodConventionSpec{}
@@ -461,6 +488,15 @@ func (d *ClusterPodConventionSpecDie) DieRelease() conventionsv1alpha1.ClusterPo
 func (d *ClusterPodConventionSpecDie) DieReleasePtr() *conventionsv1alpha1.ClusterPodConventionSpec {
 	r := d.DieRelease()
 	return &r
+}
+
+// DieReleaseDuck releases the value into the passed value and returns the same. Panics on error.
+func (d *ClusterPodConventionSpecDie) DieReleaseDuck(v any) any {
+	data := d.DieReleaseJSON()
+	if err := json.Unmarshal(data, v); err != nil {
+		panic(err)
+	}
+	return v
 }
 
 // DieReleaseJSON returns the resource managed by the die as JSON. Panics on error.
@@ -668,6 +704,15 @@ func (d *ClusterPodConventionWebhookDie) DieFeedPtr(r *conventionsv1alpha1.Clust
 	return d.DieFeed(*r)
 }
 
+// DieFeedDuck returns a new die with the provided value converted into the underlying type. Panics on error.
+func (d *ClusterPodConventionWebhookDie) DieFeedDuck(v any) *ClusterPodConventionWebhookDie {
+	data, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+	return d.DieFeedJSON(data)
+}
+
 // DieFeedJSON returns a new die with the provided JSON. Panics on error.
 func (d *ClusterPodConventionWebhookDie) DieFeedJSON(j []byte) *ClusterPodConventionWebhookDie {
 	r := conventionsv1alpha1.ClusterPodConventionWebhook{}
@@ -716,6 +761,15 @@ func (d *ClusterPodConventionWebhookDie) DieRelease() conventionsv1alpha1.Cluste
 func (d *ClusterPodConventionWebhookDie) DieReleasePtr() *conventionsv1alpha1.ClusterPodConventionWebhook {
 	r := d.DieRelease()
 	return &r
+}
+
+// DieReleaseDuck releases the value into the passed value and returns the same. Panics on error.
+func (d *ClusterPodConventionWebhookDie) DieReleaseDuck(v any) any {
+	data := d.DieReleaseJSON()
+	if err := json.Unmarshal(data, v); err != nil {
+		panic(err)
+	}
+	return v
 }
 
 // DieReleaseJSON returns the resource managed by the die as JSON. Panics on error.
@@ -910,6 +964,15 @@ func (d *ClusterPodConventionWebhookCertificateDie) DieFeedPtr(r *conventionsv1a
 	return d.DieFeed(*r)
 }
 
+// DieFeedDuck returns a new die with the provided value converted into the underlying type. Panics on error.
+func (d *ClusterPodConventionWebhookCertificateDie) DieFeedDuck(v any) *ClusterPodConventionWebhookCertificateDie {
+	data, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+	return d.DieFeedJSON(data)
+}
+
 // DieFeedJSON returns a new die with the provided JSON. Panics on error.
 func (d *ClusterPodConventionWebhookCertificateDie) DieFeedJSON(j []byte) *ClusterPodConventionWebhookCertificateDie {
 	r := conventionsv1alpha1.ClusterPodConventionWebhookCertificate{}
@@ -958,6 +1021,15 @@ func (d *ClusterPodConventionWebhookCertificateDie) DieRelease() conventionsv1al
 func (d *ClusterPodConventionWebhookCertificateDie) DieReleasePtr() *conventionsv1alpha1.ClusterPodConventionWebhookCertificate {
 	r := d.DieRelease()
 	return &r
+}
+
+// DieReleaseDuck releases the value into the passed value and returns the same. Panics on error.
+func (d *ClusterPodConventionWebhookCertificateDie) DieReleaseDuck(v any) any {
+	data := d.DieReleaseJSON()
+	if err := json.Unmarshal(data, v); err != nil {
+		panic(err)
+	}
+	return v
 }
 
 // DieReleaseJSON returns the resource managed by the die as JSON. Panics on error.
@@ -1153,6 +1225,15 @@ func (d *PodIntentDie) DieFeedPtr(r *conventionsv1alpha1.PodIntent) *PodIntentDi
 	return d.DieFeed(*r)
 }
 
+// DieFeedDuck returns a new die with the provided value converted into the underlying type. Panics on error.
+func (d *PodIntentDie) DieFeedDuck(v any) *PodIntentDie {
+	data, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+	return d.DieFeedJSON(data)
+}
+
 // DieFeedJSON returns a new die with the provided JSON. Panics on error.
 func (d *PodIntentDie) DieFeedJSON(j []byte) *PodIntentDie {
 	r := conventionsv1alpha1.PodIntent{}
@@ -1213,6 +1294,15 @@ func (d *PodIntentDie) DieReleaseUnstructured() *unstructured.Unstructured {
 	return &unstructured.Unstructured{
 		Object: u,
 	}
+}
+
+// DieReleaseDuck releases the value into the passed value and returns the same. Panics on error.
+func (d *PodIntentDie) DieReleaseDuck(v any) any {
+	data := d.DieReleaseJSON()
+	if err := json.Unmarshal(data, v); err != nil {
+		panic(err)
+	}
+	return v
 }
 
 // DieReleaseJSON returns the resource managed by the die as JSON. Panics on error.
@@ -1495,6 +1585,15 @@ func (d *PodIntentSpecDie) DieFeedPtr(r *conventionsv1alpha1.PodIntentSpec) *Pod
 	return d.DieFeed(*r)
 }
 
+// DieFeedDuck returns a new die with the provided value converted into the underlying type. Panics on error.
+func (d *PodIntentSpecDie) DieFeedDuck(v any) *PodIntentSpecDie {
+	data, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+	return d.DieFeedJSON(data)
+}
+
 // DieFeedJSON returns a new die with the provided JSON. Panics on error.
 func (d *PodIntentSpecDie) DieFeedJSON(j []byte) *PodIntentSpecDie {
 	r := conventionsv1alpha1.PodIntentSpec{}
@@ -1543,6 +1642,15 @@ func (d *PodIntentSpecDie) DieRelease() conventionsv1alpha1.PodIntentSpec {
 func (d *PodIntentSpecDie) DieReleasePtr() *conventionsv1alpha1.PodIntentSpec {
 	r := d.DieRelease()
 	return &r
+}
+
+// DieReleaseDuck releases the value into the passed value and returns the same. Panics on error.
+func (d *PodIntentSpecDie) DieReleaseDuck(v any) any {
+	data := d.DieReleaseJSON()
+	if err := json.Unmarshal(data, v); err != nil {
+		panic(err)
+	}
+	return v
 }
 
 // DieReleaseJSON returns the resource managed by the die as JSON. Panics on error.
@@ -1750,6 +1858,15 @@ func (d *PodIntentStatusDie) DieFeedPtr(r *conventionsv1alpha1.PodIntentStatus) 
 	return d.DieFeed(*r)
 }
 
+// DieFeedDuck returns a new die with the provided value converted into the underlying type. Panics on error.
+func (d *PodIntentStatusDie) DieFeedDuck(v any) *PodIntentStatusDie {
+	data, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+	return d.DieFeedJSON(data)
+}
+
 // DieFeedJSON returns a new die with the provided JSON. Panics on error.
 func (d *PodIntentStatusDie) DieFeedJSON(j []byte) *PodIntentStatusDie {
 	r := conventionsv1alpha1.PodIntentStatus{}
@@ -1798,6 +1915,15 @@ func (d *PodIntentStatusDie) DieRelease() conventionsv1alpha1.PodIntentStatus {
 func (d *PodIntentStatusDie) DieReleasePtr() *conventionsv1alpha1.PodIntentStatus {
 	r := d.DieRelease()
 	return &r
+}
+
+// DieReleaseDuck releases the value into the passed value and returns the same. Panics on error.
+func (d *PodIntentStatusDie) DieReleaseDuck(v any) any {
+	data := d.DieReleaseJSON()
+	if err := json.Unmarshal(data, v); err != nil {
+		panic(err)
+	}
+	return v
 }
 
 // DieReleaseJSON returns the resource managed by the die as JSON. Panics on error.
