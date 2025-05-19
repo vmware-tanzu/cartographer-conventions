@@ -8,8 +8,8 @@ require (
 	github.com/CycloneDX/cyclonedx-go v0.9.2
 	github.com/go-logr/logr v1.4.2
 	github.com/google/go-containerregistry v0.20.3
-	k8s.io/api v0.33.0
-	k8s.io/apimachinery v0.33.0
+	k8s.io/api v0.33.1
+	k8s.io/apimachinery v0.33.1
 	sigs.k8s.io/controller-runtime v0.20.4
 )
 
