@@ -7,7 +7,7 @@ toolchain go1.24.2
 replace github.com/vmware-tanzu/cartographer-conventions/webhook => ./webhook
 
 require (
-	github.com/go-logr/logr v1.4.2
+	github.com/go-logr/logr v1.4.3
 	github.com/google/go-cmp v0.7.0
 	github.com/google/go-containerregistry v0.20.5
 	github.com/google/go-containerregistry/pkg/authn/k8schain v0.0.0-20220105220605-d9bfbcb99e52
