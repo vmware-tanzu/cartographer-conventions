@@ -196,14 +196,10 @@ jobs:
       fail-fast: false
       matrix:
         k8s:
-        - 1.25.11
-        - 1.26.6
-        - 1.27.16
-        - 1.28.15
-        - 1.29.12
-        - 1.30.8
-        - 1.31.4
-        - 1.32.0
+        - 1.30.13
+        - 1.31.9
+        - 1.32.5
+        - 1.32.2
     env:
       REGISTRY_NAME: registry.local
       BUNDLE: registry.local/conventions/bundle
@@ -287,23 +283,31 @@ jobs:
         set -o nounset
         set -o pipefail
 
+        # create hosts.toml for Containerd 2.0 registry configuration
+        mkdir -p "${CERT_DIR}/${REGISTRY_NAME}" # Create the subdirectory for the registry host
+        cat > "${CERT_DIR}/${REGISTRY_NAME}/hosts.toml" <<EOF
+        server = "https://${REGISTRY_NAME}"
+        [host."https://${REGISTRY_NAME}"]
+          ca = "/etc/containerd/certs.d/${REGISTRY_NAME}/ca.pem" # Path to CA inside the container
+          capabilities = ["pull", "resolve"]
+        EOF
+
         # create a cluster with the local registry enabled in containerd
         cat <<EOF | kind create cluster --config=-
         kind: Cluster
         apiVersion: kind.x-k8s.io/v1alpha4
         containerdConfigPatches:
         - |-
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."${REGISTRY_NAME}"]
-            endpoint = ["https://local-registry"]
-        - |-
-          [plugins."io.containerd.grpc.v1.cri".registry.configs."local-registry".tls]
-            ca_file  = "/etc/docker/certs.d/local-registry/ca.pem"
+          [plugins."io.containerd.grpc.v1.cri".registry]
+            config_path = "/etc/containerd/certs.d"
         nodes:
         - role: control-plane
           image: kindest/node:v${{ matrix.k8s }}
           extraMounts:
-          - containerPath: /etc/docker/certs.d/local-registry
-            hostPath: ${CERT_DIR}
+          - containerPath: /etc/containerd/certs.d/${REGISTRY_NAME}/ca.pem
+            hostPath: ${CERT_DIR}/ca.pem
+          - containerPath: /etc/containerd/certs.d/${REGISTRY_NAME}/hosts.toml
+            hostPath: ${CERT_DIR}/${REGISTRY_NAME}/hosts.toml
         EOF
 
         # connect the registry to the cluster network
