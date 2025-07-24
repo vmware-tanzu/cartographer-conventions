@@ -199,7 +199,7 @@ jobs:
         - 1.30.13
         - 1.31.9
         - 1.32.5
-        - 1.32.2
+        - 1.33.2
     env:
       REGISTRY_NAME: registry.local
       BUNDLE: registry.local/conventions/bundle
