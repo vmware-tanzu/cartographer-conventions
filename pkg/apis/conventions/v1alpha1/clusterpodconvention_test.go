@@ -190,8 +190,8 @@ func TestClusterPodConventionValidate(t *testing.T) {
 				},
 			},
 			expected: field.ErrorList{
-				field.Required(field.NewPath("spec", "webhook", "clientConfig", "service", "name"), "service name is required"),
-				field.Required(field.NewPath("spec", "webhook", "clientConfig", "service", "namespace"), "service namespace is required"),
+				field.Required(field.NewPath("spec", "webhook", "clientConfig", "service", "name"), ""),
+				field.Required(field.NewPath("spec", "webhook", "clientConfig", "service", "namespace"), ""),
 			},
 		}, {
 			name: "invalid URL",

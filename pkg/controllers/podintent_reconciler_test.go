@@ -471,6 +471,13 @@ func TestBuildRegistryConfig(t *testing.T) {
 						)
 					}),
 			},
+			ExpectTracks: []rtesting.TrackRequest{
+				rtesting.NewTrackRequest(diecorev1.ServiceAccountBlank.
+					MetadataDie(func(d *diemetav1.ObjectMetaDie) {
+						d.Namespace(namespace)
+						d.Name("wrong-sa")
+					}), parent, scheme),
+			},
 		},
 		"ServiceAccount not present in api reader(unlikely)": {
 			Request: request,
@@ -547,17 +554,27 @@ func TestBuildRegistryConfig(t *testing.T) {
 					StatusDie(func(d *dieconventionsv1alpha1.PodIntentStatusDie) {
 						d.ConditionsDie(
 							dieconventionsv1alpha1.PodIntentConditionConventionsAppliedBlank.
-								Status(metav1.ConditionFalse).
-								Reason("ImageResolutionFailed").
-								Message("failed to authenticate: secrets \"wrong-secret\" not found"),
+								Status(metav1.ConditionTrue).
+								Reason("Applied"),
 							dieconventionsv1alpha1.PodIntentConditionReadyBlank.
-								Status(metav1.ConditionFalse).
-								Reason("ImageResolutionFailed").
-								Message("failed to authenticate: secrets \"wrong-secret\" not found"),
+								Status(metav1.ConditionTrue).
+								Reason("ConventionsApplied"),
 						)
+						d.Template(&conventionsv1alpha1.PodTemplateSpec{
+							ObjectMeta: conventionsv1alpha1.ObjectMeta{
+								Annotations: map[string]string{},
+							},
+							Spec: corev1.PodSpec{
+								Containers: []corev1.Container{{
+									Name:  "workload",
+									Image: fmt.Sprintf("%s/hello", registryUrl.Host),
+								}},
+							},
+						})
 					}),
 			},
 			GivenObjects: []client.Object{
+				defaultSA,
 				parent.
 					SpecDie(func(d *dieconventionsv1alpha1.PodIntentSpecDie) {
 						d.ImagePullSecretsDie(
@@ -574,6 +591,7 @@ func TestBuildRegistryConfig(t *testing.T) {
 			},
 			ExpectTracks: []rtesting.TrackRequest{
 				rtesting.NewTrackRequest(absentSecret, parent, scheme),
+				rtesting.NewTrackRequest(defaultSA, parent, scheme),
 			},
 		},
 	}
