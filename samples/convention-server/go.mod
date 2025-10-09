@@ -1,8 +1,6 @@
 module github.com/vmware-tanzu/cartographer-conventions/samples/convention-server
 
-go 1.24.0
-
-toolchain go1.24.2
+go 1.24.3
 
 replace github.com/vmware-tanzu/cartographer-conventions/webhook => ../../webhook
 
