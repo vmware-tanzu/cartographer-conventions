@@ -3,7 +3,7 @@ module github.com/vmware-tanzu/cartographer-conventions/webhook
 go 1.24.3
 
 require (
-	github.com/CycloneDX/cyclonedx-go v0.9.2
+	github.com/CycloneDX/cyclonedx-go v0.9.3
 	github.com/go-logr/logr v1.4.3
 	github.com/google/go-containerregistry v0.20.6
 	k8s.io/api v0.34.1
