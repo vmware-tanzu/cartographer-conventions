@@ -2,7 +2,7 @@ module github.com/vmware-tanzu/cartographer-conventions/samples/dumper-server
 
 go 1.24.0
 
-toolchain go1.24.2
+toolchain go1.24.13
 
 replace github.com/vmware-tanzu/cartographer-conventions/webhook => ../../webhook
 
@@ -28,8 +28,8 @@ require (
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	k8s.io/api v0.33.2 // indirect
-	k8s.io/apimachinery v0.33.2 // indirect
+	k8s.io/api v0.33.3 // indirect
+	k8s.io/apimachinery v0.33.3 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/utils v0.0.0-20241104100929-3ea5e8cea738 // indirect
 	sigs.k8s.io/controller-runtime v0.21.0 // indirect
