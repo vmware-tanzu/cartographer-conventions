@@ -18,7 +18,7 @@ jobs:
   unit:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: actions/setup-go@v6
       with:
         go-version-file: "go.mod"
@@ -43,7 +43,7 @@ jobs:
       KO_DOCKER_REPO: registry.local/conventions
       BUNDLE: registry.local/conventions/bundle
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: actions/setup-go@v6
       with:
         go-version-file: "go.mod"
@@ -204,7 +204,7 @@ jobs:
       REGISTRY_NAME: registry.local
       BUNDLE: registry.local/conventions/bundle
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: actions/setup-go@v6
       with:
         go-version-file: "go.mod"
@@ -587,7 +587,7 @@ jobs:
       REGISTRY_NAME: registry.local
       BUNDLE: registry.local/conventions/bundle
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: carvel-dev/setup-action@v2
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
@@ -716,7 +716,7 @@ jobs:
       packages: write
       id-token: write
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Get the version
       id: get_version
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
