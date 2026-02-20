@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/CycloneDX/cyclonedx-go v0.9.3
 	github.com/go-logr/logr v1.4.3
-	github.com/google/go-containerregistry v0.20.6
+	github.com/google/go-containerregistry v0.21.0
 	k8s.io/api v0.35.1
 	k8s.io/apimachinery v0.35.1
 	sigs.k8s.io/controller-runtime v0.22.2
