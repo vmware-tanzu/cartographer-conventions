@@ -3,7 +3,7 @@ module github.com/vmware-tanzu/cartographer-conventions/tools
 go 1.26.0
 
 require (
-	carvel.dev/ytt v0.52.0
+	carvel.dev/ytt v0.53.2
 	golang.org/x/tools v0.38.0
 	reconciler.io/dies/diegen v0.18.0
 	sigs.k8s.io/controller-tools v0.19.0
