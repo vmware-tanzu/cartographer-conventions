@@ -18,14 +18,11 @@ package v1alpha1
 
 import (
 	"context"
-	"fmt"
 
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	runtime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	apiserverwebhook "k8s.io/apiserver/pkg/util/webhook"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
@@ -33,31 +30,18 @@ import (
 
 type ClusterPodConventionValidator struct{}
 
-var (
-	_ webhook.CustomValidator = &ClusterPodConventionValidator{}
-)
+var _ admission.Validator[*ClusterPodConvention] = &ClusterPodConventionValidator{}
 
-// ValidateCreate implements webhook.CustomValidator so a webhook will be registered for the type
-func (r *ClusterPodConventionValidator) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
-	clusterPodConvention, ok := obj.(*ClusterPodConvention)
-	if !ok {
-		return nil, fmt.Errorf("expected a ClusterPodConvention object, but got git %T", obj)
-	}
-	return nil, clusterPodConvention.validate().ToAggregate()
+func (*ClusterPodConventionValidator) ValidateCreate(ctx context.Context, obj *ClusterPodConvention) (admission.Warnings, error) {
+	return nil, obj.validate().ToAggregate()
 }
 
-// ValidateUpdate implements webhook.CustomValidator so a webhook will be registered for the type
-func (c *ClusterPodConventionValidator) ValidateUpdate(ctx context.Context, old runtime.Object, new runtime.Object) (admission.Warnings, error) {
-	clusterPodConvention, ok := new.(*ClusterPodConvention)
-	if !ok {
-		return nil, fmt.Errorf("expected a ClusterPodConvention object, but got git %T", new)
-	}
+func (*ClusterPodConventionValidator) ValidateUpdate(ctx context.Context, old, obj *ClusterPodConvention) (admission.Warnings, error) {
 	// TODO check for immutable fields
-	return nil, clusterPodConvention.validate().ToAggregate()
+	return nil, obj.validate().ToAggregate()
 }
 
-// ValidateDelete implements webhook.CustomValidator so a webhook will be registered for the type
-func (c *ClusterPodConventionValidator) ValidateDelete(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
+func (*ClusterPodConventionValidator) ValidateDelete(ctx context.Context, obj *ClusterPodConvention) (admission.Warnings, error) {
 	return nil, nil
 }
 

@@ -18,25 +18,18 @@ package v1alpha1
 
 import (
 	"context"
-	"fmt"
 
-	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 // +kubebuilder:webhook:path=/mutate-conventions-carto-run-v1alpha1-podintent,mutating=true,failurePolicy=fail,sideEffects=none,admissionReviewVersions=v1beta1,groups=conventions.carto.run,resources=podintents,verbs=create;update,versions=v1alpha1,name=podintents.conventions.carto.run
 
 type PodIntentDefaulter struct{}
 
-var _ webhook.CustomDefaulter = &PodIntentDefaulter{}
+var _ admission.Defaulter[*PodIntent] = &PodIntentDefaulter{}
 
-// Default implements webhook.Defaulter so a webhook will be registered for the type
-func (r *PodIntentDefaulter) Default(ctx context.Context, obj runtime.Object) error {
-	podIntent, ok := obj.(*PodIntent)
-	if !ok {
-		return fmt.Errorf("expected a PodIntent object, but got %T", obj)
-	}
-	return podIntent.Spec.Default()
+func (*PodIntentDefaulter) Default(ctx context.Context, obj *PodIntent) error {
+	return obj.Spec.Default()
 }
 
 func (s *PodIntentSpec) Default() error {

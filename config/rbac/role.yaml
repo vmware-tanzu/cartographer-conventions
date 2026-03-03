@@ -8,7 +8,6 @@ rules:
   - ""
   resources:
   - configmaps
-  - events
   verbs:
   - create
   - delete
@@ -25,6 +24,19 @@ rules:
   verbs:
   - get
   - list
+  - watch
+- apiGroups:
+  - ""
+  - events.k8s.io
+  resources:
+  - events
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
   - watch
 - apiGroups:
   - cert-manager.io
