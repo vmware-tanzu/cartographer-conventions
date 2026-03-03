@@ -137,7 +137,7 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "PodIntent")
 		os.Exit(1)
 	}
-	if err = ctrl.NewWebhookManagedBy(mgr).For(&conventionsv1alpha1.PodIntent{}).
+	if err = ctrl.NewWebhookManagedBy(mgr, &conventionsv1alpha1.PodIntent{}).
 		WithDefaulter(&conventionsv1alpha1.PodIntentDefaulter{}).
 		WithValidator(&conventionsv1alpha1.PodIntentValidator{}).
 		Complete(); err != nil {
@@ -145,7 +145,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = ctrl.NewWebhookManagedBy(mgr).For(&conventionsv1alpha1.ClusterPodConvention{}).
+	if err = ctrl.NewWebhookManagedBy(mgr, &conventionsv1alpha1.ClusterPodConvention{}).
 		WithDefaulter(&conventionsv1alpha1.ClusterPodConventionDefaults{}).
 		WithValidator(&conventionsv1alpha1.ClusterPodConventionValidator{}).
 		Complete(); err != nil {

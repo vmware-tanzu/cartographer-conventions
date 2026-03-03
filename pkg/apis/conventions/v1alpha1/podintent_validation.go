@@ -18,11 +18,8 @@ package v1alpha1
 
 import (
 	"context"
-	"fmt"
 
-	runtime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
@@ -30,32 +27,18 @@ import (
 
 type PodIntentValidator struct{}
 
-var (
-	_ webhook.CustomValidator = &PodIntentValidator{}
-)
+var _ admission.Validator[*PodIntent] = &PodIntentValidator{}
 
-// ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *PodIntentValidator) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
-	podIntent, ok := obj.(*PodIntent)
-	if !ok {
-		return admission.Warnings{}, fmt.Errorf("expected a PodIntent, but got %T", obj)
-	}
-
-	return nil, podIntent.validate().ToAggregate()
+func (*PodIntentValidator) ValidateCreate(ctx context.Context, obj *PodIntent) (admission.Warnings, error) {
+	return nil, obj.validate().ToAggregate()
 }
 
-// ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *PodIntentValidator) ValidateUpdate(ctx context.Context, old runtime.Object, new runtime.Object) (admission.Warnings, error) {
-	podIntent, ok := new.(*PodIntent)
-	if !ok {
-		return admission.Warnings{}, fmt.Errorf("expected a PodIntent, but got %T", new)
-	}
+func (*PodIntentValidator) ValidateUpdate(ctx context.Context, old, obj *PodIntent) (admission.Warnings, error) {
 	// TODO check for immutable fields
-	return nil, podIntent.validate().ToAggregate()
+	return nil, obj.validate().ToAggregate()
 }
 
-// ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *PodIntentValidator) ValidateDelete(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
+func (*PodIntentValidator) ValidateDelete(ctx context.Context, obj *PodIntent) (admission.Warnings, error) {
 	return nil, nil
 }
 

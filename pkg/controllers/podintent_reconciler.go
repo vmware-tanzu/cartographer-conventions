@@ -72,7 +72,7 @@ var (
 
 // +kubebuilder:rbac:groups=conventions.carto.run,resources=podintents,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=conventions.carto.run,resources=podintents/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=core,resources=events,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core;events.k8s.io,resources=events,verbs=get;list;watch;create;update;patch;delete
 
 func PodIntentReconciler(c reconcilers.Config, wc binding.WebhookConfig, rc binding.RegistryConfig) *reconcilers.ResourceReconciler[*conventionsv1alpha1.PodIntent] {
 	return &reconcilers.ResourceReconciler[*conventionsv1alpha1.PodIntent]{

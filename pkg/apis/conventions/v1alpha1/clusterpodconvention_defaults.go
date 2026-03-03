@@ -18,26 +18,19 @@ package v1alpha1
 
 import (
 	"context"
-	"fmt"
 
-	"k8s.io/apimachinery/pkg/runtime"
 	utilpointer "k8s.io/utils/pointer"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 // +kubebuilder:webhook:path=/mutate-conventions-carto-run-v1alpha1-clusterpodconvention,mutating=true,failurePolicy=fail,sideEffects=none,admissionReviewVersions=v1beta1,groups=conventions.carto.run,resources=clusterpodconventions,verbs=create;update,versions=v1alpha1,name=clusterpodconventions.conventions.carto.run
 
 type ClusterPodConventionDefaults struct{}
 
-var _ webhook.CustomDefaulter = &ClusterPodConventionDefaults{}
+var _ admission.Defaulter[*ClusterPodConvention] = &ClusterPodConventionDefaults{}
 
-// Default implements webhook.Defaulter so a webhook will be registered for the type
-func (r *ClusterPodConventionDefaults) Default(ctx context.Context, obj runtime.Object) error {
-	clusterPodConvention, ok := obj.(*ClusterPodConvention)
-	if !ok {
-		return fmt.Errorf("expected a ClusterPodConvention object, but got git %T", obj)
-	}
-	return clusterPodConvention.Spec.Default()
+func (*ClusterPodConventionDefaults) Default(ctx context.Context, obj *ClusterPodConvention) error {
+	return obj.Spec.Default()
 }
 
 func (s *ClusterPodConventionSpec) Default() error {
