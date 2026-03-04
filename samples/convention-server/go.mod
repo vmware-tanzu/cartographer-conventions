@@ -13,7 +13,7 @@ require (
 )
 
 require (
-	github.com/CycloneDX/cyclonedx-go v0.9.3 // indirect
+	github.com/CycloneDX/cyclonedx-go v0.10.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
 	github.com/google/go-containerregistry v0.21.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
