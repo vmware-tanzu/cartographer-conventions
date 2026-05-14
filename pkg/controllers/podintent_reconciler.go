@@ -186,7 +186,7 @@ func BuildRegistryConfig(rc binding.RegistryConfig) reconcilers.SubReconciler[*c
 			if err = c.TrackAndGet(ctx, serviceAccountNamespacedName, sa); err != nil {
 				log.Error(err, "fetching serviceAccount failed")
 				// should not happen mostly.
-				conditionManager.MarkFalse(conventionsv1alpha1.PodIntentConditionConventionsApplied, "ImageResolutionFailed", fmt.Sprintf("failed to authenticate: %v", err.Error()))
+				conditionManager.MarkFalse(conventionsv1alpha1.PodIntentConditionConventionsApplied, "ImageResolutionFailed", "failed to authenticate: %v", err.Error())
 				return ctrl.Result{}, nil
 			}
 
