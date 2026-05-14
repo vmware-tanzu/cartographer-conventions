@@ -47,7 +47,7 @@ jobs:
     - uses: actions/setup-go@v6
       with:
         go-version-file: "go.mod"
-    - uses: carvel-dev/setup-action@v2.1.0
+    - uses: carvel-dev/setup-action@v2.2.0
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
     - uses: ko-build/setup-ko@v0.9
@@ -210,7 +210,7 @@ jobs:
     - uses: actions/setup-go@v6
       with:
         go-version-file: "go.mod"
-    - uses: carvel-dev/setup-action@v2.1.0
+    - uses: carvel-dev/setup-action@v2.2.0
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Install kind
