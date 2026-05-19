@@ -5,7 +5,7 @@ go 1.26.0
 replace github.com/vmware-tanzu/cartographer-conventions/webhook => ../../webhook
 
 require (
-	github.com/CycloneDX/cyclonedx-go v0.10.0
+	github.com/CycloneDX/cyclonedx-go v0.11.0
 	github.com/Masterminds/semver v1.5.0
 	github.com/go-logr/logr v1.4.3
 	github.com/go-logr/zapr v1.3.0
