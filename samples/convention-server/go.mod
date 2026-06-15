@@ -9,13 +9,13 @@ require (
 	github.com/go-logr/zapr v1.3.0
 	github.com/vmware-tanzu/cartographer-conventions/webhook v0.5.1
 	go.uber.org/zap v1.28.0
-	k8s.io/api v0.36.1
+	k8s.io/api v0.36.2
 )
 
 require (
-	github.com/CycloneDX/cyclonedx-go v0.10.0 // indirect
+	github.com/CycloneDX/cyclonedx-go v0.11.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
-	github.com/google/go-containerregistry v0.21.5 // indirect
+	github.com/google/go-containerregistry v0.21.6 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.3-0.20250322232337-35a7c28c31ee // indirect
@@ -25,7 +25,7 @@ require (
 	golang.org/x/net v0.53.0 // indirect
 	golang.org/x/text v0.36.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	k8s.io/apimachinery v0.36.1 // indirect
+	k8s.io/apimachinery v0.36.2 // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20260317180543-43fb72c5454a // indirect
 	k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2 // indirect
