@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	carvel.dev/ytt v0.55.0
 	golang.org/x/tools v0.45.0
-	reconciler.io/dies/diegen v0.19.0
+	reconciler.io/dies/diegen v0.19.1
 	sigs.k8s.io/controller-tools v0.21.0
 	sigs.k8s.io/kustomize/kustomize/v5 v5.8.1
 )
