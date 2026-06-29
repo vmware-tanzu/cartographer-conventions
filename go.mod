@@ -16,7 +16,7 @@ require (
 	k8s.io/apiserver v0.36.1
 	k8s.io/client-go v0.36.1
 	k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2
-	reconciler.io/dies v0.19.0
+	reconciler.io/dies v0.19.1
 	reconciler.io/runtime v0.26.1
 	sigs.k8s.io/controller-runtime v0.24.1
 	sigs.k8s.io/yaml v1.6.0
@@ -33,7 +33,7 @@ require (
 	github.com/Azure/go-autorest/autorest/date v0.3.1 // indirect
 	github.com/Azure/go-autorest/logger v0.2.2 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.1 // indirect
-	github.com/CycloneDX/cyclonedx-go v0.10.0 // indirect
+	github.com/CycloneDX/cyclonedx-go v0.11.0 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.39.2 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.31.12 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.18.16 // indirect

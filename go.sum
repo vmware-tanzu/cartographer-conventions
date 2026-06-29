@@ -28,8 +28,8 @@ github.com/Azure/go-autorest/logger v0.2.2/go.mod h1:I5fg9K52o+iuydlWfa9T5K6WFos
 github.com/Azure/go-autorest/tracing v0.6.0/go.mod h1:+vhtPC754Xsa23ID7GlGsrdKBpUA79WCAKPPZVC2DeU=
 github.com/Azure/go-autorest/tracing v0.6.1 h1:YUMSrC/CeD1ZnnXcNYU4a/fzsO35u2Fsful9L/2nyR0=
 github.com/Azure/go-autorest/tracing v0.6.1/go.mod h1:/3EgjbsjraOqiicERAeu3m7/z0x1TzjQGAwDrJrXGkc=
-github.com/CycloneDX/cyclonedx-go v0.10.0 h1:7xyklU7YD+CUyGzSFIARG18NYLsKVn4QFg04qSsu+7Y=
-github.com/CycloneDX/cyclonedx-go v0.10.0/go.mod h1:vUvbCXQsEm48OI6oOlanxstwNByXjCZ2wuleUlwGEO8=
+github.com/CycloneDX/cyclonedx-go v0.11.0 h1:GokP8FiRC+foiuwWhSSLpSD5H4hSWtGnR3wo7apkBFI=
+github.com/CycloneDX/cyclonedx-go v0.11.0/go.mod h1:vUvbCXQsEm48OI6oOlanxstwNByXjCZ2wuleUlwGEO8=
 github.com/Masterminds/semver/v3 v3.4.0 h1:Zog+i5UMtVoCU8oKka5P7i9q9HgrJeGzI9SA1Xbatp0=
 github.com/Masterminds/semver/v3 v3.4.0/go.mod h1:4V+yj/TJE1HU9XfppCwVMZq3I84lprf4nC11bSS5beM=
 github.com/aws/aws-sdk-go-v2 v1.39.2 h1:EJLg8IdbzgeD7xgvZ+I8M1e0fL0ptn/M47lianzth0I=
@@ -379,8 +379,8 @@ k8s.io/kube-openapi v0.0.0-20260317180543-43fb72c5454a h1:xCeOEAOoGYl2jnJoHkC3hk
 k8s.io/kube-openapi v0.0.0-20260317180543-43fb72c5454a/go.mod h1:uGBT7iTA6c6MvqUvSXIaYZo9ukscABYi2btjhvgKGZ0=
 k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2 h1:AZYQSJemyQB5eRxqcPky+/7EdBj0xi3g0ZcxxJ7vbWU=
 k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2/go.mod h1:xDxuJ0whA3d0I4mf/C4ppKHxXynQ+fxnkmQH0vTHnuk=
-reconciler.io/dies v0.19.0 h1:noHocgVp+pDfaFxsOh1t/kuliy1S2qxXKnWDAFVJ5Fk=
-reconciler.io/dies v0.19.0/go.mod h1:OLtAkKimdu4baXyjWRmBDiKnh4Plg4H26PE1e3DJFrA=
+reconciler.io/dies v0.19.1 h1:OWjsOZxFb2sGNBiD4pjZMv/gwoiRr+7eiqCWsk1FSm0=
+reconciler.io/dies v0.19.1/go.mod h1:OLtAkKimdu4baXyjWRmBDiKnh4Plg4H26PE1e3DJFrA=
 reconciler.io/runtime v0.26.1 h1:drRYZ6u3xu2KARiiaD4WKkEfg5AfugoTiYjeHBlKKCU=
 reconciler.io/runtime v0.26.1/go.mod h1:85cWiJoLWx8w0ghrV4pM6rMHkcr6OONm71aOZDearAU=
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.34.0 h1:hSfpvjjTQXQY2Fol2CS0QHMNs/WI1MOSGzCm1KhM5ec=
