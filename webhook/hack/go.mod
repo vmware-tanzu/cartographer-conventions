@@ -1,6 +1,6 @@
 module github.com/vmware-tanzu/cartographer-conventions/tools
 
-go 1.26.3
+go 1.26.5
 
 require (
 	carvel.dev/ytt v0.55.1
