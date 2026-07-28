@@ -5,7 +5,7 @@ go 1.26.5
 replace github.com/vmware-tanzu/cartographer-conventions/webhook => ./webhook
 
 require (
-	github.com/go-logr/logr v1.4.3
+	github.com/go-logr/logr v1.4.4
 	github.com/google/go-cmp v0.7.0
 	github.com/google/go-containerregistry v0.21.7
 	github.com/google/go-containerregistry/pkg/authn/k8schain v0.0.0-20251003171851-d0099a1a8b77
