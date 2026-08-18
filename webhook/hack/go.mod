@@ -3,7 +3,7 @@ module github.com/vmware-tanzu/cartographer-conventions/tools
 go 1.26.5
 
 require (
-	carvel.dev/ytt v0.55.1
+	carvel.dev/ytt v0.55.2
 	golang.org/x/tools v0.48.0
 	reconciler.io/dies/diegen v0.19.1
 	sigs.k8s.io/controller-tools v0.21.0
@@ -11,7 +11,7 @@ require (
 )
 
 require (
-	github.com/BurntSushi/toml v1.2.1 // indirect
+	github.com/BurntSushi/toml v1.5.0 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/cppforlife/cobrautil v0.0.0-20200514214827-bb86e6965d72 // indirect
 	github.com/cppforlife/go-cli-ui v0.0.0-20200505234325-512793797f05 // indirect
@@ -36,7 +36,7 @@ require (
 	github.com/go-openapi/swag/yamlutils v0.26.0 // indirect
 	github.com/gobuffalo/flect v1.0.3 // indirect
 	github.com/google/gnostic-models v0.7.1 // indirect
-	github.com/hashicorp/go-version v1.6.0 // indirect
+	github.com/hashicorp/go-version v1.7.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/k14s/starlark-go v0.0.0-20200720175618-3a5c849cc368 // indirect
