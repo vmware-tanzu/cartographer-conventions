@@ -6,7 +6,7 @@ require (
 	carvel.dev/ytt v0.55.3
 	golang.org/x/tools v0.52.0
 	reconciler.io/dies/diegen v0.20.0
-	sigs.k8s.io/controller-tools v0.22.0
+	sigs.k8s.io/controller-tools v0.23.0
 	sigs.k8s.io/kustomize/kustomize/v5 v5.8.1
 )
 
